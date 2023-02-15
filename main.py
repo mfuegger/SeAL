@@ -1,5 +1,6 @@
 import pprint
 import trace as tr
+import plotting
 
 # ---- testing ------
 
@@ -30,6 +31,7 @@ events = [
 	(0, 'y', 0.5),  # add glitch
 ]
 times, states = tr.trace(init, events=events, T=20)
+plotting.plot(times, states)
 
 # print it
 for i in range(len(times)):
