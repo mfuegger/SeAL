@@ -17,7 +17,7 @@ def plot(times, states, signals, fname='out.svg', dt=30, dv=60, x0=60):
 	height = len(states) * dv
 	dwg = svgwrite.Drawing(
 		fname,
-		size=(height, width),
+		size=(width + 40, height),
 	)
 
 	signal_ybase = {}
