@@ -28,7 +28,7 @@ tr.fall(f=tr.INVf, i=['y'], o='b', d=5)
 # run it
 init = {'a': 1, 'b': 1, 'y': 0}
 events = [
-	(2, 'y', 0.5),  # add glitch
+	(2, 'y', 0.5),  # add glitch at time 2
 ]
 times, states = tr.trace(init, events=events, T=30)
 plotting.plot(times, states, tr.getSignals())
