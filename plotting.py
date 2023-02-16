@@ -77,7 +77,7 @@ def plot(times, states, signals, fname='out.svg', dt=10, dv=20, x0=20):
 			dwg.add(dwg.rect(
 				(x0 + patch[0]*dt, ybase - 0.8 * dv),
 				(patch[1]*dt - patch[0]*dt, 0.8 * dv),
-				stroke=svgwrite.rgb(10, 10, 10, '%'),
+				stroke='red',
 				fill='red',
 				opacity=0.5,
 				stroke_width=1
