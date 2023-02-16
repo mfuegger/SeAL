@@ -30,9 +30,13 @@ def plot(times, states, signals, fname='out.svg', dt=10, dv=20, x0=20):
 
 	for s in states[0].keys():
 		ybase = signal_ybase[s]
+		
+		# make points
 		points = []
-		for i in range(len(times)-1):
+		for i in range(len(times)):
 			y = ybase - states[i][s] * 0.8 * dv
+
+			# get points for signal line
 			if i == 0:
 				points += [ (x0 + times[i]*dt, y) ]
 
@@ -41,12 +45,43 @@ def plot(times, states, signals, fname='out.svg', dt=10, dv=20, x0=20):
 
 		points += [ (x0 + times[-1]*dt, y) ]
 
+		# make patches
+		patches = []
+		previous_state = None
+		patch_M_start = None
+		for i in range(len(times)):
+			# get patches for M
+			if states[i][s] != previous_state:
+				# state change
+				if states[i][s] == 0.5:
+					# start of an M
+					patch_M_start = times[i]
+
+				elif (patch_M_start is not None) and ( (states[i][s] != 0.5) or (i == len(times)-1) ):
+					# end of M patch or M patch is open and end of time
+					patches += [ (patch_M_start, times[i]) ]
+					patch_M_start = None
+
+			previous_state = states[i][s]
+
+		# draw points
 		dwg.add(dwg.path(
 			d=points2path(points),
 			stroke=svgwrite.rgb(10, 10, 10, '%'),
 			fill='white',
 			stroke_width=1
 		))
+
+		# draw patches
+		for patch in patches:
+			dwg.add(dwg.rect(
+				(x0 + patch[0]*dt, ybase - 0.8 * dv),
+				(patch[1]*dt - patch[0]*dt, 0.8 * dv),
+				stroke=svgwrite.rgb(10, 10, 10, '%'),
+				fill='red',
+				opacity=0.5,
+				stroke_width=1
+			))
 
 	# grid |
 	for time in times:
