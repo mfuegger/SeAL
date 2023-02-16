@@ -66,7 +66,9 @@ tr.fall(f=tr.Cf, i=['c2','en3'], o='c3', d=5)
 # times, states = tr.trace(init, events=events, T=20)
 
 init = {'en1': 1, 'en2': 1, 'en3': 1, 'c_in': 0, 'c1': 0, 'c2': 0, 'c3': 0, 'ack_in': 0}
-events = []
+events = [
+#	(0, 'c1', 0.5),  # add glitch
+]
 times, states = tr.trace(init, events=events, T=32)
 
 plotting.plot(times, states, tr.getSignals())
