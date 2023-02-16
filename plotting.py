@@ -50,15 +50,20 @@ def plot(times, states, signals, fname='out.svg', dt=10, dv=20, x0=20):
 		previous_state = None
 		patch_M_start = None
 		for i in range(len(times)):
+			if (patch_M_start is not None) and ( i == len(times)-1 ):
+					# M patch is open and end of time
+					patches += [ (patch_M_start, times[i]) ]
+					patch_M_start = None
+
 			# get patches for M
-			if states[i][s] != previous_state:
+			elif states[i][s] != previous_state:
 				# state change
 				if states[i][s] == 0.5:
 					# start of an M
 					patch_M_start = times[i]
 
-				elif (patch_M_start is not None) and ( (states[i][s] != 0.5) or (i == len(times)-1) ):
-					# end of M patch or M patch is open and end of time
+				elif (patch_M_start is not None) and (states[i][s] != 0.5):
+					# end of M patch
 					patches += [ (patch_M_start, times[i]) ]
 					patch_M_start = None
 
