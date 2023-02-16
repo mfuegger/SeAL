@@ -8,15 +8,20 @@ INVr = lambda a: 1-a
 INVf = lambda a: a
 
 rules = []
-signals = set()
+signals = []
+
+def getSignals():
+	global signals
+	return signals
 
 
 def rule(f, i, o, val, d=1):
 	global rules, signals
 	rules += [ {'f': f, 'i': i, 'o': o, 'val': val, 'd': d} ]
-	signals.update(i)
-	signals.add(o)
-
+	for s in i + [ o ]:
+		if s not in signals:
+			signals += [ s ]
+			
 
 def eval_rule(state, rule):
 	args = [ state[s] for s in rule['i'] ]
