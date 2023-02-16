@@ -12,7 +12,7 @@ def points2path(points):
 	return d
 
 
-def plot(times, states, signals, fname='out.svg', dt=10, dv=20, x0=20):
+def plot(times, states, signals, fname='out.svg', dt=30, dv=60, x0=60):
 	width = x0 + dt * times[-1]
 	height = len(states) * dv
 	dwg = svgwrite.Drawing(
@@ -25,7 +25,7 @@ def plot(times, states, signals, fname='out.svg', dt=10, dv=20, x0=20):
 	for s in signals:
 		y += dv
 		signal_ybase[s] = y
-		dwg.add(dwg.text(s, insert=(0,y - dv/2*0.8), font_size="8", fill='black'))
+		dwg.add(dwg.text(s, insert=(0,y - dv/2*0.8), font_size="16", fill='black'))
 	maxy = y
 
 	for s in states[0].keys():
@@ -74,7 +74,7 @@ def plot(times, states, signals, fname='out.svg', dt=10, dv=20, x0=20):
 			d=points2path(points),
 			stroke=svgwrite.rgb(10, 10, 10, '%'),
 			fill='white',
-			stroke_width=1
+			stroke_width=3
 		))
 
 		# draw patches
@@ -85,7 +85,7 @@ def plot(times, states, signals, fname='out.svg', dt=10, dv=20, x0=20):
 				stroke='red',
 				fill='red',
 				opacity=0.5,
-				stroke_width=1
+				stroke_width=3
 			))
 
 	# grid |
@@ -94,9 +94,9 @@ def plot(times, states, signals, fname='out.svg', dt=10, dv=20, x0=20):
 		dwg.add(dwg.line(
 			(x0 + x, 0), (x0 + x, maxy),
 			stroke=svgwrite.rgb(10, 10, 10, '%'),
-			stroke_width=0.1
+			stroke_width=0.3
 		))
-		dwg.add(dwg.text(f'{time}', insert=(x0 + x, maxy + 8), font_size="5", fill='black'))
+		dwg.add(dwg.text(f'{time}', insert=(x0 + x, maxy + 16), font_size="12", fill='black'))
 	maxx = x
 
 	# grid -
@@ -105,7 +105,7 @@ def plot(times, states, signals, fname='out.svg', dt=10, dv=20, x0=20):
 		dwg.add(dwg.line(
 			(0, y), (x0 + maxx, y),
 			stroke=svgwrite.rgb(10, 10, 10, '%'),
-			stroke_width=0.1
+			stroke_width=0.3
 		))
 
 	dwg.save()
