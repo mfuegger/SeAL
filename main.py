@@ -67,8 +67,8 @@ tr.fall(f=tr.Cf, i=['c2','en3'], o='c3', d=5)
 
 init = {'en1': 1, 'en2': 1, 'en3': 1, 'c_in': 0, 'c1': 0, 'c2': 0, 'c3': 0, 'ack_in': 0}
 events = [
-	(2, 'c3', 1),  # add glitch
-	(2.1, 'c3', 0),  # reset glitch
+	#(5, 'c3', 1),  # add glitch
+	#(5.1, 'c3', 0),  # reset glitch
 ]
 times, states = tr.trace(init, events=events, T=32)
 
