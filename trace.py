@@ -52,69 +52,100 @@ def trace(init, events=[], T=20):
 	t = 0
 	states = []
 	times = []
+
+	# check if something is initialized that is not in the circuit
+	for s in init.keys():
+		if s not in signals:
+			print(f'warning: initalized signal {s} does not appear in the circuit. Ignoring it.')
 	
 	# init
 	state = dict()
 	for s in signals:
 		state[s] = init[s] if s in init.keys() else 0
+		if s not in init.keys():
+			print(f'warning: did not find initial state for signal {s}. Assuming 0.')
 
 	# follow up
 	scheduled = []
-	while t < T:
+	while t <= T:
+		print(t)
 		# check events: keep only if still true
 		# print()
 		# print(state)
 		# print('scheduled at time', t, scheduled)
 
-		# unstable events
-		unstable_rules = [ event[1] for event in scheduled if eval_rule(state=state, rule=event[1]) == 0 ]
+		# --- apply unstable rule effects ---
 
-		# for all these: make glitch at output if the current value and the intended value do not match
+		# unstable events:
+		#   list of the rules that were scheduled, but that now evaluate not to 1 (they are 0 or 0.5)
+		unstable_rules = [ event[1] for event in scheduled if eval_rule(state=state, rule=event[1]) < 1 ]
+
+		# for all these: make glitch at output immediately if the current value and the intended value do not match
 		for rule in unstable_rules:
 			# print('unstable at time', t, rule)
 			new_value = rule['val'] if ( state[ rule['o'] ] == rule['val'] ) else 0.5
 			state[ rule['o'] ] = new_value
+			assert (new_value == 0.5)
+
+
+		# --- apply stable & scheduled rule effects ---
 
 		# keep only stable events in scheduled
-		scheduled = [ event for event in scheduled if eval_rule(state=state, rule=event[1]) > 0 ]
+		scheduled = [ event for event in scheduled if eval_rule(state=state, rule=event[1]) == 1 ]
 
-		# apply events
+		# apply events:
+		#   find the ones that are scheduled for time t
+		#   apply these
 		rules_to_apply = [ event[1] for event in scheduled if event[0] == t ]
 		for rule in rules_to_apply:
 			# print('apply at time', t, rule)
 			state[ rule['o'] ] = rule['val']
+
+
+		# --- apply external events ---
 
 		# potentially overwrite with external events
 		for event in events:
 			if event[0] == t:
 				state[ event[1] ] = event[2]
 		
+
+		# --- update state ---
+
 		# add state
-		times += [ t ]
+		times  += [ t ]
 		states += [ copy.deepcopy(state) ]
 
 		# keep only future events
 		scheduled = [ event for event in scheduled if event[0] > t ]
-		events = [ event for event in events if event[0] > t ]
+		events =    [ event for event in events    if event[0] > t ]
+
+		# --- schedule new events ---
 
 		# schedule new events
 		for rule in rules:
 			# if rule guard is true and effect not already the case in state
-			if eval_rule(state, rule) > 0 and state[ rule['o'] ] != rule['val']:
-				if eval_rule(state, rule) == 1:
+			if eval_rule(state, rule) > 0:
+				if eval_rule(state, rule) == 1 and state[ rule['o'] ] != rule['val']:
 					scheduled += [ (t + rule['d'], rule) ]
-				else:
-					assert( eval_rule(state, rule) == 0.5 )
+
+				elif eval_rule(state, rule) == 0.5 and state[ rule['o'] ] != 0.5:
+					# print('propagate M')
 					new_rule = copy.deepcopy(rule)
 					new_rule['val'] = 0.5
-					scheduled += [ (t + new_rule['d'], new_rule) ]
+					scheduled += [ (t + 0.1, new_rule) ]
 				
-		# next time:
+		# next time from:
 		#  T,
 		#  scheduled event,
 		#  external event
-		next_t = min([ T ] + [ event[0] for event in scheduled ] + [ event[0] for event in events ])
-		t = next_t
+		if t < T:
+			next_t = min([ T ] + [ event[0] for event in scheduled ] + [ event[0] for event in events ])
+			t = next_t
+
+		else:
+			# reached T
+			break
 
 	# filter (if no change in state -> remove it)
 	# this could be done more efficiently in the first place
@@ -122,10 +153,17 @@ def trace(init, events=[], T=20):
 	filtered_times = []
 	filtered_states = []
 	for i in range(len(states)):
-		if str(state) != str(states[i]):
+		if i == len(states)-1:
+			# last state -> always add
 			filtered_times += [ times[i] ]
 			filtered_states += [ states[i] ]
-			state = states[i]
+
+		else:
+			# before last state -> filter if did not change
+			if str(state) != str(states[i]):
+				filtered_times += [ times[i] ]
+				filtered_states += [ states[i] ]
+				state = states[i]
 
 	return filtered_times, filtered_states
 
