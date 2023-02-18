@@ -42,7 +42,7 @@ def fall(f, i, o, d=1):
 	rule(f=f, i=i, o=o, val=0, d=d)
 
 
-def trace(init, events=[], T=20):
+def trace(init, events=[], T=20, Mdelay=0.1):
 	"""
 	init:   initial state. Dict of the form: signal -> value
 	events: list of items (time, signal, value)
@@ -68,7 +68,6 @@ def trace(init, events=[], T=20):
 	# follow up
 	scheduled = []
 	while t <= T:
-		print(t)
 		# check events: keep only if still true
 		# print()
 		# print(state)
@@ -133,7 +132,7 @@ def trace(init, events=[], T=20):
 					# print('propagate M')
 					new_rule = copy.deepcopy(rule)
 					new_rule['val'] = 0.5
-					scheduled += [ (t + 0.1, new_rule) ]
+					scheduled += [ (t + Mdelay, new_rule) ]
 				
 		# next time from:
 		#  T,
