@@ -73,6 +73,14 @@ def trace(init, events=[], T=20, Mdelay=0.1):
 		# print(state)
 		# print('scheduled at time', t, scheduled)
 
+		# --- apply external events ---
+
+		# external events
+		for event in events:
+			if event[0] == t:
+				state[ event[1] ] = event[2]
+
+
 		# --- apply unstable rule effects ---
 
 		# unstable events:
@@ -99,14 +107,6 @@ def trace(init, events=[], T=20, Mdelay=0.1):
 		for rule in rules_to_apply:
 			# print('apply at time', t, rule)
 			state[ rule['o'] ] = rule['val']
-
-
-		# --- apply external events ---
-
-		# potentially overwrite with external events
-		for event in events:
-			if event[0] == t:
-				state[ event[1] ] = event[2]
 		
 
 		# --- update state ---
