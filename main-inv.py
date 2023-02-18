@@ -11,7 +11,7 @@ tr.rise(f=tr.INVr, i=['a'], o='y', d=4)
 tr.fall(f=tr.INVf, i=['a'], o='y', d=4)
 
 init = {'a': 0, 'y': 0,}
-glitch_t = 3
+glitch_t = 10
 events = [
 	(glitch_t, 'a', 1),  # add glitch
 	(glitch_t + 0.1, 'a', 0),  # reset glitch
