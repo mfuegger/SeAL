@@ -92,7 +92,11 @@ def trace(init, events=[], T=20, Mdelay=0.1):
 			# print('unstable at time', t, rule)
 			new_value = rule['val'] if ( state[ rule['o'] ] == rule['val'] ) else 0.5
 			state[ rule['o'] ] = new_value
-			assert (new_value == 0.5)
+			if new_value == 0.5:
+				input_parameter_str = ', '.join([ f'{s}={state[s]}' for s in rule['i'] ])
+				print(f"time {t}: M due to unstable rule G({input_parameter_str}) -> {rule['o']}")
+
+			# assert (new_value == 0.5), f"{rule['o']} = {state[ rule['o'] ]} will be set to {new_value} in state {state} with rule {rule}"
 
 
 		# --- apply stable & scheduled rule effects ---
