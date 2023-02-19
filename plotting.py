@@ -14,7 +14,7 @@ def points2path(points):
 
 def plot(times, states, signals, fname='out.svg', dt=30, dv=60, x0=60):
 	width = x0 + dt * times[-1]
-	height = len(states) * dv
+	height = len(states[0]) * dv + 200
 	dwg = svgwrite.Drawing(
 		fname,
 		size=(width + 40, height),
@@ -89,14 +89,16 @@ def plot(times, states, signals, fname='out.svg', dt=30, dv=60, x0=60):
 			))
 
 	# grid |
-	for time in times:
+	for i, time in enumerate(times):
 		x = dt*time
 		dwg.add(dwg.line(
 			(x0 + x, 0), (x0 + x, maxy),
 			stroke=svgwrite.rgb(10, 10, 10, '%'),
 			stroke_width=0.3
 		))
-		dwg.add(dwg.text(f'{time}', insert=(x0 + x, maxy + 16), font_size="12", fill='black'))
+		if i == 0 or ( i > 0 and time - times[i-1] > 0.25 ):
+			# only annotate times that are not too close to previous times
+			dwg.add(dwg.text(f'{time}', insert=(x0 + x, maxy + 16), font_size="12", fill='black'))
 	maxx = x
 
 	# grid -
