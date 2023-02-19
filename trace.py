@@ -107,6 +107,14 @@ def trace(init, events=[], T=20, Mdelay=0.1):
 		for rule in rules_to_apply:
 			# print('apply at time', t, rule)
 			state[ rule['o'] ] = rule['val']
+
+
+		# --- again apply external events if they were overwritten by a state change ---
+
+		# external events
+		for event in events:
+			if event[0] == t:
+				state[ event[1] ] = event[2]
 		
 
 		# --- update state ---
