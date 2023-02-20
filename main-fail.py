@@ -88,7 +88,7 @@ for i in range(len(times)):
 	print(f'time {times[i]}:')
 	pprint.pprint(states[i])
 
-ret = check.check(times=times, states=states, signals=list(init.keys()), output_signals=['c3','c1'])
+ret = check.check(times=times, states=states, signals=list(init.keys()), output_signals=['c3'])
 pprint.pprint(ret)
 
 plotting.plot(times, states, list(init.keys()), susceptible=ret['susceptible'])
