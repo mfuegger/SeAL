@@ -91,10 +91,10 @@ def trace(init, events=[], T=20, Mdelay=0.1):
 		for rule in unstable_rules:
 			# print('unstable at time', t, rule)
 			new_value = rule['val'] if ( state[ rule['o'] ] == rule['val'] ) else 0.5
-			state[ rule['o'] ] = new_value
 			if new_value == 0.5:
 				input_parameter_str = ', '.join([ f'{s}={state[s]}' for s in rule['i'] ])
-				print(f"time {t}: M due to unstable rule G({input_parameter_str}) -> {rule['o']}")
+				print(f"time {t}: M due to unstable rule G({input_parameter_str}) -> {rule['o']} (currently {state[rule['o']]}, setting to {rule['val']})")
+			state[ rule['o'] ] = new_value
 
 			# assert (new_value == 0.5), f"{rule['o']} = {state[ rule['o'] ]} will be set to {new_value} in state {state} with rule {rule}"
 
@@ -136,12 +136,11 @@ def trace(init, events=[], T=20, Mdelay=0.1):
 		# schedule new events
 		for rule in rules:
 			# if rule guard is true and effect not already the case in state
-			if eval_rule(state, rule) > 0:
-				if eval_rule(state, rule) == 1 and state[ rule['o'] ] != rule['val']:
+			if ( eval_rule(state, rule) > 0 ) and ( state[ rule['o'] ] != rule['val'] ):
+				if eval_rule(state, rule) == 1:
 					scheduled += [ (t + rule['d'], rule) ]
 
-				elif eval_rule(state, rule) == 0.5 and state[ rule['o'] ] != 0.5:
-					# print('propagate M')
+				elif eval_rule(state, rule) == 0.5:
 					new_rule = copy.deepcopy(rule)
 					new_rule['val'] = 0.5
 					scheduled += [ (t + Mdelay, new_rule) ]
