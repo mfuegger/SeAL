@@ -1,10 +1,10 @@
 import trace as tr
 
-def check(times, states, signals, output_signals, Mdelta=0.1):
+def check(times, states, signals, output_signals, Mdelta=0.1, Textra=30):
 	susceptible_intervals = []
 	pos = 0
 	neg = 0
-	T = times[-1]
+	T = times[-1] + Textra
 
 	non_output_signals = [ s for s in signals if s not in output_signals ]
 	for s in non_output_signals:
