@@ -82,8 +82,6 @@ events = [
 ]
 times, states = tr.trace(init, events=events, T=32)
 
-plotting.plot(times, states, list(init.keys()))
-
 # print it
 for i in range(len(times)):
 	print()
@@ -92,3 +90,6 @@ for i in range(len(times)):
 
 ret = check.check(times=times, states=states, signals=list(init.keys()), output_signals=['c3','c1'])
 pprint.pprint(ret)
+
+plotting.plot(times, states, list(init.keys()), susceptible=ret['susceptible'])
+

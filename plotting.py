@@ -12,7 +12,7 @@ def points2path(points):
 	return d
 
 
-def plot(times, states, signals, fname='out.svg', dt=30, dv=60, x0=60):
+def plot(times, states, signals, fname='out.svg', dt=30, dv=60, x0=60, susceptible=None):
 	width = x0 + dt * times[-1]
 	height = len(states[0]) * dv + 200
 	dwg = svgwrite.Drawing(
@@ -109,5 +109,20 @@ def plot(times, states, signals, fname='out.svg', dt=30, dv=60, x0=60):
 			stroke=svgwrite.rgb(10, 10, 10, '%'),
 			stroke_width=0.3
 		))
+
+	# potentially add susceptible signal regions
+	if susceptible is not None:
+		for (s,interval) in susceptible:
+			yfrom = signal_ybase[s]
+			xfrom = x0 + dt*interval[0]
+			xto = x0 + dt*interval[1]
+			dwg.add(dwg.rect(
+				(xfrom,  yfrom - 0.8 * dv),
+				(xto - xfrom, 0.8 * dv),
+				stroke='blue',
+				fill='blue',
+				opacity=0.1,
+				stroke_width=0
+			))
 
 	dwg.save()
