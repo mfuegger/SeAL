@@ -42,7 +42,7 @@ def fall(f, i, o, d=1):
 	rule(f=f, i=i, o=o, val=0, d=d)
 
 
-def trace(init, events=[], T=20, Mdelay=0.1):
+def trace(init, events=[], T=20, Mdelay=0.1, verbose=True):
 	"""
 	init:   initial state. Dict of the form: signal -> value
 	events: list of items (time, signal, value)
@@ -91,7 +91,7 @@ def trace(init, events=[], T=20, Mdelay=0.1):
 		for rule in unstable_rules:
 			# print('unstable at time', t, rule)
 			new_value = rule['val'] if ( state[ rule['o'] ] == rule['val'] ) else 0.5
-			if (new_value == 0.5) and ( state[rule['o']] != rule['val'] ):
+			if (new_value == 0.5) and ( state[rule['o']] != rule['val'] ) and verbose:
 				input_parameter_str = ', '.join([ f'{s}={state[s]}' for s in rule['i'] ])
 				print(f"time {t}: M due to unstable rule G({input_parameter_str}) -> {rule['o']} (currently {state[rule['o']]}, setting to {rule['val']})")
 			state[ rule['o'] ] = new_value
