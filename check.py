@@ -1,12 +1,11 @@
 import trace as tr
 
-def check(times, states, T, output_signals):
+def check(times, states, T, signals, output_signals):
 	susceptible_intervals = []
 	pos = 0
 	neg = 0
 
-	signals = states[0].keys()
-	non_output_signals = set(signals) - set(output_signals)
+	non_output_signals = [ s for s in signals if s not in output_signals ]
 	for s in non_output_signals:
 		for i in range(len(times)-1):
 			t = times[i]

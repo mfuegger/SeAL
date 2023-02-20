@@ -90,5 +90,5 @@ for i in range(len(times)):
 	print(f'time {times[i]}:')
 	pprint.pprint(states[i])
 
-ret = check.check(times=times, states=states, T=32, output_signals=['c3','c1'])
+ret = check.check(times=times, states=states, T=32, signals=list(init.keys()), output_signals=['c3','c1'])
 pprint.pprint(ret)
