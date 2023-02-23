@@ -1,6 +1,6 @@
-import trace as tr
+import tracem as tr
 
-def check(times, states, signals, output_signals, Mdelta=0.1, Textra=30, MafterGrid=0.01):
+def check(times, states, events, signals, output_signals, Mdelta=0.1, Textra=30, MafterGrid=0.01):
 	susceptible_intervals = []
 	pos = 0
 	neg = 0
@@ -10,7 +10,7 @@ def check(times, states, signals, output_signals, Mdelta=0.1, Textra=30, MafterG
 	for s in non_output_signals:
 		for i in range(len(times)-1):
 			t = times[i]
-			events = [
+			events += [
 				(t + MafterGrid,          s, 0.5),           # add glitch
     			(t + MafterGrid + Mdelta, s, states[i][s]),  # reset glitch
 			]
