@@ -1,27 +1,17 @@
 import pprint
-import trace as tr
+import tracem as tr
 import plotting
 import check
 
 # ---- testing ------
 
 # circuit
-
-# c
-# tr.rise(f=tr.Cr, i=['a','b'], o='y', d=2)
-# tr.fall(f=tr.Cf, i=['a','b'], o='y', d=2)
-
-# # inv
-# tr.rise(f=tr.INVr, i=['y'], o='a', d=4)
-# tr.fall(f=tr.INVf, i=['y'], o='a', d=4)
-
-# # inv
-# tr.rise(f=tr.INVr, i=['y'], o='b', d=5)
-# tr.fall(f=tr.INVf, i=['y'], o='b', d=5)
+# Muller Pipeline
 
 # inv5
 tr.rise(f=tr.INVr, i=['c1'], o='c_in', d=4)
 tr.fall(f=tr.INVf, i=['c1'], o='c_in', d=4)
+
 
 # inv1
 tr.rise(f=tr.INVr, i=['c2'], o='en1', d=2)
@@ -46,14 +36,6 @@ tr.fall(f=tr.INVf, i=['c3'], o='en3', d=4)
 # c3
 tr.rise(f=tr.Cr, i=['c2','en3'], o='c3', d=5)
 tr.fall(f=tr.Cf, i=['c2','en3'], o='c3', d=5)
-
-# # inv4
-# tr.rise(f=tr.INVr, i=['c3'], o='ack_in', d=4)
-# tr.fall(f=tr.INVf, i=['c3'], o='ack_in', d=4)
-
-# inv
-#rise(f=INVr, i=['y'], o='z', d=1)
-#fall(f=INVf, i=['y'], o='z', d=1)
 
 # pprint.pprint(rules)
 # pprint.pprint(signals)
@@ -88,7 +70,7 @@ for i in range(len(times)):
 	print(f'time {times[i]}:')
 	pprint.pprint(states[i])
 
-ret = check.check(times=times, states=states, signals=list(init.keys()), output_signals=['c3'])
+ret = check.check(times=times, events=events, states=states, signals=list(init.keys()), output_signals=['c3', 'c1'])
 pprint.pprint(ret)
 
 plotting.plot(times, states, list(init.keys()), susceptible=ret['susceptible'])

@@ -1,5 +1,5 @@
 import pprint
-import trace as tr
+import tracem as tr
 import plotting
 
 # ---- testing ------
