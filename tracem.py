@@ -145,7 +145,7 @@ def trace(init, events=[], T=20, Mdelay=0.1, verbose=True):
 				if eval_rule(state, rule) == 1:
 					scheduled += [ (t + rule['d'], rule) ]
 
-				elif eval_rule(state, rule) == 0.5:
+				elif eval_rule(state, rule) == 0.5 and ( state[ rule['o'] ] != 0.5 ):
 					new_rule = copy.deepcopy(rule)
 					new_rule['val'] = 0.5
 					scheduled += [ (t + Mdelay, new_rule) ]
