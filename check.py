@@ -10,11 +10,11 @@ def check(times, states, events, signals, output_signals, Mdelta=0.1, Textra=30,
 	for s in non_output_signals:
 		for i in range(len(times)-1):
 			t = times[i]
-			events += [
+			events_check = events + [
 				(t + MafterGrid,          s, 0.5),           # add glitch
     			(t + MafterGrid + Mdelta, s, states[i][s]),  # reset glitch
 			]
-			times_M, states_M = tr.trace(states[0], events=events, T=T, verbose=False)
+			times_M, states_M = tr.trace(states[0], events=events_check, T=T, verbose=False)
 			
 			was_M = False
 			for state_M in states_M:
