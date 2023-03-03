@@ -1,6 +1,6 @@
 import tracem as tr
 
-def check(times, states, events, signals, output_signals, Mdelta=0.1, Textra=30, MafterGrid=0.01):
+def check(times, states, events, signals, output_signals, Mdelta=0.1, Textra=30, MafterGrid=0.01, cutoff_min=-float('Inf'), cutoff_max=float('Inf')):
 	susceptible_intervals = []
 	pos = 0
 	neg = 0
@@ -20,11 +20,14 @@ def check(times, states, events, signals, output_signals, Mdelta=0.1, Textra=30,
 			for state_M in states_M:
 				was_M = was_M or any([ state_M[s] == 0.5 for s in output_signals ])
 			
+			t_from = max(cutoff_min, times[i])
+			t_to =   min(cutoff_max, times[i+1])
+
 			if was_M:
-				susceptible_intervals += [ (s, [times[i], times[i+1]]) ]
-				pos += times[i+1] - times[i]
+				susceptible_intervals += [ (s, [t_from, t_to]) ]
+				pos += t_to - t_from
 			else:
-				neg += times[i+1] - times[i]
+				neg += t_to - t_from
 
 	return {
 		'p': pos/(pos+neg),
