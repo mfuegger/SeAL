@@ -1,6 +1,6 @@
 import tracem as tr
 
-def check(times, states, events, signals, output_signals, Mdelta=0.1, Textra=30, MafterGrid=0.01, cutoff_min=-float('Inf'), cutoff_max=float('Inf')):
+def check(times, states, events, signals, output_signals, Mdelta=0.1, Textra=30, MafterGrid=0.01, cutoff_min=5, cutoff_max=float('Inf')):
 	susceptible_intervals = []
 	pos = 0
 	neg = 0
@@ -20,16 +20,20 @@ def check(times, states, events, signals, output_signals, Mdelta=0.1, Textra=30,
 			for state_M in states_M:
 				was_M = was_M or any([ state_M[s] == 0.5 for s in output_signals ])
 			
-			t_from = max(cutoff_min, times[i])
-			t_to =   min(cutoff_max, times[i+1])
+			if times[i] <= cutoff_max and times[i+1] >= cutoff_min:
+				# region overlaps with cropped region
+				t_from = max(cutoff_min, times[i])
+				t_to =   min(cutoff_max, times[i+1])
 
-			if was_M:
-				susceptible_intervals += [ (s, [t_from, t_to]) ]
-				pos += t_to - t_from
-			else:
-				neg += t_to - t_from
+				if was_M:
+					susceptible_intervals += [ (s, [t_from, t_to]) ]
+					pos += t_to - t_from
+				else:
+					neg += t_to - t_from
 
 	return {
-		'p': pos/(pos+neg),
+		'p': pos/(pos+neg) if pos + neg > 0 else 'undefined',
+		'cutoff_min': cutoff_min,
+		'cutoff_max': cutoff_max,
 		'susceptible': susceptible_intervals
 	}

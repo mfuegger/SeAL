@@ -12,7 +12,7 @@ def points2path(points):
 	return d
 
 
-def plot(times, states, signals, fname='out.svg', dt=30, dv=60, x0=60, susceptible=None):
+def plot(times, states, signals, fname='out.svg', dt=30, dv=60, x0=60, susceptible=None, cutoff=None):
 	width = x0 + dt * times[-1]
 	height = len(states[0]) * dv + 200
 	dwg = svgwrite.Drawing(
@@ -123,6 +123,29 @@ def plot(times, states, signals, fname='out.svg', dt=30, dv=60, x0=60, susceptib
 				fill='blue',
 				opacity=0.1,
 				stroke_width=0
+			))
+
+	# potentially draw cutoff boundaries
+	if cutoff is not None:
+		# is of form [min, max]
+		if cutoff[0] > 0:
+			time = cutoff[0]
+			x = dt*time
+			dwg.add(dwg.line(
+				(x0 + x, 0), (x0 + x, maxy + 1),
+				stroke=svgwrite.rgb(70, 70, 70, '%'),
+				stroke_width=2,
+				stroke_dasharray=5
+			))
+
+		if cutoff[1] < times[-1]:
+			time = cutoff[1]
+			x = dt*time
+			dwg.add(dwg.line(
+				(x0 + x, 0), (x0 + x, maxy + 1),
+				stroke=svgwrite.rgb(70, 70, 70, '%'),
+				stroke_width=2,
+				stroke_dasharray=5
 			))
 
 	dwg.save()

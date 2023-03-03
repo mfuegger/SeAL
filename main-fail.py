@@ -70,8 +70,26 @@ for i in range(len(times)):
 	print(f'time {times[i]}:')
 	pprint.pprint(states[i])
 
-ret = check.check(times=times, events=events, states=states, signals=list(init.keys()), output_signals=['c3', 'c1'])
+# cutoff
+cutoff_min = 0
+cutoff_max = float('Inf')
+
+ret = check.check(
+	times=times,
+	events=events,
+	states=states,
+	signals=list(init.keys()),
+	output_signals=['c3', 'c1'],
+	cutoff_min=cutoff_min,
+	cutoff_max=cutoff_max
+)
 pprint.pprint(ret)
 
-plotting.plot(times, states, list(init.keys()), susceptible=ret['susceptible'])
+plotting.plot(
+	times,
+	states,
+	list(init.keys()),
+	susceptible=ret['susceptible'],
+	cutoff=[cutoff_min, cutoff_max],
+	)
 
