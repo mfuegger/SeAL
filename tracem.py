@@ -19,6 +19,15 @@ def getSignals():
 	return signals
 
 
+def clear():
+	"""
+	clears the circuit
+	"""
+	global rules, signals
+	rules = []
+	signals = []
+
+
 def rule(f, i, o, val, d=1):
 	global rules, signals
 	rules += [ {'f': f, 'i': i, 'o': o, 'val': val, 'd': d} ]
