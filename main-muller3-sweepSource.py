@@ -38,8 +38,8 @@ def createCircuit(source_delay):
 	tr.fall(f=tr.Cf, i=['c2','en3'], o='c3', d=5)
 
 
-T = 50
-sweep_values = np.linspace(0.1, 50, num=20)
+T = 100
+sweep_values = np.linspace(0.1, 25, num=20)
 p = []
 for source_delay in sweep_values:
 	# clear circuit
@@ -85,12 +85,12 @@ plt.plot(sweep_values, p, '*', color='blue')
 plt.ylim(0,1)
 plt.show()
 
-
-# plotting.plot(
-# 	times,
-# 	states,
-# 	list(init.keys()),
-# 	susceptible=ret['susceptible'],
-# 	cutoff=[cutoff_min, cutoff_max],
-# 	)
+# plot the last one
+plotting.plot(
+	times,
+	states,
+	list(init.keys()),
+	susceptible=ret['susceptible'],
+	cutoff=[cutoff_min, cutoff_max],
+	)
 
