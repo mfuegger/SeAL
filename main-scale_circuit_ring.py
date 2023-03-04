@@ -22,14 +22,25 @@ c_dict = {}
 for c in range(steps):
     c_dict[f'list{c+1}'] = []
 
+output_signals = ['ack1']
+for j in range(num_bits):
+    output_signals.append(f'ca{num_stages}F[{j}]')
+    output_signals.append(f'ca{num_stages}T[{j}]')
+    output_signals.append(f'cb{num_stages}F[{j}]')
+    output_signals.append(f'cb{num_stages}T[{j}]')
+
+# print("Output Signals")
+# for i in range(len(output_signals)):
+#     print(output_signals[i])
     
+
 # Start circuit
 
 for i in range(1, num_stages+1):
     # Last stage (ackin)     
     if (i == num_stages):
-        tr.rise(f=tr.INVr, i=['ackin'], o=f'en{i}', d=2)
-        tr.fall(f=tr.INVf, i=['ackin'], o=f'en{i}', d=2)
+        tr.rise(f=tr.INVr, i=[f'ack{1}'], o=f'en{i}', d=2)
+        tr.fall(f=tr.INVf, i=[f'ack{1}'], o=f'en{i}', d=2)
 
     else:
 	# inv_2                 ack3        en2
@@ -41,21 +52,21 @@ for i in range(1, num_stages+1):
         # First stage (inputs aF, aT, bF & bT)
         if (i == 1):
             # c_a1F[0]
-            tr.rise(f=tr.Cr, i=[f'aF[{j}]', f'en{i}'], o=f'ca{i}F[{j}]', d=5)
-            tr.fall(f=tr.Cf, i=[f'aF[{j}]', f'en{i}'], o=f'ca{i}F[{j}]', d=5)
+            tr.rise(f=tr.Cr, i=[f'ca{num_stages}T[{j}]', f'en{i}'], o=f'ca{i}F[{j}]', d=5)
+            tr.fall(f=tr.Cf, i=[f'ca{num_stages}T[{j}]', f'en{i}'], o=f'ca{i}F[{j}]', d=5)
 
             # c_a1T[0]
-            tr.rise(f=tr.Cr, i=[f'aT[{j}]', f'en{i}'], o=f'ca{i}T[{j}]', d=5)
-            tr.fall(f=tr.Cf, i=[f'aT[{j}]', f'en{i}'], o=f'ca{i}T[{j}]', d=5)
+            tr.rise(f=tr.Cr, i=[f'ca{num_stages}F[{j}]', f'en{i}'], o=f'ca{i}T[{j}]', d=5)
+            tr.fall(f=tr.Cf, i=[f'ca{num_stages}F[{j}]', f'en{i}'], o=f'ca{i}T[{j}]', d=5)
             
             
             # c_b1F[0]
-            tr.rise(f=tr.Cr, i=[f'bF[{j}]', f'en{i}'], o=f'cb{i}F[{j}]', d=5)
-            tr.fall(f=tr.Cf, i=[f'bF[{j}]', f'en{i}'], o=f'cb{i}F[{j}]', d=5)
+            tr.rise(f=tr.Cr, i=[f'cb{num_stages}T[{j}]', f'en{i}'], o=f'cb{i}F[{j}]', d=5)
+            tr.fall(f=tr.Cf, i=[f'cb{num_stages}T[{j}]', f'en{i}'], o=f'cb{i}F[{j}]', d=5)
 
             # c_b1T[0]
-            tr.rise(f=tr.Cr, i=[f'bT[{j}]', f'en{i}'], o=f'cb{i}T[{j}]', d=5)
-            tr.fall(f=tr.Cf, i=[f'bT[{j}]', f'en{i}'], o=f'cb{i}T[{j}]', d=5)
+            tr.rise(f=tr.Cr, i=[f'cb{num_stages}F[{j}]', f'en{i}'], o=f'cb{i}T[{j}]', d=5)
+            tr.fall(f=tr.Cf, i=[f'cb{num_stages}F[{j}]', f'en{i}'], o=f'cb{i}T[{j}]', d=5)
 
         # Intermediate stages (input of stage is ouput of previous one)
         else:
@@ -105,8 +116,8 @@ for i in range(1, num_stages+1):
 
             # First Stage (ackout)     
             if (i == 1):
-                tr.rise(f=tr.Cr, i=[str(c_dict[f'list{steps}'][0]), str(c_dict[f'list{steps}'][1])], o='ackout', d=5)
-                tr.fall(f=tr.Cf, i=[str(c_dict[f'list{steps}'][0]), str(c_dict[f'list{steps}'][1])], o='ackout', d=5)
+                tr.rise(f=tr.Cr, i=[str(c_dict[f'list{steps}'][0]), str(c_dict[f'list{steps}'][1])], o=f'ack{i}', d=5)
+                tr.fall(f=tr.Cf, i=[str(c_dict[f'list{steps}'][0]), str(c_dict[f'list{steps}'][1])], o=f'ack{i}', d=5)
             # All other stages (ack_i)     
             else:
                 # ack2				c_dict[list1[0]]
@@ -131,10 +142,6 @@ for i in range(1, num_stages+1):
     for c in range(steps):
         c_dict[f'list{c+1}'].clear()
 
-
-
-
-
 #######################################################
 # pprint.pprint(rules)
 # pprint.pprint(signals)
@@ -142,51 +149,42 @@ for i in range(1, num_stages+1):
 # run it
 
 init = {
-    'en1': 0,   
-    'aF[0]': 1,
-    'aT[0]': 0,
-    'ca1F[0]': 1,
+    'en1': 1,   
+    'ca1F[0]': 0,
     'ca1T[0]': 0,
-    'ora10': 1,
-    'aF[1]': 0,
-    'aT[1]': 1,
+    'ora10': 0,
     'ca1F[1]': 0,
-    'ca1T[1]': 1,
-    'ora11': 1,
-    'cor10': 1,
-
-    'bF[0]': 1,
-    'bT[0]': 0,
-    'cb1F[0]': 1,
+    'ca1T[1]': 0,
+    'ora11': 0,
+    'cor10': 0,
+    'cb1F[0]': 0,
     'cb1T[0]': 0,
-    'orb10': 1,
-    'bF[1]': 0,
-    'bT[1]': 1,
+    'orb10': 0,
     'cb1F[1]': 0,
-    'cb1T[1]': 1,
-    'orb11': 1,
-    'cor11': 1,
-    'ackout': 1,
+    'cb1T[1]': 0,
+    'orb11': 0,
+    'cor11': 0,
+    'ack1': 0,
 
     'en2': 0,
-    'ca2F[0]': 1,
+    'ca2F[0]': 0,
     'ca2T[0]': 0,
-    'ora20': 1,
+    'ora20': 0,
     'ca2F[1]': 0,
-    'ca2T[1]': 1,
-    'ora21': 1,
-    'cor20': 1,
-    'cb2F[0]': 1,
+    'ca2T[1]': 0,
+    'ora21': 0,
+    'cor20': 0,
+    'cb2F[0]': 0,
     'cb2T[0]': 0,
-    'orb20': 1,
+    'orb20': 0,
     'cb2F[1]': 0,
-    'cb2T[1]': 1,
-    'orb21': 1,
-    'cor21': 1,
-    'ack2': 1,
+    'cb2T[1]': 0,
+    'orb21': 0,
+    'cor21': 0,
+    'ack2': 0,
 
  
-    'en3': 0,
+    'en3': 1,
     'ca3F[0]': 1,
     'ca3T[0]': 0,
     'ora30': 1,
@@ -203,7 +201,60 @@ init = {
     'cor31': 1,
     'ack3': 1,
 
-    'ackin': 1,}
+# Uncomment to test num_bits = 4
+
+    # 'ca1F[2]': 0,
+    # 'ca1T[2]': 0,
+    # 'ora12': 0,
+    # 'ca1F[3]': 0,
+    # 'ca1T[3]': 0,
+    # 'ora13': 0,
+    # 'cor12': 0,
+    # 'cb1F[2]': 0,
+    # 'cb1T[2]': 0,
+    # 'orb12': 0,
+    # 'cb1F[3]': 0,
+    # 'cb1T[3]': 0,
+    # 'orb13': 0,
+    # 'cor13': 0,
+    # 'cc10': 0,
+    # 'cc12': 0,
+
+    # 'ca2F[2]': 0,
+    # 'ca2T[2]': 0,
+    # 'ora22': 0,
+    # 'ca2F[3]': 0,
+    # 'ca2T[3]': 0,
+    # 'ora23': 0,
+    # 'cor22': 0,
+    # 'cb2F[2]': 0,
+    # 'cb2T[2]': 0,
+    # 'orb22': 0,
+    # 'cb2F[3]': 0,
+    # 'cb2T[3]': 0,
+    # 'orb23': 0,
+    # 'cor23': 0,
+    # 'cc20': 0,
+    # 'cc22': 0,
+
+    # 'ca3F[2]': 1,
+    # 'ca3T[2]': 0,
+    # 'ora32': 1,
+    # 'ca3F[3]': 0,
+    # 'ca3T[3]': 1,
+    # 'ora33': 1,
+    # 'cor32': 1,
+    # 'cb3F[2]': 0,
+    # 'cb3T[2]': 1,
+    # 'orb32': 1,
+    # 'cb3F[3]': 1,
+    # 'cb3T[3]': 0,
+    # 'orb33': 1,
+    # 'cor33': 1,
+    # 'cc30': 1,
+    # 'cc32': 1,
+
+}
 
 glitch_t = 4
 events = [
@@ -216,23 +267,15 @@ events = [
     # (glitch_t, 'c3', .5),  # add glitch
     # (glitch_t + 0.1, 'c3', 0),  # reset glitch
 ]
-times, states = tr.trace(init, events=events, T=100)
+times, states = tr.trace(init, events=events, T=200)
 
 # print it
 for i in range(len(times)):
 	print()
 	print(f'time {times[i]}:')
 	pprint.pprint(states[i])
-
-ret = check.check(times=times, events=events, states=states, signals=list(init.keys()), output_signals=['ca3F[0]',
-                                                                                                        'ca3T[0]',
-                                                                                                        'ca3F[1]',
-                                                                                                        'ca3T[1]',
-                                                                                                        'cb3F[0]',
-                                                                                                        'cb3T[0]',
-                                                                                                        'cb3F[1]',
-                                                                                                        'cb3T[1]',
-                                                                                                        'ackout'])
+        
+ret = check.check(times=times, events=events, states=states, signals=list(init.keys()), output_signals=output_signals)
 pprint.pprint(ret)
 
 plotting.plot(times, states, list(init.keys()), susceptible=ret['susceptible'])
