@@ -6,7 +6,7 @@ import check
 # ---- testing ------
 
 # circuit
-# 1 dual-rail bit ring (fast environment)
+# 2 dual-rail bit ring (fast environment)
 
 # inv1
 tr.rise(f=tr.INVr, i=['ack2'], o='en1', d=2)
