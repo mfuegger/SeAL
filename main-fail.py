@@ -6,7 +6,7 @@ import check
 # ---- testing ------
 
 # circuit
-# Muller Pipeline
+# Muller Pipeline (ring)
 
 # inv5
 tr.rise(f=tr.INVr, i=['c1'], o='c_in', d=4)
@@ -62,7 +62,7 @@ events = [
     # (glitch_t, 'c3', .5),  # add glitch
     # (glitch_t + 0.1, 'c3', 0),  # reset glitch
 ]
-times, states = tr.trace(init, events=events, T=32)
+times, states = tr.trace(init, events=events, T=60)
 
 # print it
 for i in range(len(times)):
