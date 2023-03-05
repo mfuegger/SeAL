@@ -93,4 +93,3 @@ plotting.plot(
 	susceptible=ret['susceptible'],
 	cutoff=[cutoff_min, cutoff_max],
 	)
-
