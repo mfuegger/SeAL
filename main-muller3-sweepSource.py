@@ -4,6 +4,7 @@ import plotting
 import check
 import numpy as np
 import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 def createCircuit(source_delay):
 	# circuit
@@ -41,7 +42,7 @@ def createCircuit(source_delay):
 T = 200
 sweep_values = np.linspace(0.1, 25, num=20)
 p = []
-for source_delay in sweep_values:
+for source_delay in tqdm(sweep_values):
 	# clear circuit
 	tr.clear()
 	

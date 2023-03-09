@@ -41,7 +41,7 @@ def createCircuit(sink_delay):
 T = 200
 sweep_values = np.linspace(0.1, 25, num=20)
 p = []
-for sink_delay in sweep_values:
+for sink_delay in tqdm(sweep_values):
 	# clear circuit
 	tr.clear()
 	
