@@ -57,12 +57,12 @@ init = {
 	'en3': 1,
 	'c3': 0,
 }
-glitch_t = 4
+glitch_t = 10
 events = [
-    # (glitch_t, 'c3', .5),  # add glitch
-    # (glitch_t + 0.1, 'c3', 0),  # reset glitch
+    (glitch_t, 'c2', 1),  # add glitch
+    (glitch_t + 0.1, 'c2', 0),  # reset glitch
 ]
-times, states = tr.trace(init, events=events, T=60)
+times, states = tr.trace(init, events=events, T=32)
 
 # print it
 for i in range(len(times)):
@@ -74,22 +74,10 @@ for i in range(len(times)):
 cutoff_min = 0
 cutoff_max = float('Inf')
 
-ret = check.check(
-	times=times,
-	events=events,
-	states=states,
-	signals=list(init.keys()),
-	output_signals=['c3', 'c1'],
-	cutoff_min=cutoff_min,
-	cutoff_max=cutoff_max
-)
-pprint.pprint(ret)
-
 plotting.plot(
 	times,
 	states,
 	list(init.keys()),
-	susceptible=ret['susceptible'],
 	cutoff=[cutoff_min, cutoff_max],
 	)
 
