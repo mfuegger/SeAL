@@ -7,9 +7,9 @@ Cf = lambda a,b: min(1-a,1-b)
 
 INVr = lambda a: 1-a
 INVf = lambda a: a 
-# print(INVf(0))
-ORr = lambda a,b: max(a,b)
-ORf = lambda a,b: min(1-a,1-b)
+
+ORr = lambda a,b: max(a,b)    # a or b      -> rise
+ORf = lambda a,b: 1-max(a,b)  # not(a or b) -> fall
 
 rules = []
 signals = []
@@ -27,7 +27,6 @@ def clear():
 	rules = []
 	signals = []
 
-
 def rule(f, i, o, val, d=1):
 	global rules, signals
 	rules += [ {'f': f, 'i': i, 'o': o, 'val': val, 'd': d} ]
@@ -35,12 +34,10 @@ def rule(f, i, o, val, d=1):
 		if s not in signals:
 			signals += [ s ]
 			
-
 def eval_rule(state, rule):
 	args = [ state[s] for s in rule['i'] ]
-	x = rule['f'](*args)
+	# x = rule['f'](*args)
 	return rule['f'](*args)
-
 
 def rise(f, i, o, d=1):
 	"""
