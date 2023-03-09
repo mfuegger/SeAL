@@ -52,7 +52,7 @@ init = {
 	'c3': 0,
 }
 events = []
-times, states = tr.trace(init, events=events, T=200)
+times, states = tr.trace(init, events=events, T=32)
 
 # print it
 for i in range(len(times)):
