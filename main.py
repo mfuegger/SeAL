@@ -19,27 +19,27 @@ import plotting
 # tr.rise(f=tr.INVr, i=['y'], o='b', d=5)
 # tr.fall(f=tr.INVf, i=['y'], o='b', d=5)
 
-# inv5
+# inv5 (source)
 tr.rise(f=tr.INVr, i=['c1'], o='c_in', d=4)
 tr.fall(f=tr.INVf, i=['c1'], o='c_in', d=4)
 
 # inv1
-tr.rise(f=tr.INVr, i=['c2'], o='en1', d=2)
-tr.fall(f=tr.INVf, i=['c2'], o='en1', d=2)
+tr.rise(f=tr.INVr, i=['c2'], o='en1', d=1)
+tr.fall(f=tr.INVf, i=['c2'], o='en1', d=1)
 
 # c1
 tr.rise(f=tr.Cr, i=['c_in','en1'], o='c1', d=5)
 tr.fall(f=tr.Cf, i=['c_in','en1'], o='c1', d=5)
 
 # inv2
-tr.rise(f=tr.INVr, i=['c3'], o='en2', d=2)
-tr.fall(f=tr.INVf, i=['c3'], o='en2', d=2)
+tr.rise(f=tr.INVr, i=['c3'], o='en2', d=1)
+tr.fall(f=tr.INVf, i=['c3'], o='en2', d=1)
 
 # c2
 tr.rise(f=tr.Cr, i=['c1','en2'], o='c2', d=5)
 tr.fall(f=tr.Cf, i=['c1','en2'], o='c2', d=5)
 
-# inv3
+# inv3 (sink)
 tr.rise(f=tr.INVr, i=['c3'], o='en3', d=4)
 tr.fall(f=tr.INVf, i=['c3'], o='en3', d=4)
 
@@ -87,7 +87,7 @@ events = [
     # (glitch_t - 5, 'c1', 0),  # add glitch
     # (glitch_t - 5 + 0.1, 'c1', 1),  # reset glitch
 ]
-times, states = tr.trace(init, events=events, T=32)
+times, states = tr.trace(init, events=events, T=50)
 
 plotting.plot(times, states, list(init.keys()))
 
