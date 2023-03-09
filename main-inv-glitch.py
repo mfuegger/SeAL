@@ -14,7 +14,7 @@ init = {'i': 0, 'o': 1,}
 glitch_t = 1.5
 events = [
 	(1, 'i', 1),
-	# (glitch_t, 'i', 0),  # add down
+	(glitch_t, 'i', 0),  # add down
 	# (3, 'i', 1),
 ]
 times, states = tr.trace(init, events=events, T=4)
