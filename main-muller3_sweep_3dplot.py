@@ -50,7 +50,7 @@ parser.add_argument('--generate', action='store_true')
 args = parser.parse_args()
 
 T = 100
-NUM = 4
+NUM = 10
 sweep_values_src = np.linspace(0.1, 25, num=NUM)
 sweep_values_snk = np.linspace(0.1, 25, num=NUM)
 
