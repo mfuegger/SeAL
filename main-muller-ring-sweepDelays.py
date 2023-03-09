@@ -104,7 +104,7 @@ def initCircuit(num_stages, num_tokens, signals):
                             #     init[s] = 0
                             # if ('c' in s):
                             #     init[s] = 1
-                            
+
                             # Bs
                             if ('en' in s):
                                 init[s] = 1
@@ -125,7 +125,7 @@ def initCircuit(num_stages, num_tokens, signals):
 
 tokens = 1
 stages = 5
-delay = 100
+delay = 10
 p = []
 
 plt.figure()
@@ -133,8 +133,8 @@ sweep_values = []
 # labels = []
 # markers = []
 
-# checking for 1, 6, 11, 16 tokens
-for d in range(1, delay, 5):
+# checking for 110 tokens
+for d in range(1, delay+1):
     sweep_values += [d]
     
     # clear circuit
@@ -147,7 +147,7 @@ for d in range(1, delay, 5):
     init = initCircuit(num_stages=stages, num_tokens=tokens, signals=signals)
 
     # trace it
-    T = 60
+    T = 100
     events = []
 
     times, states = tr.trace(init, events=events, T=T)
