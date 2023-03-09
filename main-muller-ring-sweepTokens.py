@@ -98,18 +98,18 @@ def initCircuit(num_stages, num_tokens, signals):
             # depending on D or S first,
             # B should be Bd or Bs
             for s in signals:
-                        if str(stage) in s:
-                            # Bd
-                            # if ('en' in s):
-                            #     init[s] = 0
-                            # if ('c' in s):
-                            #     init[s] = 1
+                if str(stage) in s:
+                    # Bd
+                    # if ('en' in s):
+                    #     init[s] = 0
+                    # if ('c' in s):
+                    #     init[s] = 1
 
-                            # Bs
-                            if ('en' in s):
-                                init[s] = 1
-                            if ('c' in s):
-                                init[s] = 0
+                    # Bs
+                    if ('en' in s):
+                        init[s] = 1
+                    if ('c' in s):
+                        init[s] = 0
         # else:
         #     # bubble is of the same type as the subsequent non-bubble stage
         #     for ts in range(stage-1, num_stages-1):
@@ -144,8 +144,8 @@ def initCircuit(num_stages, num_tokens, signals):
 
 # run it
 
-tokens = 4
-stages = 10
+tokens = 4 #4
+stages = 20 #20
 results = {}
 
 plt.figure()
@@ -155,7 +155,7 @@ markers = []
 # checking for 1-4 tokens
 for t in range(1, tokens+1):
     
-    labels.append(f'{t} Token(s)')
+    labels.append(f'{t} token(s)')
 
     # min number of stages for t tokens
     min_stages = 2*t+1
@@ -163,6 +163,8 @@ for t in range(1, tokens+1):
     results[t] = {'stages':[], 'p':[]}
 
     for s in range(min_stages, stages+1):
+        print(f'[info] computing {t} tokens / {s} stages')
+
         # clear circuit
         tr.clear()
         
@@ -173,7 +175,7 @@ for t in range(1, tokens+1):
         init = initCircuit(num_stages=s, num_tokens=t, signals=signals)
 
         # trace it
-        T = 60
+        T = 200
         events = []
 
         times, states = tr.trace(init, events=events, T=T)
@@ -212,21 +214,24 @@ for t in range(1, tokens+1):
 
     plt.plot(results[t]['stages'], results[t]['p'], linestyle='-', marker='o', label=labels[t-1])
 
-plt.xlabel('num_stages')
+plt.xlabel('#stages')
 plt.ylabel('P(fail)')
-plt.xlim(0, stages+3)
+plt.xlim(3-0.3, stages+0.3)
+plt.xticks(np.arange(3, stages+1, step=1))
 plt.ylim(0, 1)
 plt.legend(loc=3)
-plt.show()
 
-    # # plot the last one
-    # plotting.plot(
-    #     times,
-    #     states,
-    #     list(init.keys()),
-    #     susceptible=ret['susceptible'],
-    #     cutoff=[cutoff_min, cutoff_max],
-    #     )
+fname = f'muller-ring-sweepTokens.png'
+print(f'[info] saving figure: {fname}')
+plt.savefig(
+    fname,
+    dpi=300,
+    format='png',
+    metadata=None,
+    bbox_inches=None,
+    pad_inches=0.01,
+    facecolor='auto',
+    edgecolor='auto'
+)
 
-
-
+# plt.show()

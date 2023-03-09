@@ -98,18 +98,18 @@ def initCircuit(num_stages, num_tokens, signals):
             # depending on D or S first,
             # B should be Bd or Bs
             for s in signals:
-                        if str(stage) in s:
-                            # Bd
-                            # if ('en' in s):
-                            #     init[s] = 0
-                            # if ('c' in s):
-                            #     init[s] = 1
+                if str(stage) in s:
+                    # Bd
+                    # if ('en' in s):
+                    #     init[s] = 0
+                    # if ('c' in s):
+                    #     init[s] = 1
 
-                            # Bs
-                            if ('en' in s):
-                                init[s] = 1
-                            if ('c' in s):
-                                init[s] = 0
+                    # Bs
+                    if ('en' in s):
+                        init[s] = 1
+                    if ('c' in s):
+                        init[s] = 0
 
 
         stage += 1  
@@ -123,8 +123,8 @@ def initCircuit(num_stages, num_tokens, signals):
 
 # run it
 
-tokens = 1
-stages = 5
+tokens = 2
+stages = 10
 delay = 10
 p = []
 
@@ -135,6 +135,8 @@ sweep_values = []
 
 # checking for 110 tokens
 for d in range(1, delay+1):
+    print(f'[info] computing for delay {d}')
+
     sweep_values += [d]
     
     # clear circuit
@@ -173,23 +175,24 @@ for d in range(1, delay+1):
 
 plt.plot(sweep_values, p, linestyle='-', marker='o')
 
-plt.xlabel('MCE Delay')
+plt.xlabel('C gate delay')
 plt.ylabel('P(fail)')
-plt.xlim(0, delay)
+plt.xlim(1, delay)
 plt.ylim(0, 1)
 # plt.legend(loc=3)
-plt.title(f"{tokens} Tokens/{stages} Stages")
-plt.show()
+plt.title(f"{tokens} token(s) / {stages} stages")
 
-    # # plot the last one
-    # plotting.plot(
-    #     times,
-    #     states,
-    #     list(init.keys()),
-    #     susceptible=ret['susceptible'],
-    #     cutoff=[cutoff_min, cutoff_max],
-    #     )
+fname = f'muller-ring-sweepDelay-{tokens}per{stages}.png'
+print(f'[info] saving figure: {fname}')
+plt.savefig(
+    fname,
+    dpi=300,
+    format='png',
+    metadata=None,
+    bbox_inches=None,
+    pad_inches=0.01,
+    facecolor='auto',
+    edgecolor='auto'
+)
 
-
-
-
+# plt.show()

@@ -38,7 +38,7 @@ def createCircuit(source_delay):
 	tr.fall(f=tr.Cf, i=['c2','en3'], o='c3', d=5)
 
 
-T = 100
+T = 200
 sweep_values = np.linspace(0.1, 25, num=20)
 p = []
 for source_delay in sweep_values:
