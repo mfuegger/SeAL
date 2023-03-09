@@ -84,7 +84,18 @@ plt.xlabel('source delay [INV delay]')
 plt.ylabel('P(fail)')
 plt.plot(sweep_values, p, '*', color='blue')
 plt.ylim(0,1)
-plt.show()
+fname = 'muller3_sweepSource.png'
+print(f'[info] saving figure: {fname}')
+plt.savefig(
+    fname,
+    dpi=300,
+    format='png',
+    metadata=None,
+    bbox_inches=None,
+    pad_inches=0.01,
+    facecolor='auto',
+    edgecolor='auto'
+)
 
 # plot the last one
 plotting.plot(
