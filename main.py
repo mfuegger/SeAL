@@ -5,13 +5,13 @@ import plotting
 # ---- testing ------
 
 # circuit
-# Muller Pipeline (ring)
+# Muller Pipeline (linear)
 
-# inv5 (source)
+# inv1 (source)
 tr.rise(f=tr.INVr, i=['c1'], o='c_in', d=4)
 tr.fall(f=tr.INVf, i=['c1'], o='c_in', d=4)
 
-# inv1
+# inv2
 tr.rise(f=tr.INVr, i=['c2'], o='en1', d=1)
 tr.fall(f=tr.INVf, i=['c2'], o='en1', d=1)
 
@@ -19,7 +19,7 @@ tr.fall(f=tr.INVf, i=['c2'], o='en1', d=1)
 tr.rise(f=tr.Cr, i=['c_in','en1'], o='c1', d=5)
 tr.fall(f=tr.Cf, i=['c_in','en1'], o='c1', d=5)
 
-# inv2
+# inv3
 tr.rise(f=tr.INVr, i=['c3'], o='en2', d=1)
 tr.fall(f=tr.INVf, i=['c3'], o='en2', d=1)
 
@@ -27,7 +27,7 @@ tr.fall(f=tr.INVf, i=['c3'], o='en2', d=1)
 tr.rise(f=tr.Cr, i=['c1','en2'], o='c2', d=5)
 tr.fall(f=tr.Cf, i=['c1','en2'], o='c2', d=5)
 
-# inv3 (sink)
+# inv4 (sink)
 tr.rise(f=tr.INVr, i=['c3'], o='en3', d=4)
 tr.fall(f=tr.INVf, i=['c3'], o='en3', d=4)
 
@@ -35,13 +35,6 @@ tr.fall(f=tr.INVf, i=['c3'], o='en3', d=4)
 tr.rise(f=tr.Cr, i=['c2','en3'], o='c3', d=5)
 tr.fall(f=tr.Cf, i=['c2','en3'], o='c3', d=5)
 
-# # inv4
-# tr.rise(f=tr.INVr, i=['c3'], o='ack_in', d=4)
-# tr.fall(f=tr.INVf, i=['c3'], o='ack_in', d=4)
-
-# inv
-#rise(f=INVr, i=['y'], o='z', d=1)
-#fall(f=INVf, i=['y'], o='z', d=1)
 
 # pprint.pprint(rules)
 # pprint.pprint(signals)
