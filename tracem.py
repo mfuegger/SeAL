@@ -8,8 +8,14 @@ Cf = lambda a,b: min(1-a,1-b)
 INVr = lambda a: 1-a
 INVf = lambda a: a 
 
+BUFr = lambda a: a
+BUFf = lambda a: 1-a 
+
 ORr = lambda a,b: max(a,b)    # a or b      -> rise
 ORf = lambda a,b: 1-max(a,b)  # not(a or b) -> fall
+
+ANDr = lambda a,b: min(a,b)    # a and b      -> rise
+ANDf = lambda a,b: 1-min(a,b)  # not(a and b) -> fall
 
 rules = []
 signals = []
