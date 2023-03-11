@@ -8,7 +8,7 @@ all: trace.svg trace-glitch.svg trace-glitch-ii.svg trace-check.svg trace-inv.sv
 	inkscape trace-inv-glitch-prop.svg --export-area-drawing --batch-process --export-type=pdf --export-filename=trace-inv-glitch-prop.pdf
 
 
-trace-inv.svg: ../main.py
+trace-inv.svg: ../main-inv.py
 	python3 ../main-inv.py && cp out.svg trace-inv.svg
 
 trace-inv-glitch.svg: ../main-inv-glitch.py
