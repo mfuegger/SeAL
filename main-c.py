@@ -40,6 +40,8 @@ if not CHECK:
     ]
 
 times, states = tr.trace(init, events=events, T=32)
+        
+plotting.plot(times, states, list(init.keys()))
 
 # print it
 for i in range(len(times)):
@@ -50,8 +52,6 @@ for i in range(len(times)):
 # cutoff
 cutoff_min = 0
 cutoff_max = float('Inf')
-        
-plotting.plot(times, states, list(init.keys()))
 
 if CHECK:
     ret = check.check(

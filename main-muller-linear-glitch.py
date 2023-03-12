@@ -1,7 +1,6 @@
 import pprint
 import tracem as tr
 import plotting
-import check
 
 # ---- testing ------
 
@@ -41,12 +40,6 @@ tr.fall(f=tr.Cf, i=['c2','en3'], o='c3', d=5)
 # pprint.pprint(signals)
 
 # run it
-
-# init = {'a': 1, 'b': 1, 'y': 0}
-# events = [
-# 	(0, 'y', 0.5),  # add glitch
-# ]
-# times, states = tr.trace(init, events=events, T=20)
 
 init = {
 	'c_in': 0,
