@@ -33,9 +33,9 @@ def check(times, states, events, signals, output_signals,
     # construct regions backwards
     times_extra, states_extra = tr.trace(states[0], events=events, T=T, verbose=False)
     delays = tr.getDelays()
-    
+
     times_grid = set()
-    times_grid_toprocess = set(times_extra)
+    times_grid_toprocess = set(times_extra + [ times[-1] ])  # dont forget the times[-1] line at the end umntil where to check
 
     current_time = max(times_grid_toprocess)
     while current_time >= 0:
@@ -56,6 +56,7 @@ def check(times, states, events, signals, output_signals,
 
     # remove all times that are > times[-1] -> only insert faults into these regions
     times_grid = [ t for t in times_grid if t <= times[-1] ]
+    # print(f'the time grid with the regions : {times_grid}')
 
     # construct the states for it
     states_grid = []
