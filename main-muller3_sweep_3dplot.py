@@ -49,7 +49,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--generate', action='store_true')
 args = parser.parse_args()
 
-T = 100
+T = 200
 NUM = 25
 sweep_values_src = np.linspace(1, 25, num=NUM)
 sweep_values_snk = np.linspace(1, 25, num=NUM)

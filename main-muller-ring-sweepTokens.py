@@ -1,7 +1,7 @@
 import pprint
 import tracem as tr
 import plotting
-import check
+import checknew as check
 import math as m
 import numpy as np
 import matplotlib.pyplot as plt
@@ -144,8 +144,8 @@ def initCircuit(num_stages, num_tokens, signals):
 
 # run it
 
-tokens = 4 #4
-stages = 20 #20
+tokens = 6   # 6
+stages = 20  # 20
 results = {}
 
 plt.figure()
