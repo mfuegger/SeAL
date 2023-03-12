@@ -1,11 +1,11 @@
 import pprint
 import tracem as tr
 import plotting
-import check
+import checknew as check
 
 # ---- testing ------
 
-CHECK = False
+CHECK = True
 
 # circuit
 # Muller Pipeline (ring)

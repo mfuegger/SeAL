@@ -24,6 +24,44 @@ def getSignals():
 	global signals
 	return signals
 
+def getDelays():
+	"""
+	get delays of all PRs as sorted list
+	"""
+	global rules
+
+	ret = sorted(list(set([ rule['d'] for rule in rules ])))
+	return ret
+
+def getInflunceList(o: str):
+	"""
+	for PRs of the form
+
+	G1 -> o = b [d]
+	
+	it returns [ (a, d), (b, d), ... ]
+	where a, b, ... are the variables in G
+	"""
+	global rules
+
+	ret = [ (sig, rule['d']) for rule in rules for sig in rule['i'] if rule['o'] == o ]
+	return ret
+
+
+def getInflunceTimeList(o: str):
+	"""
+	for PRs of the form
+
+	G1 -> o = b [d1]
+	G1 -> o = b [d2]
+	
+	it returns [ d1, d2 ]
+	"""
+	global rules
+
+	ret = [ rule['d'] for rule in rules if rule['o'] == o ]
+	return ret
+
 
 def clear():
 	"""
