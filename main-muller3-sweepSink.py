@@ -1,7 +1,7 @@
 import pprint
 import tracem as tr
 import plotting
-import check
+import checknew as check
 import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
@@ -40,7 +40,7 @@ def createCircuit(sink_delay):
 
 
 T = 200
-sweep_values = np.linspace(0.1, 25, num=20)
+sweep_values = np.linspace(1, 25, num=25)
 p = []
 for sink_delay in tqdm(sweep_values):
 	# clear circuit
