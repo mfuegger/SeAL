@@ -8,9 +8,9 @@ import checknew as check
 CHECK = True
 
 # circuit
-# Muller Pipeline (ring)
+# BUFF + AND
 
-# buf1
+# buf
 tr.rise(f=tr.BUFr, i=['a'], o='b', d=5)
 tr.fall(f=tr.BUFf, i=['a'], o='b', d=5)
 
