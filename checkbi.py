@@ -44,10 +44,20 @@ def findBoundary(tfrom, tto, s, states, s_state, events, T, output_signals, init
 
     # else intersect
     else:
+        middle = (tto + tfrom)/2
+
         if tto - tfrom <= 0.05:
-            return (tto + tfrom)/2
+            return middle
+
         else:
-            return findBoundary(tfrom=tfrom, tto=(tfrom+tto)/2, s=s, states=states, s_state=s_state, events=events, T=T, output_signals=output_signals, initially=False)
+            middle_is_M = isSusceptible(t=middle, s=s, states=states, s_state=s_state, events=events, T=T, output_signals=output_signals, MafterGrid=0.001)
+
+            if middle_is_M:
+                # boundary must be on the left half
+                return findBoundary(tfrom=tfrom, tto=middle, s=s, states=states, s_state=s_state, events=events, T=T, output_signals=output_signals, initially=False)
+            else:
+                # boundary must be on the right half
+                return findBoundary(tfrom=middle, tto=tto, s=s, states=states, s_state=s_state, events=events, T=T, output_signals=output_signals, initially=False)
 
 
 
