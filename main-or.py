@@ -1,7 +1,8 @@
 import pprint
 import tracem as tr
 import plotting
-import checknew as check
+# import checknew as check
+import checkbi as check
 
 # ---- testing ------
 

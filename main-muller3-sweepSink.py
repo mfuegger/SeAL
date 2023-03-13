@@ -1,7 +1,7 @@
 import pprint
 import tracem as tr
 import plotting
-import checknew as check
+import checkbi as check
 import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
