@@ -1,7 +1,7 @@
 import pprint
 import tracem as tr
 import plotting
-import check
+import checkbi as check
 import numpy as np
 import math as m
 
@@ -29,6 +29,11 @@ for j in range(num_bits):
     output_signals.append(f'cb{num_stages}F[{j}]')
     output_signals.append(f'cb{num_stages}T[{j}]')
 
+signals = []
+for i in range(1, num_stages+1):
+    signals.append(f'en{i}')
+    signals.append(f'c{i}')
+
 # print("Output Signals")
 # for i in range(len(output_signals)):
 #     print(output_signals[i])
@@ -39,13 +44,13 @@ for j in range(num_bits):
 for i in range(1, num_stages+1):
     # Last stage (ackin)     
     if (i == num_stages):
-        tr.rise(f=tr.INVr, i=[f'ack{1}'], o=f'en{i}', d=2)
-        tr.fall(f=tr.INVf, i=[f'ack{1}'], o=f'en{i}', d=2)
+        tr.rise(f=tr.INVr, i=[f'ack{1}'], o=f'en{i}', d=1)
+        tr.fall(f=tr.INVf, i=[f'ack{1}'], o=f'en{i}', d=1)
 
     else:
 	# inv_2                 ack3        en2
-        tr.rise(f=tr.INVr, i=[f'ack{i+1}'], o=f'en{i}', d=2)
-        tr.fall(f=tr.INVf, i=[f'ack{i+1}'], o=f'en{i}', d=2)
+        tr.rise(f=tr.INVr, i=[f'ack{i+1}'], o=f'en{i}', d=1)
+        tr.fall(f=tr.INVf, i=[f'ack{i+1}'], o=f'en{i}', d=1)
         
         
     for j in range(num_bits):
@@ -267,7 +272,7 @@ events = [
     # (glitch_t, 'c3', .5),  # add glitch
     # (glitch_t + 0.1, 'c3', 0),  # reset glitch
 ]
-times, states = tr.trace(init, events=events, T=200)
+times, states = tr.trace(init, events=events, T=20)
 
 # print it
 for i in range(len(times)):
