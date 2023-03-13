@@ -1,12 +1,12 @@
 import pprint
 import tracem as tr
 import plotting
-import checknew as check
+import checkbi as check
 import math as m
 
 # ---- testing ------
 
-CHECK = False
+CHECK = True
 
 # circuit (at least 3 stages)
 # Muller Pipeline (linear)
@@ -37,8 +37,8 @@ for i in range(1, num_stages+1):
         tr.fall(f=tr.INVf, i=[f'c{i}'], o=f'en{i}', d=sink_delay)
     else:    
         # en
-        tr.rise(f=tr.INVr, i=[f'c{i+1}'], o=f'en{i}', d=2)
-        tr.fall(f=tr.INVf, i=[f'c{i+1}'], o=f'en{i}', d=2)
+        tr.rise(f=tr.INVr, i=[f'c{i+1}'], o=f'en{i}', d=1)
+        tr.fall(f=tr.INVf, i=[f'c{i+1}'], o=f'en{i}', d=1)
 
     # c
     if i == 1:

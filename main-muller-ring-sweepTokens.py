@@ -1,7 +1,7 @@
 import pprint
 import tracem as tr
 import plotting
-import checknew as check
+import checkbi as check
 import math as m
 import numpy as np
 import matplotlib.pyplot as plt
@@ -55,27 +55,30 @@ def initCircuit(num_stages, num_tokens, signals):
 
     # first tag each stage
     for i in range(0, num_stages):
-        if bubbles >= data_t and bubbles >= spacer_t:
+        # bubbles at the beginning
+        # if bubbles >= data_t and bubbles >= spacer_t:
         # spread bubbles
-        # if bubbles >= 2*data_t and bubbles >= 2*spacer_t:
+        if bubbles >= 2*data_t and bubbles >= 2*spacer_t:
             tag[i] = 'B'
             bubbles -= 1
 
         # place D before S
-        # elif spacer_t > data_t:
-        #     tag[i] = 'S'
-        #     spacer_t -= 1
-        # else:
-        #     tag[i] = 'D'
-        #     data_t -= 1
-
-        # place S before D
-        elif data_t > spacer_t:
-            tag[i] = 'D'
-            data_t -= 1
-        else:
+        elif spacer_t > data_t:
             tag[i] = 'S'
             spacer_t -= 1
+        else:
+            tag[i] = 'D'
+            data_t -= 1
+
+        # place S before D
+        # elif data_t > spacer_t:
+        #     tag[i] = 'D'
+        #     data_t -= 1
+        # else:
+        #     tag[i] = 'S'
+        #     spacer_t -= 1
+
+    pprint.pprint(tag)
 
     # then populate the init{}
     stage = 1
@@ -99,17 +102,17 @@ def initCircuit(num_stages, num_tokens, signals):
             # B should be Bd or Bs
             for s in signals:
                 if str(stage) in s:
-                    # Bd
-                    # if ('en' in s):
-                    #     init[s] = 0
-                    # if ('c' in s):
-                    #     init[s] = 1
-
-                    # Bs
+                    # Bd coz D first
                     if ('en' in s):
-                        init[s] = 1
-                    if ('c' in s):
                         init[s] = 0
+                    if ('c' in s):
+                        init[s] = 1
+
+                    # Bs coz S first
+                    # if ('en' in s):
+                    #     init[s] = 1
+                    # if ('c' in s):
+                    #     init[s] = 0
         # else:
         #     # bubble is of the same type as the subsequent non-bubble stage
         #     for ts in range(stage-1, num_stages-1):
@@ -200,17 +203,6 @@ for t in range(1, tokens+1):
         # print(f"Stages = {s} & Tokens = {t}")
         # pprint.pprint(results)
         # pprint.pprint(ret)
-
-    
-    # Separate plots
-    # plt.subplot(1, tokens+1, t)
-    # plt.plot(results[t]['stages'], results[t]['p'], '*', color='blue')
-    # plt.xlabel('num_stages')
-    # plt.ylabel('P(fail)')
-    # plt.xlim(3, stages)
-    # plt.ylim(0, 1)
-    # plt.title(f"{t} token(s)")
-
 
     plt.plot(results[t]['stages'], results[t]['p'], linestyle='-', marker='o', label=labels[t-1])
 

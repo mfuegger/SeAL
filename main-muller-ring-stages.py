@@ -1,12 +1,12 @@
 import pprint
 import tracem as tr
 import plotting
-import check as check
+import checkbi as check
 import math as m
 
 # ---- testing ------
 
-CHECK = False
+CHECK = True
 
 # circuit (at least 3 stages)
 # Muller Pipeline (ring)
@@ -140,8 +140,8 @@ def initCircuit(num_stages, num_tokens, signals):
 
 # run it
 
-num_stages = 4
-num_tokens = 1
+num_stages = 5
+num_tokens = 2
 T = 32
 
 # create it
