@@ -13,13 +13,13 @@ from tqdm.contrib import itertools
 
 def createCircuit(source_delay, sink_delay):
     # circuit
-    # Muller Pipeline
+    # Muller Pipeline (linear)
 
-    # inv5
+    # inv1 (source)
     tr.rise(f=tr.INVr, i=['c1'], o='c_in', d=source_delay)
     tr.fall(f=tr.INVf, i=['c1'], o='c_in', d=source_delay)
 
-    # inv1
+    # inv2
     tr.rise(f=tr.INVr, i=['c2'], o='en1', d=1)
     tr.fall(f=tr.INVf, i=['c2'], o='en1', d=1)
 
@@ -27,7 +27,7 @@ def createCircuit(source_delay, sink_delay):
     tr.rise(f=tr.Cr, i=['c_in','en1'], o='c1', d=5)
     tr.fall(f=tr.Cf, i=['c_in','en1'], o='c1', d=5)
 
-    # inv2
+    # inv3
     tr.rise(f=tr.INVr, i=['c3'], o='en2', d=1)
     tr.fall(f=tr.INVf, i=['c3'], o='en2', d=1)
 
@@ -35,7 +35,7 @@ def createCircuit(source_delay, sink_delay):
     tr.rise(f=tr.Cr, i=['c1','en2'], o='c2', d=5)
     tr.fall(f=tr.Cf, i=['c1','en2'], o='c2', d=5)
 
-    # inv3
+    # inv4 (sink)
     tr.rise(f=tr.INVr, i=['c3'], o='en3', d=sink_delay)
     tr.fall(f=tr.INVf, i=['c3'], o='en3', d=sink_delay)
 
@@ -97,8 +97,8 @@ if args.generate:
         )
         #pprint.pprint(ret)
         p += [ ret['p'] ]
-        snk+= [ sink_delay ]
-        src+= [ source_delay ]
+        snk += [ sink_delay ]
+        src += [ source_delay ]
 
     with open('p_sweepink_snk_src.pickle', 'wb') as f:
         print('[info] saving data to pickle')
@@ -124,6 +124,8 @@ fig = plt.figure()
 ax = fig.add_subplot(projection='3d')
 ax.set_xlabel('sink delay [INV delay]')
 ax.set_ylabel('source delay [INV delay]')
+ax.invert_xaxis()
+ax.invert_yaxis()
 ax.set_zlabel('P(fail)')
 ax.set_zlim(0,1)
 
