@@ -1,7 +1,7 @@
 import pprint
 import tracem as tr
 import plotting
-import check
+import checknew as check
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle
@@ -49,10 +49,10 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--generate', action='store_true')
 args = parser.parse_args()
 
-T = 100
-NUM = 10
-sweep_values_src = np.linspace(0.1, 25, num=NUM)
-sweep_values_snk = np.linspace(0.1, 25, num=NUM)
+T = 200
+NUM = 25
+sweep_values_src = np.linspace(1, 25, num=NUM)
+sweep_values_snk = np.linspace(1, 25, num=NUM)
 
 if args.generate:
 

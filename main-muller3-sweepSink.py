@@ -40,7 +40,7 @@ def createCircuit(sink_delay):
 
 
 T = 200
-sweep_values = np.linspace(0.1, 25, num=25)
+sweep_values = np.linspace(1, 25, num=25)
 results = {}
 
 plt.figure()
