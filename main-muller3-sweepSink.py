@@ -2,6 +2,7 @@ import pprint
 import tracem as tr
 import plotting
 import checknew as check
+import checknew as check
 import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
@@ -60,6 +61,14 @@ for source_delay in range(4, 25, 6):
             
             # create it
             createCircuit(sink_delay=sink_delay)
+sweep_values = np.linspace(1, 25, num=25)
+p = []
+for sink_delay in tqdm(sweep_values):
+	# clear circuit
+	tr.clear()
+	
+	# create it
+	createCircuit(sink_delay=sink_delay)
 
             # check it to get p
             init = {
