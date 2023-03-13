@@ -6,11 +6,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
-def createCircuit(source_delay):
+def createCircuit(source_delay, sink_delay):
 	# circuit
 	# Muller Pipeline (linear)
 
-	# inv1
+	# inv1 (source)
 	tr.rise(f=tr.INVr, i=['c1'], o='c_in', d=source_delay)
 	tr.fall(f=tr.INVf, i=['c1'], o='c_in', d=source_delay)
 
@@ -31,8 +31,8 @@ def createCircuit(source_delay):
 	tr.fall(f=tr.Cf, i=['c1','en2'], o='c2', d=5)
 
 	# inv4 (sink)
-	tr.rise(f=tr.INVr, i=['c3'], o='en3', d=4)
-	tr.fall(f=tr.INVf, i=['c3'], o='en3', d=4)
+	tr.rise(f=tr.INVr, i=['c3'], o='en3', d=sink_delay)
+	tr.fall(f=tr.INVf, i=['c3'], o='en3', d=sink_delay)
 
 	# c3
 	tr.rise(f=tr.Cr, i=['c2','en3'], o='c3', d=5)
@@ -48,6 +48,7 @@ labels = []
 markers = []
 i = 0
 
+# sweep sink_delay with only 4 values: 4, 10, 16 & 22
 for sink_delay in range(4, 25, 6):
 
     labels.append(f'sink delay = {sink_delay}')
@@ -59,7 +60,7 @@ for sink_delay in range(4, 25, 6):
         tr.clear()
         
         # create it
-        createCircuit(source_delay=source_delay)
+        createCircuit(source_delay=source_delay, sink_delay=sink_delay)
 
         # check it to get p
         init = {
@@ -92,8 +93,6 @@ for sink_delay in range(4, 25, 6):
         #pprint.pprint(ret)
         results[sink_delay]['src_delay'] += [source_delay]
         results[sink_delay]['p'] += [ret['p']]
-
-        # pprint.pprint(results)
 
     plt.plot(results[sink_delay]['src_delay'], results[sink_delay]['p'], linestyle='-', marker='o', label=labels[i])
     i += 1
