@@ -30,6 +30,8 @@ def isSusceptible(t, s, states, s_state, events, T, output_signals, MafterGrid=0
 
 
 def findBoundary(tfrom, tto, s, states, s_state, events, T, output_signals, initially=True):
+    print(tfrom, tto)
+
     # check if anywhere marked
     if not isSusceptible(t=tto, s=s, states=states, s_state=s_state, events=events, T=T, output_signals=output_signals, MafterGrid=-0.05):
         # no -> return boundary at end
@@ -45,7 +47,7 @@ def findBoundary(tfrom, tto, s, states, s_state, events, T, output_signals, init
         if tto - tfrom <= 0.1:
             return (tto + tfrom)/2
         else:
-            return findBoundary(tfrom=tfrom, tto=tto/2, s=s, states=states, s_state=s_state, events=events, T=T, output_signals=output_signals, initially=False)
+            return findBoundary(tfrom=tfrom, tto=(tfrom+tto)/2, s=s, states=states, s_state=s_state, events=events, T=T, output_signals=output_signals, initially=False)
 
 
 
@@ -74,6 +76,9 @@ def check(times, states, events, signals, output_signals,
                 # it has a marked area:
                 susceptible_intervals += [ (s, [boundary, tto]) ]
             
+            assert (tto - boundary >= 0)
+            assert (boundary - tfrom >= 0)
+
             pos += tto - boundary
             neg += boundary - tfrom
 
