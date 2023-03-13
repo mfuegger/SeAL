@@ -30,7 +30,7 @@ def isSusceptible(t, s, states, s_state, events, T, output_signals, MafterGrid=0
 
 
 def findBoundary(tfrom, tto, s, states, s_state, events, T, output_signals, initially=True):
-    print(tfrom, tto)
+    # print(tfrom, tto)
 
     # check if anywhere marked
     if not isSusceptible(t=tto, s=s, states=states, s_state=s_state, events=events, T=T, output_signals=output_signals, MafterGrid=-0.05):
@@ -44,7 +44,7 @@ def findBoundary(tfrom, tto, s, states, s_state, events, T, output_signals, init
 
     # else intersect
     else:
-        if tto - tfrom <= 0.1:
+        if tto - tfrom <= 0.05:
             return (tto + tfrom)/2
         else:
             return findBoundary(tfrom=tfrom, tto=(tfrom+tto)/2, s=s, states=states, s_state=s_state, events=events, T=T, output_signals=output_signals, initially=False)
