@@ -4,6 +4,8 @@ import plotting
 import checkbi as check
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib import cm
+
 import pickle
 import pandas as pd
 from mpl_toolkits import mplot3d
@@ -142,9 +144,15 @@ Xplot = np.reshape(list(df.x), (NUM, NUM))
 Yplot = np.reshape(list(df.y), (NUM, NUM))
 Zplot = np.reshape(list(df.z), (NUM, NUM))
 
-# surf = ax.plot_trisurf(df.x, df.y, df.z,  linewidth=0.2)
-surf = ax.plot_wireframe(Xplot, Yplot, Zplot)
-ax.invert_yaxis()
+#surf = ax.plot_wireframe(Xplot, Yplot, Zplot)
+#ax.invert_yaxis()
+
+norm = plt.Normalize(Zplot.min(), Zplot.max())
+colors = cm.viridis(norm(Zplot))
+rcount, ccount, _ = colors.shape
+surf = ax.plot_surface(Xplot, Yplot, Zplot, rcount=rcount, ccount=ccount,
+                       facecolors=colors, shade=False)
+surf.set_facecolor((0,0,0,0))
 
 fname = 'muller3_sweep_3dplot.png'
 print(f'[info] saving figure: {fname}')

@@ -39,7 +39,7 @@ def createCircuit(source_delay, sink_delay):
 	tr.fall(f=tr.Cf, i=['c2','en3'], o='c3', d=5)
 
 
-T = 200
+T = 1000
 sweep_values = np.linspace(1, 25, num=25)
 results = {}
 
