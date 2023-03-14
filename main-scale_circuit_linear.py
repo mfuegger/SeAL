@@ -1,7 +1,7 @@
 import pprint
 import tracem as tr
 import plotting
-import check
+import checkbi as check
 import numpy as np
 import math as m
 
@@ -11,7 +11,7 @@ import math as m
 # 2 dual-rail bit linear pipeline
 
 num_stages = 3
-num_bits = 2
+num_bits = 4
 
 a = np.array(num_bits)
 b = np.array(num_bits)
@@ -131,37 +131,35 @@ for i in range(1, num_stages+1):
     for c in range(steps):
         c_dict[f'list{c+1}'].clear()
 
-
-
-
-
 #######################################################
 # pprint.pprint(rules)
 # pprint.pprint(signals)
 
 # run it
 
+T = 200
+
 init = {
-    'en1': 0,   
     'aF[0]': 1,
     'aT[0]': 0,
+    'bF[0]': 1,
+    'bT[0]': 0,
+    'aF[1]': 0,
+    'aT[1]': 1,
+    'bF[1]': 0,
+    'bT[1]': 1,
+
+    'en1': 0,   
     'ca1F[0]': 1,
     'ca1T[0]': 0,
     'ora10': 1,
-    'aF[1]': 0,
-    'aT[1]': 1,
     'ca1F[1]': 0,
     'ca1T[1]': 1,
     'ora11': 1,
     'cor10': 1,
-
-    'bF[0]': 1,
-    'bT[0]': 0,
     'cb1F[0]': 1,
     'cb1T[0]': 0,
     'orb10': 1,
-    'bF[1]': 0,
-    'bT[1]': 1,
     'cb1F[1]': 0,
     'cb1T[1]': 1,
     'orb11': 1,
@@ -203,26 +201,120 @@ init = {
     'cor31': 1,
     'ack3': 1,
 
-    'ackin': 1,}
+    'ackin': 1,
+
+    # Uncomment for 4 bits
+    'aF[2]': 1,
+    'aT[2]': 0,
+    'bF[2]': 1,
+    'bT[2]': 0,
+    'aF[3]': 0,
+    'aT[3]': 1,
+    'bF[3]': 0,
+    'bT[3]': 1,
+
+    'ca1F[2]': 1,
+    'ca1T[2]': 0,
+    'ora12': 1,
+    'cb1F[2]': 1,
+    'cb1T[2]': 0,
+    'orb12': 1,
+    'cor12': 1,
+    'ca1F[3]': 0,
+    'ca1T[3]': 1,
+    'ora13': 1,
+    'cb1F[3]': 0,
+    'cb1T[3]': 1,
+    'orb13': 1,
+    'cor13': 1,
+    'cc10': 1,
+    'cc12': 1,
+
+    'ca2F[2]': 1,
+    'ca2T[2]': 0,
+    'ora22': 1,
+    'cb2F[2]': 1,
+    'cb2T[2]': 0,
+    'orb22': 1,
+    'cor22': 1,
+    'ca2F[3]': 0,
+    'ca2T[3]': 1,
+    'ora23': 1,
+    'cb2F[3]': 0,
+    'cb2T[3]': 1,
+    'orb23': 1,
+    'cor23': 1,
+    'cc20': 1,
+    'cc22': 1,
+
+    'ca3F[2]': 1,
+    'ca3T[2]': 0,
+    'ora32': 1,
+    'cb3F[2]': 1,
+    'cb3T[2]': 0,
+    'orb32': 1,
+    'cor32': 1,
+    'ca3F[3]': 0,
+    'ca3T[3]': 1,
+    'ora33': 1,
+    'cb3F[3]': 0,
+    'cb3T[3]': 1,
+    'orb33': 1,
+    'cor33': 1,
+    'cc30': 1,
+    'cc32': 1,
+    
+    }
 
 glitch_t = 4
 events = [
-	# (5, 'aF', 0),
-	# (10, 'bF', 0),
-	# (44, 'ackin', 0),
-	# (50, 'aT', 1),
-    # (55, 'bT', 1),
-	# (10, 'a', 1),
-    # (glitch_t, 'c3', .5),  # add glitch
-    # (glitch_t + 0.1, 'c3', 0),  # reset glitch
+	(5, 'aF[0]', 0),
+    (5, 'aT[1]', 0),
+	(10, 'bF[0]', 0),
+    (10, 'bT[1]', 0),
+	(44, 'ackin', 0),
+	(50, 'aT[0]', 1),
+    (50, 'aF[1]', 1),
+    (55, 'bT[0]', 1),
+    (55, 'bF[1]', 1),
+    (84, 'ackin', 1),
+    (60, 'aT[0]', 0),
+    (60, 'aF[1]', 0),
+    (65, 'bT[0]', 0),
+    (65, 'bF[1]', 0),
+    (100, 'ackin', 0),
+    (110, 'aF[0]', 1),
+    (110, 'aT[1]', 1),
+	(120, 'bF[0]', 1),
+    (120, 'bT[1]', 1),
+	(150, 'ackin', 1),
+
+
+    # Uncomment for 4 bits
+    (5, 'aF[2]', 0),
+    (5, 'aT[3]', 0),
+	(10, 'bF[2]', 0),
+    (10, 'bT[3]', 0),
+    (50, 'aT[2]', 1),
+    (50, 'aF[3]', 1),
+    (55, 'bT[2]', 1),
+    (55, 'bF[3]', 1),
+    (60, 'aT[2]', 0),
+    (60, 'aF[3]', 0),
+    (65, 'bT[2]', 0),
+    (65, 'bF[3]', 0),
+    (110, 'aF[2]', 1),
+    (110, 'aT[3]', 1),
+	(120, 'bF[2]', 1),
+    (120, 'bT[3]', 1),
 ]
-times, states = tr.trace(init, events=events, T=100)
+times, states = tr.trace(init, events=events, T=T)
 
 # print it
-for i in range(len(times)):
-	print()
-	print(f'time {times[i]}:')
-	pprint.pprint(states[i])
+# for i in range(len(times)):
+# 	print()
+# 	print(f'time {times[i]}:')
+# 	pprint.pprint(states[i])
 
 ret = check.check(times=times, events=events, states=states, signals=list(init.keys()), output_signals=['ca3F[0]',
                                                                                                         'ca3T[0]',

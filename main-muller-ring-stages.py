@@ -98,10 +98,10 @@ def initCircuit(num_stages, num_tokens, signals):
         else:
             for s in signals:
                         if str(stage) in s:
-                        #     if ('en' in s):
-                        #         init[s] = 0
-                        #     if ('c' in s):
-                        #         init[s] = 1
+                            # if ('en' in s):
+                            #     init[s] = 0
+                            # if ('c' in s):
+                            #     init[s] = 1
                             if ('en' in s):
                                 init[s] = 1
                             if ('c' in s):
