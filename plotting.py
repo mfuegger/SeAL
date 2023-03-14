@@ -1,5 +1,5 @@
 import svgwrite
-
+import matplotlib.pyplot as plt
 
 def points2path(points):
 	d = ''
@@ -12,7 +12,31 @@ def points2path(points):
 	return d
 
 
+def plotSensitivityBars(p_per_sig, fname='bar.pdf', title=None):
+	fig = plt.figure(figsize=(6.5,4))
+
+	if title is not None:
+		plt.title(title, fontsize=35)
+
+	x = p_per_sig.keys()
+	height = p_per_sig.values()
+	plt.bar(x, height, width=0.8)
+	plt.xticks(fontsize=22)
+	plt.yticks(fontsize=22)
+	
+	plt.savefig(
+		fname,
+		dpi=300,
+        pad_inches=1.1
+	)
+
+
 def plot(times, states, signals, fname='out.svg', dt=30, dv=60, x0=60, susceptible=None, cutoff=None):
+	GRID_COLOR = svgwrite.rgb(30, 30, 30, '%')
+	GRID_LW = 0.1
+
+	SIGNAL_LW = 4
+
 	width = x0 + dt * times[-1]
 	height = len(states[0]) * dv + 200
 	dwg = svgwrite.Drawing(
@@ -74,7 +98,7 @@ def plot(times, states, signals, fname='out.svg', dt=30, dv=60, x0=60, susceptib
 			d=points2path(points),
 			stroke=svgwrite.rgb(10, 10, 10, '%'),
 			fill='white',
-			stroke_width=3
+			stroke_width=SIGNAL_LW
 		))
 
 		# draw patches
@@ -93,8 +117,8 @@ def plot(times, states, signals, fname='out.svg', dt=30, dv=60, x0=60, susceptib
 		x = dt*time
 		dwg.add(dwg.line(
 			(x0 + x, 0), (x0 + x, maxy),
-			stroke=svgwrite.rgb(10, 10, 10, '%'),
-			stroke_width=0.3
+			stroke=GRID_COLOR,
+			stroke_width=GRID_LW
 		))
 		if i == 0 or ( i > 0 and time - times[i-1] > 0.25 ):
 			# only annotate times that are not too close to previous times
@@ -106,8 +130,8 @@ def plot(times, states, signals, fname='out.svg', dt=30, dv=60, x0=60, susceptib
 		y = signal_ybase[s]
 		dwg.add(dwg.line(
 			(0, y), (x0 + maxx, y),
-			stroke=svgwrite.rgb(10, 10, 10, '%'),
-			stroke_width=0.3
+			stroke=GRID_COLOR,
+			stroke_width=GRID_LW
 		))
 
 	# potentially add susceptible signal regions

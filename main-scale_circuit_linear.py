@@ -137,8 +137,6 @@ for i in range(1, num_stages+1):
 
 # run it
 
-T = 200
-
 init = {
     'aF[0]': 1,
     'aT[0]': 0,
@@ -326,7 +324,9 @@ ret = check.check(times=times, events=events, states=states, signals=list(init.k
                                                                                                         'cb3F[1]',
                                                                                                         'cb3T[1]',
                                                                                                         'ackout'])
-pprint.pprint(ret)
+pprint.pprint(ret['p_per_sig'])
+print(ret['p'])
+plotting.plotSensitivityBars(p_per_sig=ret['p_per_sig'], fname=f'bar-linear-{num_bits}bit.pdf')
 
 plotting.plot(times, states, list(init.keys()), susceptible=ret['susceptible'])
 
