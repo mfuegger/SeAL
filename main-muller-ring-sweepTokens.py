@@ -178,7 +178,7 @@ for t in range(1, tokens+1):
         init = initCircuit(num_stages=s, num_tokens=t, signals=signals)
 
         # trace it
-        T = 200
+        T = 500
         events = []
 
         times, states = tr.trace(init, events=events, T=T)

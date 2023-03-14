@@ -64,6 +64,7 @@ def findBoundary(tfrom, tto, s, states, s_state, events, T, output_signals, init
 
 def check(times, states, events, signals, output_signals,
     Textra=30,
+    exclude_output_signals=True,
     cutoff_min=0, cutoff_max=float('Inf')):
     """
     checking all equivalence regions
@@ -71,6 +72,7 @@ def check(times, states, events, signals, output_signals,
     susceptible_intervals = []
     pos = 0
     neg = 0
+    pos_per_sig = { s: 0 for s in signals }
     T = times[-1] + Textra
 
     non_output_signals = [ s for s in signals if s not in output_signals ]
@@ -92,6 +94,14 @@ def check(times, states, events, signals, output_signals,
             pos += tto - boundary
             neg += boundary - tfrom
 
+            pos_per_sig[s] += tto - boundary
+
+    for s in output_signals:
+        pos_per_sig[s] += times[-1] - times[0]
+
+        if not exclude_output_signals:
+            susceptible_intervals += [ (s, [times[0], times[-1]]) ]
+            pos += times[-1] - times[0]
 
             # if times[i] <= cutoff_max and times[i+1] >= cutoff_min:
             #     # region overlaps with cropped region
@@ -106,6 +116,7 @@ def check(times, states, events, signals, output_signals,
 
     return {
         'p': pos/(pos+neg) if pos + neg > 0 else 'undefined',
+        'p_per_sig': { s: pos_per_sig[s] / (times[-1] - times[0]) for s in signals },
         'cutoff_min': cutoff_min,
         'cutoff_max': cutoff_max,
         'susceptible': susceptible_intervals

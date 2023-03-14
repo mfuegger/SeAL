@@ -51,8 +51,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--generate', action='store_true')
 args = parser.parse_args()
 
-T = 200
-NUM = 25
+T = 500
+NUM = 25 # 25
 sweep_values_src = np.linspace(1, 25, num=NUM)
 sweep_values_snk = np.linspace(1, 25, num=NUM)
 
@@ -95,9 +95,11 @@ if args.generate:
             signals=list(init.keys()),
             output_signals=['c3', 'c1'],
             cutoff_min=cutoff_min,
-            cutoff_max=cutoff_max
+            cutoff_max=cutoff_max,
+            # exclude_output_signals=False,
         )
-        #pprint.pprint(ret)
+        # pprint.pprint(ret)
+
         p += [ ret['p'] ]
         snk += [ sink_delay ]
         src += [ source_delay ]
@@ -110,6 +112,16 @@ if args.generate:
             'src':src},
             f)
 
+
+
+# # plot the last one
+# plotting.plot(
+#   times,
+#   states,
+#   list(init.keys()),
+#   susceptible=ret['susceptible'],
+#   cutoff=[cutoff_min, cutoff_max],
+#   )
 
 with open('p_sweepink_snk_src.pickle', 'rb') as f:
     print('[info] loaded data from pickle')
@@ -153,6 +165,7 @@ rcount, ccount, _ = colors.shape
 surf = ax.plot_surface(Xplot, Yplot, Zplot, rcount=rcount, ccount=ccount,
                        facecolors=colors, shade=False)
 surf.set_facecolor((0,0,0,0))
+ax.invert_xaxis()
 
 fname = 'muller3_sweep_3dplot.png'
 print(f'[info] saving figure: {fname}')
@@ -168,13 +181,4 @@ plt.savefig(
 )
 # plt.show()
 
-
-# # plot the last one
-# plotting.plot(
-#   times,
-#   states,
-#   list(init.keys()),
-#   susceptible=ret['susceptible'],
-#   cutoff=[cutoff_min, cutoff_max],
-#   )
 
