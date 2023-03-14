@@ -1,7 +1,7 @@
 import pprint
 import tracem as tr
 import plotting
-import check
+import checkbi as check
 import numpy as np
 import math as m
 
@@ -205,6 +205,7 @@ init = {
 
     'ackin': 1,}
 
+T = 500
 glitch_t = 4
 events = [
 	# (5, 'aF', 0),
@@ -216,7 +217,7 @@ events = [
     # (glitch_t, 'c3', .5),  # add glitch
     # (glitch_t + 0.1, 'c3', 0),  # reset glitch
 ]
-times, states = tr.trace(init, events=events, T=100)
+times, states = tr.trace(init, events=events, T=T)
 
 # print it
 for i in range(len(times)):

@@ -51,8 +51,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--generate', action='store_true')
 args = parser.parse_args()
 
-T = 500
-NUM = 25 # 25
+T = 1000
+NUM = 2 # 25
 sweep_values_src = np.linspace(1, 25, num=NUM)
 sweep_values_snk = np.linspace(1, 25, num=NUM)
 
@@ -103,6 +103,15 @@ if args.generate:
         p += [ ret['p'] ]
         snk += [ sink_delay ]
         src += [ source_delay ]
+
+        plotting.plot(
+          times,
+          states,
+          list(init.keys()),
+          fname=f"{sink_delay}-{source_delay}.svg",
+          susceptible=ret['susceptible'],
+          cutoff=[cutoff_min, cutoff_max],
+          )
 
     with open('p_sweepink_snk_src.pickle', 'wb') as f:
         print('[info] saving data to pickle')
