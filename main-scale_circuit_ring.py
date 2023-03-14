@@ -11,7 +11,7 @@ import math as m
 # 2 dual-rail bit linear pipeline
 
 num_stages = 3
-num_bits = 2
+num_bits = 4
 
 a = np.array(num_bits)
 b = np.array(num_bits)
@@ -152,6 +152,7 @@ for i in range(1, num_stages+1):
 # pprint.pprint(signals)
 
 # run it
+T = 400
 
 init = {
     'en1': 1,   
@@ -170,6 +171,7 @@ init = {
     'orb11': 0,
     'cor11': 0,
     'ack1': 0,
+
 
     'en2': 0,
     'ca2F[0]': 0,
@@ -206,58 +208,57 @@ init = {
     'cor31': 1,
     'ack3': 1,
 
-# Uncomment to test num_bits = 4
+    # Uncomment for 4 bits
+    'ca1F[2]': 0,
+    'ca1T[2]': 0,
+    'ora12': 0,
+    'ca1F[3]': 0,
+    'ca1T[3]': 0,
+    'ora13': 0,
+    'cor12': 0,
+    'cb1F[2]': 0,
+    'cb1T[2]': 0,
+    'orb12': 0,
+    'cb1F[3]': 0,
+    'cb1T[3]': 0,
+    'orb13': 0,
+    'cor13': 0,
+    'cc10': 0,
+    'cc12': 0,
 
-    # 'ca1F[2]': 0,
-    # 'ca1T[2]': 0,
-    # 'ora12': 0,
-    # 'ca1F[3]': 0,
-    # 'ca1T[3]': 0,
-    # 'ora13': 0,
-    # 'cor12': 0,
-    # 'cb1F[2]': 0,
-    # 'cb1T[2]': 0,
-    # 'orb12': 0,
-    # 'cb1F[3]': 0,
-    # 'cb1T[3]': 0,
-    # 'orb13': 0,
-    # 'cor13': 0,
-    # 'cc10': 0,
-    # 'cc12': 0,
+    'ca2F[2]': 0,
+    'ca2T[2]': 0,
+    'ora22': 0,
+    'ca2F[3]': 0,
+    'ca2T[3]': 0,
+    'ora23': 0,
+    'cor22': 0,
+    'cb2F[2]': 0,
+    'cb2T[2]': 0,
+    'orb22': 0,
+    'cb2F[3]': 0,
+    'cb2T[3]': 0,
+    'orb23': 0,
+    'cor23': 0,
+    'cc20': 0,
+    'cc22': 0,
 
-    # 'ca2F[2]': 0,
-    # 'ca2T[2]': 0,
-    # 'ora22': 0,
-    # 'ca2F[3]': 0,
-    # 'ca2T[3]': 0,
-    # 'ora23': 0,
-    # 'cor22': 0,
-    # 'cb2F[2]': 0,
-    # 'cb2T[2]': 0,
-    # 'orb22': 0,
-    # 'cb2F[3]': 0,
-    # 'cb2T[3]': 0,
-    # 'orb23': 0,
-    # 'cor23': 0,
-    # 'cc20': 0,
-    # 'cc22': 0,
-
-    # 'ca3F[2]': 1,
-    # 'ca3T[2]': 0,
-    # 'ora32': 1,
-    # 'ca3F[3]': 0,
-    # 'ca3T[3]': 1,
-    # 'ora33': 1,
-    # 'cor32': 1,
-    # 'cb3F[2]': 0,
-    # 'cb3T[2]': 1,
-    # 'orb32': 1,
-    # 'cb3F[3]': 1,
-    # 'cb3T[3]': 0,
-    # 'orb33': 1,
-    # 'cor33': 1,
-    # 'cc30': 1,
-    # 'cc32': 1,
+    'ca3F[2]': 1,
+    'ca3T[2]': 0,
+    'ora32': 1,
+    'ca3F[3]': 0,
+    'ca3T[3]': 1,
+    'ora33': 1,
+    'cor32': 1,
+    'cb3F[2]': 0,
+    'cb3T[2]': 1,
+    'orb32': 1,
+    'cb3F[3]': 1,
+    'cb3T[3]': 0,
+    'orb33': 1,
+    'cor33': 1,
+    'cc30': 1,
+    'cc32': 1,
 
 }
 
@@ -272,7 +273,7 @@ events = [
     # (glitch_t, 'c3', .5),  # add glitch
     # (glitch_t + 0.1, 'c3', 0),  # reset glitch
 ]
-times, states = tr.trace(init, events=events, T=20)
+times, states = tr.trace(init, events=events, T=T)
 
 # print it
 for i in range(len(times)):
