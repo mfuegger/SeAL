@@ -140,9 +140,9 @@ def initCircuit(num_stages, num_tokens, signals):
 
 # run it
 
-num_stages = 5
-num_tokens = 2
-T = 32
+num_stages = 10
+num_tokens = 4
+T = 100
 
 # create it
 signals, output_signals = createCircuit(num_stages=num_stages)
