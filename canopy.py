@@ -43,6 +43,12 @@ def createCircuit(num_stages):
 
 # ----------------------------------------------------------------------------------------------------------
 
+def getThroughput(times, states, signal='c1'):
+    # measures 0->1 transitions / time
+    transition_0to1 = [ 1 for i in range(len(states)-1) if states[i][signal] == 0 and states[i+1][signal] == 1 ]
+    return len(transition_0to1) / (times[-1] - times[0])
+
+
 def initCircuit(num_stages, num_tokens, signals):  
     # for initilazing the circuit
     # always starts either with a DATA token or a bubble
@@ -127,11 +133,11 @@ def initCircuit(num_stages, num_tokens, signals):
 
 # run it
 
-tokens = 4   # 6
-stages = 10  # 20
+tokens = 6   # 6
+stages = 20  # 20
 p = []
 throughput = []
-T = 50
+T = 200
 
 sweep_values = np.linspace(1, tokens, num=tokens)
 
@@ -166,6 +172,7 @@ for t in range(1, tokens+1):
     )
 
     p += [ ret['p'] ]
+    throughput += [ getThroughput(times, states, signal='c1') ]
 
 
 # fig = plt.figure()
@@ -195,7 +202,7 @@ for t in range(1, tokens+1):
 x = sweep_values
 y1 = p
 # y2 = [2, 4, 3, 1]
-y2 = [0.04, 0.08, 0.06, 0.02] #throughput
+y2 = throughput  # [0.04, 0.08, 0.06, 0.02]
 
 fig, ax1 = plt.subplots()
 
@@ -208,7 +215,7 @@ ax1.set_xlim(1-0.3, tokens+0.3)
 ax1.set_xticks(np.arange(1, tokens+1, step=1))
 ax1.set_ylabel('P(fail)', color='g')
 ax1.set_ylim(0, 1)
-ax2.set_ylabel('Throughput', color='b')
+ax2.set_ylabel('Throughput [1 / INV delay]', color='b')
 ax2.set_ylim(0, 0.1)
 
 # plt.plot(sweep_values, p, linestyle='-', marker='o')
@@ -220,15 +227,15 @@ ax2.set_ylim(0, 0.1)
 # plt.legend(loc=3)
 plt.show()
 
-# fname = 'muller3_sweepSource.png'
-# print(f'[info] saving figure: {fname}')
-# plt.savefig(
-#     fname,
-#     dpi=300,
-#     format='png',
-#     metadata=None,
-#     bbox_inches=None,
-#     pad_inches=0.01,
-#     facecolor='auto',
-#     edgecolor='auto'
-# )
+fname = 'canopy.png'
+print(f'[info] saving figure: {fname}')
+plt.savefig(
+    fname,
+    dpi=300,
+    format='png',
+    metadata=None,
+    bbox_inches=None,
+    pad_inches=0.01,
+    facecolor='auto',
+    edgecolor='auto'
+)
