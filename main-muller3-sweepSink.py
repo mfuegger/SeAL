@@ -51,7 +51,7 @@ i = 0
 # sweep source_delay with only 4 values: 4, 10, 16 & 22
 for source_delay in range(4, 25, 6):
 
-    labels.append(f'sink delay = {source_delay}')
+    labels.append(f'source delay = {source_delay}')
 
     results[source_delay] = {'snk_delay':[], 'p':[]}
 

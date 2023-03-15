@@ -173,6 +173,8 @@ for t in range(1, tokens+1):
 
     p += [ ret['p'] ]
     throughput += [ getThroughput(times, states, signal='c1') ]
+    print(p)
+    print(throughput)
 
 
 # fig = plt.figure()
