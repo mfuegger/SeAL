@@ -9,7 +9,7 @@ from libs import plotting
 from libs import checkbi as check
 
 # circuit
-# 2 dual-rail bit ring (fast environment)
+# 2 dual-rail-bit linear pipeline
 
 # inv1
 tr.rise(f=tr.INVr, i=['ack2'], o='en1', d=2)

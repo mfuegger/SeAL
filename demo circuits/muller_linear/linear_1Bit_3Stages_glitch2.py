@@ -7,10 +7,11 @@ import pprint
 from libs import tracem as tr
 from libs import plotting
 
-# ---- testing ------
+# EXAMPLE MASKED GLITCH
 
 # circuit
 # Muller Pipeline (linear)
+# 1-bit 3-stage linear pipeline
 
 # inv1
 tr.rise(f=tr.INVr, i=['c1'], o='c_in', d=4)
@@ -55,10 +56,10 @@ init = {
 	'en3': 1,
 	'c3': 0,
 }
-glitch_t = 10
+glitch_t = 22
 events = [
-    (glitch_t, 'c2', 1),  # add glitch
-    (glitch_t + 0.1, 'c2', 0),  # reset glitch
+    (glitch_t, 'c2', 0),  # add glitch
+    (glitch_t + 0.1, 'c2', 1),  # reset glitch
 ]
 times, states = tr.trace(init, events=events, T=32)
 

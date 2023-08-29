@@ -14,6 +14,7 @@ CHECK = True
 
 # circuit
 # Muller Pipeline (linear)
+# 1-bit 3-stage linear pipeline
 
 # inv1 (source)
 tr.rise(f=tr.INVr, i=['c1'], o='c_in', d=4)

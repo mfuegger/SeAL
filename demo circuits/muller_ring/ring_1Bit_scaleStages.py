@@ -9,6 +9,8 @@ from libs import plotting
 from libs import checkbi as check
 import math as m
 
+# CHECK = True --> show sensitivity windows
+# CHECK = False --> show effect of specific glitches
 CHECK = True
 
 # CREATE RING w/ 1 BIT (not dual-rail) AND VARIABLE NUMBER OF STAGES

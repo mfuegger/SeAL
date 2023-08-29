@@ -11,9 +11,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
+# CREATE LINEAR PIPELINE w/ 1 BIT (not dual-rail), 3 STAGES,
+# SWEEPING OVER SINK DEALYS
+# PLOT SHOWS EFFECT OF VARYING THE SPEED OF SINK
+
+# circuit
+# Muller Pipeline (linear)
+# 1-bit 3-stage linear pipeline
+
 def createCircuit(source_delay, sink_delay):
-	# circuit
-	# Muller Pipeline (linear)
 
 	# inv1 (source)
 	tr.rise(f=tr.INVr, i=['c1'], o='c_in', d=source_delay)

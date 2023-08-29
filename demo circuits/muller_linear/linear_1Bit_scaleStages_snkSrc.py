@@ -9,7 +9,12 @@ from libs import plotting
 from libs import checkbi as check
 import math as m
 
-CHECK = True
+# CHECK = True --> show sensitivity windows
+# CHECK = False --> show effect of specific glitches
+CHECK = False
+
+# CREATE LINEAR PIPELINE w/ 1 BIT (not dual-rail), VARIABLE NUMBER OF STAGES,
+# AND VARIABLE SINK AND SOURCES DEALYS
 
 # circuit (at least 3 stages)
 # Muller Pipeline (linear)
@@ -21,13 +26,6 @@ sink_delay = 4
 output_signals = ['c1', f'c{num_stages}']
 
 signals = ['c_in']
-
-#  max number of tokens (of each kind DATA/SPACER)
-#  based on the number of stages
-max_tokens = m.floor((num_stages-1)/2)
-
-# DATA & SPACER, num_tokens of each
-# num_tokens = 1
 
 # c_in
 tr.rise(f=tr.INVr, i=['c1'], o='c_in', d=source_delay)

@@ -12,9 +12,10 @@ import math as m
 
 # CREATE LINEAR PIPELINE w/ VARIABLE NUMBER OF STAGES AND INPUT BITS
 # TODO work out automatic initialization
+# TODO fix percentages in paper based on monitored signals section A.3
 
 # circuit (at least 3 stages/2 input bits)
-# 8 dual-rail bit linear pipeline
+# 8 dual-rail bits linear pipeline
 
 num_stages = 3
 num_bits = 4
@@ -270,7 +271,7 @@ init = {
     
     }
 
-T = 300
+T = 500
 glitch_t = 4
 events = [
 	(5, 'aF[0]', 0),
@@ -329,6 +330,17 @@ ret = check.check(times=times, events=events, states=states, signals=list(init.k
                                                                                                         'cb3T[0]',
                                                                                                         'cb3F[1]',
                                                                                                         'cb3T[1]',
+                                                                                                        
+                                                                                                        # Uncomment for 8 input bits
+                                                                                                        'ca3F[2]',
+                                                                                                        'ca3T[2]',
+                                                                                                        'ca3F[3]',
+                                                                                                        'ca3T[3]',
+                                                                                                        'cb3F[2]',
+                                                                                                        'cb3T[2]',
+                                                                                                        'cb3F[3]',
+                                                                                                        'cb3T[3]',
+
                                                                                                         'ackout'])
 pprint.pprint(ret['p_per_sig'])
 print(ret['p'])

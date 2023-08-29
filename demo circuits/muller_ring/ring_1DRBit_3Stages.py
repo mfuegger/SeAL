@@ -9,7 +9,7 @@ from libs import plotting
 from libs import checkbi as check
 
 # circuit
-# 1 dual-rail bit 3-stage ring (fast environment)
+# 1 dual-rail-bit 3-stage ring (fast environment)
 
 # inv1
 tr.rise(f=tr.INVr, i=['ack2'], o='en1', d=2)
