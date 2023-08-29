@@ -1,8 +1,11 @@
-import pprint
-import tracem as tr
-import plotting
+import os
+import sys
+dir_path = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(dir_path + '/../')
 
-# ---- testing ------
+import pprint
+from libs import tracem as tr
+from libs import plotting
 
 # circuit
 
@@ -13,7 +16,7 @@ tr.fall(f=tr.INVf, i=['i'], o='o', d=1)
 init = {'i': 0, 'o': 1,}
 glitch_t = 1.5
 events = [
-	(1, 'i', 1),
+	(1, 'i', .5),
 	(glitch_t, 'i', 0),  # add down
 	# (3, 'i', 1),
 ]

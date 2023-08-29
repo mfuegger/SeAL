@@ -1,7 +1,12 @@
+import os
+import sys
+dir_path = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(dir_path + '/../../')
+
 import pprint
-import tracem as tr
-import plotting
-import checkbi as check
+from libs import tracem as tr
+from libs import plotting
+from libs import checkbi as check
 import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
@@ -48,14 +53,14 @@ labels = []
 markers = []
 i = 0
 
-# sweep sink_delay with only 4 values: 4, 10, 16 & 22
-for sink_delay in range(4, 25, 6):
+# sweep source_delay with only 4 values: 4, 10, 16 & 22
+for source_delay in [1,4,25]: # range(4, 25, 6):
 
-    labels.append(f'sink delay = {sink_delay}')
+    labels.append(f'sink delay = {source_delay}')
 
-    results[sink_delay] = {'src_delay':[], 'p':[]}
+    results[source_delay] = {'snk_delay':[], 'p':[]}
 
-    for source_delay in tqdm(sweep_values):
+    for sink_delay in [1,4,25]: # tqdm(sweep_values):
         # clear circuit
         tr.clear()
         
@@ -91,21 +96,23 @@ for sink_delay in range(4, 25, 6):
                 cutoff_max=cutoff_max
         )
         #pprint.pprint(ret)
-        results[sink_delay]['src_delay'] += [source_delay]
-        results[sink_delay]['p'] += [ret['p']]
+        results[source_delay]['snk_delay'] += [sink_delay]
+        results[source_delay]['p'] += [ret['p']]
 
-    plt.plot(results[sink_delay]['src_delay'], results[sink_delay]['p'], linestyle='-', marker='o', label=labels[i])
+        plotting.plotSensitivityBars(ret['p_per_sig'], fname=f'muller3-bar-{source_delay}-{sink_delay}.pdf', title=f'source: {source_delay}, sink: {sink_delay}')
+
+    plt.plot(results[source_delay]['snk_delay'], results[source_delay]['p'], linestyle='-', marker='o', label=labels[i])
     i += 1
 
 
-plt.xlabel('source delay [INV delay]')
+plt.xlabel('sink delay [INV delay]')
 plt.ylabel('P(fail)')
 # plt.plot(sweep_values, p, '*', color='blue')
 plt.xlim(0, 25+0.5)
 plt.ylim(0,1)
 plt.legend(loc=3)
 
-fname = 'muller3_sweepSource.png'
+fname = 'muller3_sweepSink.png'
 print(f'[info] saving figure: {fname}')
 plt.savefig(
     fname,

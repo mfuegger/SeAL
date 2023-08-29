@@ -1,8 +1,11 @@
-import pprint
-import tracem as tr
-import plotting
+import os
+import sys
+dir_path = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(dir_path + '/../../')
 
-# ---- testing ------
+import pprint
+from libs import tracem as tr
+from libs import plotting
 
 # circuit
 # Muller Pipeline (linear)
@@ -50,10 +53,10 @@ init = {
 	'en3': 1,
 	'c3': 0,
 }
-glitch_t = 10
+glitch_t = 22
 events = [
-    (glitch_t, 'c2', 1),  # add glitch
-    (glitch_t + 0.1, 'c2', 0),  # reset glitch
+    (glitch_t, 'c2', 0),  # add glitch
+    (glitch_t + 0.1, 'c2', 1),  # reset glitch
 ]
 times, states = tr.trace(init, events=events, T=32)
 

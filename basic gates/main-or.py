@@ -1,11 +1,16 @@
+import os
+import sys
+dir_path = os.path.dirname(os.path.realpath(__file__))
+# print(dir_path)
+sys.path.append(dir_path + '/../')
+
 import pprint
-import tracem as tr
-import plotting
-# import checknew as check
-import checkbi as check
+from libs import tracem as tr
+from libs import plotting
+from libs import checkbi as check
 
-# ---- testing ------
-
+# CHECK = True --> show sensitivity windows
+# CHECK = False --> show effect of specific glitches
 CHECK = True
 
 # circuit
