@@ -11,6 +11,10 @@ import math as m
 import numpy as np
 import matplotlib.pyplot as plt
 
+# CREATE RING w/ 1 BIT (not dual-rail), VARIABLE NUMBER OF STAGES, AND VARIABLE NUMBER OF TOKENS
+# PLOT SHOWS EFFECT OF VARYING THE NUMBER OF TOKENS IN EACH CIRCUIT, NAMELY THE OCCUPANCY
+# TODO put equation for calculating min. number of tokens w.r.t. number of stages
+
 # circuit (at least 3 stages)
 # Muller Pipeline (ring)
 

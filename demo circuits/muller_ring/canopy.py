@@ -12,6 +12,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.axisartist.parasite_axes import HostAxes
 
+# CREATE RING w/ 1 BIT (not dual-rail), VARIABLE NUMBER OF STAGES, AND VARIABLE NUMBER OF TOKENS
+# CANOPY PLOT SHOWS EFFECT OF VARYING THE NUMBER OF TOKENS ON THE PROB. TO FAIL AND THE THROUGHPUT IN A CIRCUIT w/ FIXED NUMBER OF STAGES
+# TODO put equation for calculating min. number of tokens w.r.t. number of stages
 
 # circuit (at least 3 stages)
 # Muller Pipeline (ring)

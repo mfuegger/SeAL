@@ -9,9 +9,9 @@ from libs import plotting
 from libs import checkbi as check
 import math as m
 
-# ---- testing ------
-
 CHECK = True
+
+# CREATE RING w/ 1 BIT (not dual-rail) AND VARIABLE NUMBER OF STAGES
 
 # circuit (at least 3 stages)
 # Muller Pipeline (ring)
