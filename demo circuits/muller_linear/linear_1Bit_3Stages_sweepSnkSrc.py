@@ -1,7 +1,12 @@
+import os
+import sys
+dir_path = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(dir_path + '/../../')
+
 import pprint
-import tracem as tr
-import plotting
-import checkbi as check
+from libs import tracem as tr
+from libs import plotting
+from libs import checkbi as check
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
@@ -13,9 +18,15 @@ import argparse
 from tqdm import tqdm
 from tqdm.contrib import itertools
 
+# CREATE LINEAR PIPELINE w/ 1 BIT (not dual-rail), 3 STAGES,
+# SWEEPING OVER VARIABLE SINK AND SOURCE DEALYS
+# 3D PLOT SHOWS EFFECT OF VARYING THE SPEEDS OF SINK AND SOURCE
+
+# circuit
+# Muller Pipeline (linear)
+# 1-bit 3-stage linear pipeline
+
 def createCircuit(source_delay, sink_delay):
-    # circuit
-    # Muller Pipeline (linear)
 
     # inv1 (source)
     tr.rise(f=tr.INVr, i=['c1'], o='c_in', d=source_delay)
@@ -52,7 +63,7 @@ parser.add_argument('--generate', action='store_true')
 args = parser.parse_args()
 
 T = 1000
-NUM = 2 # 25
+NUM = 25 # 25
 sweep_values_src = np.linspace(1, 25, num=NUM)
 sweep_values_snk = np.linspace(1, 25, num=NUM)
 

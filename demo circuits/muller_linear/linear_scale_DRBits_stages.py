@@ -1,14 +1,21 @@
+import os
+import sys
+dir_path = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(dir_path + '/../../')
+
 import pprint
-import tracem as tr
-import plotting
-import checkbi as check
+from libs import tracem as tr
+from libs import plotting
+from libs import checkbi as check
 import numpy as np
 import math as m
 
-# ---- testing ------
+# CREATE LINEAR PIPELINE w/ VARIABLE NUMBER OF STAGES AND INPUT BITS
+# TODO work out automatic initialization
+# TODO fix percentages in paper based on monitored signals section A.3
 
-# circuit (at least 3 stages/2 bits)
-# 2 dual-rail bit linear pipeline
+# circuit (at least 3 stages/2 input bits)
+# 8 dual-rail bits linear pipeline
 
 num_stages = 3
 num_bits = 4
@@ -201,7 +208,7 @@ init = {
 
     'ackin': 1,
 
-    # Uncomment for 4 bits
+    # Uncomment for 8 input bits
     'aF[2]': 1,
     'aT[2]': 0,
     'bF[2]': 1,
@@ -289,7 +296,7 @@ events = [
 	(150, 'ackin', 1),
 
 
-    # Uncomment for 4 bits
+    # Uncomment for 8 input bits
     (5, 'aF[2]', 0),
     (5, 'aT[3]', 0),
 	(10, 'bF[2]', 0),
@@ -323,6 +330,17 @@ ret = check.check(times=times, events=events, states=states, signals=list(init.k
                                                                                                         'cb3T[0]',
                                                                                                         'cb3F[1]',
                                                                                                         'cb3T[1]',
+                                                                                                        
+                                                                                                        # Uncomment for 8 input bits
+                                                                                                        'ca3F[2]',
+                                                                                                        'ca3T[2]',
+                                                                                                        'ca3F[3]',
+                                                                                                        'ca3T[3]',
+                                                                                                        'cb3F[2]',
+                                                                                                        'cb3T[2]',
+                                                                                                        'cb3F[3]',
+                                                                                                        'cb3T[3]',
+
                                                                                                         'ackout'])
 pprint.pprint(ret['p_per_sig'])
 print(ret['p'])

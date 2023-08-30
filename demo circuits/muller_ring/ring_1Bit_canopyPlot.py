@@ -1,10 +1,20 @@
+import os
+import sys
+dir_path = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(dir_path + '/../../')
+
 import pprint
-import tracem as tr
-import plotting
-import checkbi as check
+from libs import tracem as tr
+from libs import plotting
+from libs import checkbi as check
 import math as m
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.axisartist.parasite_axes import HostAxes
+
+# CREATE RING w/ 1 BIT (not dual-rail), VARIABLE NUMBER OF STAGES, AND VARIABLE NUMBER OF TOKENS
+# CANOPY PLOT SHOWS EFFECT OF VARYING THE NUMBER OF TOKENS ON THE PROB. TO FAIL AND THE THROUGHPUT IN A CIRCUIT w/ FIXED NUMBER OF STAGES
+# TODO put equation for calculating min. number of tokens w.r.t. number of stages
 
 # circuit (at least 3 stages)
 # Muller Pipeline (ring)
@@ -40,6 +50,12 @@ def createCircuit(num_stages):
     return signals, output_signals
 
 # ----------------------------------------------------------------------------------------------------------
+
+def getThroughput(times, states, signal='c1'):
+    # measures 0->1 transitions / time
+    transition_0to1 = [ 1 for i in range(len(states)-1) if states[i][signal] == 0 and states[i+1][signal] == 1 ]
+    return len(transition_0to1) / (times[-1] - times[0])
+
 
 def initCircuit(num_stages, num_tokens, signals):  
     # for initilazing the circuit
@@ -78,7 +94,7 @@ def initCircuit(num_stages, num_tokens, signals):
         #     tag[i] = 'S'
         #     spacer_t -= 1
 
-    pprint.pprint(tag)
+#     pprint.pprint(tag)
 
     # then populate the init{}
     stage = 1
@@ -113,28 +129,6 @@ def initCircuit(num_stages, num_tokens, signals):
                     #     init[s] = 1
                     # if ('c' in s):
                     #     init[s] = 0
-        # else:
-        #     # bubble is of the same type as the subsequent non-bubble stage
-        #     for ts in range(stage-1, num_stages-1):
-        #         if tag[ts+1] == 'B':
-        #             # temp_stage += 1
-        #             continue
-        #         elif tag[ts+1] == 'D':
-        #             for s in signals:
-        #                 if str(stage) in s:
-        #                     if ('en' in s):
-        #                         init[s] = 0
-        #                     if ('c' in s):
-        #                         init[s] = 1
-        #             break
-        #         elif tag[ts+1] == 'S':
-        #             for s in signals:
-        #                 if str(stage) in s:
-        #                     if ('en' in s):
-        #                         init[s] = 1
-        #                     if ('c' in s):
-        #                         init[s] = 0
-        #             break
 
         stage += 1  
 
@@ -149,71 +143,101 @@ def initCircuit(num_stages, num_tokens, signals):
 
 tokens = 6   # 6
 stages = 20  # 20
-results = {}
+p = []
+throughput = []
+T = 200
 
-plt.figure()
-labels = []
-markers = []
+sweep_values = np.linspace(1, tokens, num=tokens)
 
-# checking for 1-4 tokens
+# create circuit with stages
+signals, output_signals = createCircuit(num_stages=stages)
+
+# check P for different occupancy
 for t in range(1, tokens+1):
-    
-    labels.append(f'{t} token(s)')
+    print(f'[info] computing {t} tokens')
 
-    # min number of stages for t tokens
-    min_stages = 2*t+1
+    # initialize circuit
+    init = initCircuit(num_stages=stages, num_tokens=t, signals=signals)
 
-    results[t] = {'stages':[], 'p':[]}
+    # trace it
+    events = []
 
-    for s in range(min_stages, stages+1):
-        print(f'[info] computing {t} tokens / {s} stages')
+    times, states = tr.trace(init, events=events, T=T)
 
-        # clear circuit
-        tr.clear()
-        
-        # create it
-        signals, output_signals = createCircuit(num_stages=s)
+    # check it
+    # cutoff
+    cutoff_min = 0
+    cutoff_max = float('Inf')
 
-        # initialize it
-        init = initCircuit(num_stages=s, num_tokens=t, signals=signals)
+    ret = check.check(
+        times=times,
+        events=events,
+        states=states,
+        signals=signals,
+        output_signals=output_signals,
+        cutoff_min=cutoff_min,
+        cutoff_max=cutoff_max
+    )
 
-        # trace it
-        T = 500
-        events = []
+    p += [ ret['p'] ]
+    throughput += [ getThroughput(times, states, signal='c1') ]
+    print(p)
+    print(throughput)
 
-        times, states = tr.trace(init, events=events, T=T)
 
-        # check it
-        # cutoff
-        cutoff_min = 0
-        cutoff_max = float('Inf')
+# fig = plt.figure()
 
-        ret = check.check(
-            times=times,
-            events=events,
-            states=states,
-            signals=signals,
-            output_signals=output_signals,
-            cutoff_min=cutoff_min,
-            cutoff_max=cutoff_max
-        )
+# host = fig.add_axes([0.15, 0.1, 0.65, 0.8], axes_class=HostAxes)
+# par1 = host.twinx()
 
-        results[t]['stages'] += [s]
-        results[t]['p'] += [ret['p']]
-        # print(f"Stages = {s} & Tokens = {t}")
-        # pprint.pprint(results)
-        # pprint.pprint(ret)
+# host.axis["right"].set_visible(False)
 
-    plt.plot(results[t]['stages'], results[t]['p'], linestyle='-', marker='o', label=labels[t-1])
+# par1.axis["right"].set_visible(True)
+# par1.axis["right"].major_ticklabels.set_visible(True)
+# par1.axis["right"].label.set_visible(True)
 
-plt.xlabel('#stages')
-plt.ylabel('P(fail)')
-plt.xlim(3-0.3, stages+0.3)
-plt.xticks(np.arange(3, stages+1, step=1))
-plt.ylim(0, 1)
-plt.legend(loc=3)
+# p1, = host.plot([0, 1, 2], [0, 1, 2], label="P(fail)")
+# p2, = par1.plot([0, 1, 2], [0, 3, 2], label="Performance")
 
-fname = f'muller-ring-sweepTokens.png'
+# host.set(xlim=(1-0.3, tokens+0.3), ylim=(0, 1), xlabel="#tokens", ylabel="P(fail)")
+# par1.set(ylim=(0, 1), ylabel="Performance")
+# host.legend()
+
+# host.axis["left"].label.set_color(p1.get_color())
+# par1.axis["right"].label.set_color(p2.get_color())
+
+# host.axis["left"].label.set_color(p1.get_color())
+# par1.axis["right"].label.set_color(p2.get_color())  
+
+x = sweep_values
+y1 = p
+# y2 = [2, 4, 3, 1]
+y2 = throughput  # [0.04, 0.08, 0.06, 0.02]
+
+fig, ax1 = plt.subplots()
+
+ax2 = ax1.twinx()
+ax1.plot(x, y1, 'g-o')
+ax2.plot(x, y2, 'b-o')
+
+ax1.set_xlabel('#tokens')
+ax1.set_xlim(1-0.3, tokens+0.3)
+ax1.set_xticks(np.arange(1, tokens+1, step=1))
+ax1.set_ylabel('P(fail)', color='g')
+ax1.set_ylim(0, 1)
+ax2.set_ylabel('Throughput [1 / INV delay]', color='b')
+ax2.set_ylim(0, 0.1)
+
+# plt.plot(sweep_values, p, linestyle='-', marker='o')
+# plt.xlabel('#tokens')
+# plt.ylabel('P(fail)')
+# plt.xlim(1-0.3, tokens+0.3)
+# plt.xticks(np.arange(1, tokens+1, step=1))
+# plt.ylim(0, 1)
+# plt.legend(loc=3)
+plt.show()
+
+fname = 'canopy.png'
 print(f'[info] saving figure: {fname}')
 plt.savefig(
     fname,
@@ -225,5 +249,3 @@ plt.savefig(
     facecolor='auto',
     edgecolor='auto'
 )
-
-# plt.show()

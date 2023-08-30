@@ -1,12 +1,17 @@
-import pprint
-import tracem as tr
-import plotting
-import checkbi as check
+import os
+import sys
+dir_path = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(dir_path + '/../../')
 
-# ---- testing ------
+import pprint
+from libs import tracem as tr
+from libs import plotting
+
+# EXAMPLE NON-MASKED GLITCH
 
 # circuit
 # Muller Pipeline (linear)
+# 1-bit 3-stage linear pipeline
 
 # inv1
 tr.rise(f=tr.INVr, i=['c1'], o='c_in', d=4)
@@ -51,7 +56,11 @@ init = {
 	'en3': 1,
 	'c3': 0,
 }
-events = []
+glitch_t = 10
+events = [
+    (glitch_t, 'c2', 1),  # add glitch
+    (glitch_t + 0.1, 'c2', 0),  # reset glitch
+]
 times, states = tr.trace(init, events=events, T=32)
 
 # print it
@@ -64,22 +73,10 @@ for i in range(len(times)):
 cutoff_min = 0
 cutoff_max = float('Inf')
 
-ret = check.check(
-	times=times,
-	events=events,
-	states=states,
-	signals=list(init.keys()),
-	output_signals=['c3', 'c1'],
-	cutoff_min=cutoff_min,
-	cutoff_max=cutoff_max
-)
-pprint.pprint(ret)
-
 plotting.plot(
 	times,
 	states,
 	list(init.keys()),
-	susceptible=ret['susceptible'],
 	cutoff=[cutoff_min, cutoff_max],
 	)
 

@@ -1,12 +1,19 @@
+import os
+import sys
+dir_path = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(dir_path + '/../../')
+
 import pprint
-import tracem as tr
-import plotting
-import checkbi as check
+from libs import tracem as tr
+from libs import plotting
+from libs import checkbi as check
 import math as m
+import numpy as np
+import matplotlib.pyplot as plt
 
-# ---- testing ------
-
-CHECK = True
+# CREATE RING w/ 1 BIT (not dual-rail), VARIABLE NUMBER OF STAGES, AND VARIABLE NUMBER OF TOKENS
+# PLOT SHOWS EFFECT OF VARYING THE NUMBER OF TOKENS IN EACH CIRCUIT, NAMELY THE OCCUPANCY
+# TODO put equation for calculating min. number of tokens w.r.t. number of stages
 
 # circuit (at least 3 stages)
 # Muller Pipeline (ring)
@@ -54,26 +61,31 @@ def initCircuit(num_stages, num_tokens, signals):
     # initialize circuit
     data_t = spacer_t = num_tokens
     bubbles = num_stages - data_t - spacer_t
-    print(f"D={data_t}, S={spacer_t}, B={bubbles}")
 
     # first tag each stage
     for i in range(0, num_stages):
+        # bubbles at the beginning
+        # if bubbles >= data_t and bubbles >= spacer_t:
+        # spread bubbles
         if bubbles >= 2*data_t and bubbles >= 2*spacer_t:
             tag[i] = 'B'
             bubbles -= 1
-        # elif spacer_t > data_t:
-        #     tag[i] = 'S'
-        #     spacer_t -= 1
-        # else:
-        #     tag[i] = 'D'
-        #     data_t -= 1
-        elif data_t > spacer_t:
-            tag[i] = 'D'
-            data_t -= 1
-        else:
+
+        # place D before S
+        elif spacer_t > data_t:
             tag[i] = 'S'
             spacer_t -= 1
-        
+        else:
+            tag[i] = 'D'
+            data_t -= 1
+
+        # place S before D
+        # elif data_t > spacer_t:
+        #     tag[i] = 'D'
+        #     data_t -= 1
+        # else:
+        #     tag[i] = 'S'
+        #     spacer_t -= 1
 
     pprint.pprint(tag)
 
@@ -94,18 +106,22 @@ def initCircuit(num_stages, num_tokens, signals):
                         init[s] = 0
                     if ('c' in s):
                         init[s] = 0
-
         else:
+            # depending on D or S first,
+            # B should be Bd or Bs
             for s in signals:
-                        if str(stage) in s:
-                            # if ('en' in s):
-                            #     init[s] = 0
-                            # if ('c' in s):
-                            #     init[s] = 1
-                            if ('en' in s):
-                                init[s] = 1
-                            if ('c' in s):
-                                init[s] = 0
+                if str(stage) in s:
+                    # Bd coz D first
+                    if ('en' in s):
+                        init[s] = 0
+                    if ('c' in s):
+                        init[s] = 1
+
+                    # Bs coz S first
+                    # if ('en' in s):
+                    #     init[s] = 1
+                    # if ('c' in s):
+                    #     init[s] = 0
         # else:
         #     # bubble is of the same type as the subsequent non-bubble stage
         #     for ts in range(stage-1, num_stages-1):
@@ -131,8 +147,8 @@ def initCircuit(num_stages, num_tokens, signals):
 
         stage += 1  
 
-    for x in init:
-        print(x, init[x])
+#     for x in init:
+#         print(x, init[x])
 
     return init
 
@@ -140,72 +156,83 @@ def initCircuit(num_stages, num_tokens, signals):
 
 # run it
 
-num_stages = 10
-num_tokens = 4
-T = 100
+tokens = 6   # 6
+stages = 20  # 20
+results = {}
 
-# create it
-signals, output_signals = createCircuit(num_stages=num_stages)
+plt.figure()
+labels = []
+markers = []
 
-# initialize it
-init = initCircuit(num_stages=num_stages, num_tokens=num_tokens, signals=signals)
+# checking for 1-4 tokens
+for t in range(1, tokens+1):
+    
+    labels.append(f'{t} token(s)')
 
-events = []
+    # min number of stages for t tokens
+    min_stages = 2*t+1
 
-if not CHECK:
-    benign_glitch1 = 3.9
-    nasty_glitch1 = 4.5
-    nasty_glitch2 = 15.5
-    nasty_glitch3 = 9.5
-    events += [
-        # benign glitch 1
-        # (benign_glitch1, 'c2', 1),  # add glitch
-        # (benign_glitch1 + 0.1, 'c2', 0),  # reset glitch
+    results[t] = {'stages':[], 'p':[]}
 
-        # # nasty glitch 1
-        (nasty_glitch1, 'c2', 1),  # add glitch
-        (nasty_glitch1 + 0.1, 'c2', 0),  # reset glitch
+    for s in range(min_stages, stages+1):
+        print(f'[info] computing {t} tokens / {s} stages')
 
-        # nasty glitch 2
-        # (nasty_glitch2, 'c2', 1),  # add glitch
-        # (nasty_glitch2 + 0.1, 'c2', 0),  # reset glitch
+        # clear circuit
+        tr.clear()
+        
+        # create it
+        signals, output_signals = createCircuit(num_stages=s)
 
-        # nasty glitch 3
-        # (nasty_glitch3, 'c3', 0),  # add glitch
-        # (nasty_glitch3 + 0.1, 'c3', 1),  # reset glitch
-    ]
+        # initialize it
+        init = initCircuit(num_stages=s, num_tokens=t, signals=signals)
 
-times, states = tr.trace(init, events=events, T=T)
+        # trace it
+        T = 500
+        events = []
 
-plotting.plot(times, states, signals)
+        times, states = tr.trace(init, events=events, T=T)
 
-# print it
-for i in range(len(times)):
-    print()
-    print(f'time {times[i]}:')
-    pprint.pprint(states[i])
+        # check it
+        # cutoff
+        cutoff_min = 0
+        cutoff_max = float('Inf')
 
-# cutoff
-cutoff_min = 0
-cutoff_max = float('Inf')
-
-if CHECK:
-    ret = check.check(
-        times=times,
-        events=events,
-        states=states,
-        signals=signals,
-        output_signals=output_signals,
-        cutoff_min=cutoff_min,
-        cutoff_max=cutoff_max
-    )
-    # pprint.pprint(ret)
-
-    plotting.plot(
-        times,
-        states,
-        signals,
-        susceptible=ret['susceptible'],
-        cutoff=[cutoff_min, cutoff_max],
+        ret = check.check(
+            times=times,
+            events=events,
+            states=states,
+            signals=signals,
+            output_signals=output_signals,
+            cutoff_min=cutoff_min,
+            cutoff_max=cutoff_max
         )
 
+        results[t]['stages'] += [s]
+        results[t]['p'] += [ret['p']]
+        # print(f"Stages = {s} & Tokens = {t}")
+        # pprint.pprint(results)
+        # pprint.pprint(ret)
+
+    plt.plot(results[t]['stages'], results[t]['p'], linestyle='-', marker='o', label=labels[t-1])
+
+plt.xlabel('#stages')
+plt.ylabel('P(fail)')
+plt.xlim(3-0.3, stages+0.3)
+plt.xticks(np.arange(3, stages+1, step=1))
+plt.ylim(0, 1)
+plt.legend(loc=3)
+
+fname = f'muller-ring-sweepTokens.png'
+print(f'[info] saving figure: {fname}')
+plt.savefig(
+    fname,
+    dpi=300,
+    format='png',
+    metadata=None,
+    bbox_inches=None,
+    pad_inches=0.01,
+    facecolor='auto',
+    edgecolor='auto'
+)
+
+# plt.show()

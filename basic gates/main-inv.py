@@ -1,8 +1,11 @@
-import pprint
-import tracem as tr
-import plotting
+import os
+import sys
+dir_path = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(dir_path + '/../')
 
-# ---- testing ------
+import pprint
+from libs import tracem as tr
+from libs import plotting
 
 # circuit
 

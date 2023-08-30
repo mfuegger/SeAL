@@ -1,14 +1,23 @@
+import os
+import sys
+dir_path = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(dir_path + '/../../')
+
 import pprint
-import tracem as tr
-import plotting
-import checkbi as check
+from libs import tracem as tr
+from libs import plotting
+from libs import checkbi as check
 import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
+# TODO SCRIPT FUNCTION
+
+# circuit
+# Muller Pipeline (linear)
+# 1-bit 3-stage linear pipeline
+
 def createCircuit(source_delay, sink_delay):
-	# circuit
-	# Muller Pipeline (linear)
 
 	# inv1 (source)
 	tr.rise(f=tr.INVr, i=['c1'], o='c_in', d=source_delay)

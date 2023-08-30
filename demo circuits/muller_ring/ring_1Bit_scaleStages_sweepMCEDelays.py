@@ -1,10 +1,20 @@
+import os
+import sys
+dir_path = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(dir_path + '/../../')
+
 import pprint
-import tracem as tr
-import plotting
-import check
+from libs import tracem as tr
+from libs import plotting
+from libs import checkbi as check
 import math as m
 import numpy as np
 import matplotlib.pyplot as plt
+
+# CREATE RING w/ 1 BIT (not dual-rail), VARIABLE NUMBER OF STAGES, AND VARIABLE DELAYS FOR MCE 
+# when running circuit (below), number of TOKENS can be set as well
+# PLOT SHOWS EFFECT OF VARYING THE DELAY OF MCE IN A TOKEN/STAGE SETUP OF THE CIRCUIT
+# TODO put equation for calculating min. number of tokens w.r.t. number of stages
 
 # circuit (at least 3 stages)
 # Muller Pipeline (ring)
