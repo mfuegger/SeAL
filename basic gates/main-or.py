@@ -11,7 +11,7 @@ from libs import checkbi as check
 
 # CHECK = True --> show sensitivity windows
 # CHECK = False --> show effect of specific glitches
-CHECK = True
+CHECK = False
 
 # circuit
 

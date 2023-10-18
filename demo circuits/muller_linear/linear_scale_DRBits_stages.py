@@ -6,7 +6,8 @@ sys.path.append(dir_path + '/../../')
 import pprint
 from libs import tracem as tr
 from libs import plotting
-from libs import checkbi as check
+# from libs import checkbi as check
+from depricated import check
 import numpy as np
 import math as m
 

@@ -31,7 +31,7 @@ def plotSensitivityBars(p_per_sig, fname='bar.pdf', title=None):
 	)
 
 
-def plot(times, states, signals, fname='out.svg', dt=30, dv=60, x0=60, susceptible=None, cutoff=None):
+def plot(times, states, signals, fname='out.svg', dt=30, dv=60, x0=60, susceptible=None, fault=None, cutoff=None):
 	GRID_COLOR = svgwrite.rgb(30, 30, 30, '%')
 	GRID_LW = 0.1
 
@@ -136,6 +136,16 @@ def plot(times, states, signals, fname='out.svg', dt=30, dv=60, x0=60, susceptib
 
 	# potentially add susceptible signal regions
 	if susceptible is not None:
+		if fault == 'SA0':
+			stroke_color = 'purple'
+			fill_color = 'purple'
+		elif fault == 'SA1':
+			stroke_color = 'green'
+			fill_color = 'green'
+		else:
+			stroke_color = 'blue'
+			fill_color = 'blue'
+
 		for (s,interval) in susceptible:
 			yfrom = signal_ybase[s]
 			xfrom = x0 + dt*interval[0]
@@ -143,11 +153,12 @@ def plot(times, states, signals, fname='out.svg', dt=30, dv=60, x0=60, susceptib
 			dwg.add(dwg.rect(
 				(xfrom,  yfrom - 0.8 * dv),
 				(xto - xfrom, 0.8 * dv),
-				stroke='blue',
-				fill='blue',
+				stroke=stroke_color,
+				fill=fill_color,
 				opacity=0.1,
 				stroke_width=0
 			))
+
 
 	# potentially draw cutoff boundaries
 	if cutoff is not None:

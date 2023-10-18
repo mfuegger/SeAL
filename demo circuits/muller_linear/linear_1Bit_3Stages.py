@@ -6,11 +6,15 @@ sys.path.append(dir_path + '/../../')
 import pprint
 from libs import tracem as tr
 from libs import plotting
-from libs import checkbi as check
+# from libs import checkbi as check
+from depricated import check
 
 # CHECK = True --> show sensitivity windows
 # CHECK = False --> show effect of specific glitches
-CHECK = True
+CHECK = False
+# fault_check = 'SET'
+# fault_check = 'SA0'
+fault_check = 'SA1'
 
 # circuit
 # Muller Pipeline (linear)
@@ -62,13 +66,27 @@ events = [
 ]
 
 if not CHECK:
-    glitch_t = 4
+    glitch_t = 22
     events += [
-            (glitch_t, 'c_in', 1),  # add glitch
-            (glitch_t + 0.1, 'c_in', 0),  # reset glitch
+            # (20, 'c1', 0),  
+            # (20, 'en2', 0),
+            # (20.1, 'c1', 0),
+            # (20.1, 'en2', 0),
+            # (glitch_t, 'c1', 0),  # add glitch
+            # (glitch_t + 0.1, 'c1', 1),  # reset glitch
+
+            # (glitch_t, 'en2', 1),  # add SA1
+            # (18.6, 'en2', 0),  # add SA0
+            (24.5, 'en2', 1),  # add SA1
+        #     (13, 'c2', 0),  # add SA0
+        #     (20, 'c2', 1),  # add SA1               #########################
+            # (25.1, 'en3', 1),  # add SA1
     ]
 
-times, states = tr.trace(init, events=events, T=32)
+# if CHECK and SAF, must run trace not traceSA
+# times, states = tr.trace(init, events=events, T=32)
+times, states = tr.traceSA(init, events=events, SA_sig='en2', SA_time=24.5, T=32)
+# times, states = tr.traceSA(init, events=events, T=32)
 
 plotting.plot(times, states, list(init.keys()))
 
@@ -83,14 +101,15 @@ cutoff_min = 0
 cutoff_max = float('Inf')
 
 if CHECK:
-    ret = check.check(
+    ret = check.checkSA(
             times=times,
             events=events,
             states=states,
             signals=list(init.keys()),
             output_signals=['c3', 'c1'],
             cutoff_min=cutoff_min,
-            cutoff_max=cutoff_max
+            cutoff_max=cutoff_max,
+            fault=fault_check,
     )
     pprint.pprint(ret)
 
@@ -99,6 +118,7 @@ if CHECK:
             states,
             list(init.keys()),
             susceptible=ret['susceptible'],
+            fault=fault_check,
             cutoff=[cutoff_min, cutoff_max],
             )
 
