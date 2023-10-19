@@ -293,12 +293,16 @@ def traceSA(init, events=[], SA_sig=None, SA_time=None, T=20, Mdelay=0.1, verbos
 		# --- apply stable & scheduled rule effects ---
 
 		# keep only stable events in scheduled
-		# scheduled = [ event for event in scheduled if eval_rule(state=state, rule=event[1]) == 1 ]
+		scheduled = [ event for event in scheduled if eval_rule(state=state, rule=event[1]) == 1 ]
 
-		if SA_sig is not None:
-			scheduled = [ event for event in scheduled if eval_rule(state=state, rule=event[1]) == 1 if event[0]<SA_time if event[1]!=SA_sig ]
-		else:
-			scheduled = [ event for event in scheduled if eval_rule(state=state, rule=event[1]) == 1 ]
+		# if SA_sig is not None:
+		# # if SA_sig != :
+		# 	scheduled = [ event for event in scheduled if eval_rule(state=state, rule=event[1]) == 1 if event[1]['o']!=SA_sig
+		# 		elif event[1]['o']=SA_sig if event[0]>=SA_time]
+		# 	scheduled = [ event for event in scheduled if eval_rule(state=state, rule=event[1]) == 1 if event[0]<SA_time if event[1]['o']!=SA_sig ]
+		# 	# scheduled = [ event for event in scheduled if eval_rule(state=state, rule=event[1]) == 1 if event[0]<SA_time if event[1]['o']!=SA_sig ]
+		# else:
+		# 	scheduled = [ event for event in scheduled if eval_rule(state=state, rule=event[1]) == 1 ]
 
 		# apply events:
 		#   find the ones that are scheduled for time t

@@ -12,9 +12,11 @@ from depricated import check
 # CHECK = True --> show sensitivity windows
 # CHECK = False --> show effect of specific glitches
 CHECK = False
+# if CHECK then choose fault_check
+# CHECK = True
 # fault_check = 'SET'
-# fault_check = 'SA0'
-fault_check = 'SA1'
+fault_check = 'SA0'
+# fault_check = 'SA1'
 
 # circuit
 # Muller Pipeline (linear)
@@ -77,15 +79,16 @@ if not CHECK:
 
             # (glitch_t, 'en2', 1),  # add SA1
             # (18.6, 'en2', 0),  # add SA0
-            (24.5, 'en2', 1),  # add SA1
+            # (24.5, 'en2', 1),  # add SA1
         #     (13, 'c2', 0),  # add SA0
-        #     (20, 'c2', 1),  # add SA1               #########################
-            # (25.1, 'en3', 1),  # add SA1
+            # (3.5, 'c2', 1),  # add SA1               #########################
+            (15, 'en3', 0),  # add SA0
     ]
 
 # if CHECK and SAF, must run trace not traceSA
 # times, states = tr.trace(init, events=events, T=32)
-times, states = tr.traceSA(init, events=events, SA_sig='en2', SA_time=24.5, T=32)
+# times, states = tr.traceSA(init, events=events, SA_sig='c2', SA_time=3.5, T=32)
+times, states = tr.traceSA(init, events=events, SA_sig='en3', SA_time=15, T=32)
 # times, states = tr.traceSA(init, events=events, T=32)
 
 plotting.plot(times, states, list(init.keys()))
