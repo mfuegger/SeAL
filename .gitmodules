@@ -1,0 +1,3 @@
+[submodule "pypr"]
+	path = pypr
+	url = https://git.ecs.tuwien.ac.at/eda/pypr.git
