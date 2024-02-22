@@ -1,5 +1,7 @@
 from libs import tracem as tr
 
+ERROR = 0.001
+
 
 def getStateAtTime(times, states, time: float):
 	"""
@@ -30,7 +32,8 @@ def isSusceptible(t, s, states, s_state, events, T, output_signals, MafterGrid=0
 
 
 def findBoundary(tfrom, tto, s, states, s_state, events, T, output_signals, initially=True):
-	# print(tfrom, tto)
+	# if initially:
+	# 	print(tfrom, tto)
 
 	# check if anywhere marked
 	if not isSusceptible(t=tto, s=s, states=states, s_state=s_state, events=events, T=T, output_signals=output_signals, MafterGrid=-0.05):
@@ -48,6 +51,9 @@ def findBoundary(tfrom, tto, s, states, s_state, events, T, output_signals, init
 
 		if tto - tfrom <= 0.05:
 			return middle
+		
+		# if tto - tfrom <= 0.01:
+		# 	return round(middle, 2)
 
 		else:
 			middle_is_M = isSusceptible(t=middle, s=s, states=states, s_state=s_state, events=events, T=T, output_signals=output_signals, MafterGrid=0.001)
@@ -125,14 +131,17 @@ def check(times, states, events, signals, output_signals,
 
 
 
-def isSusceptibleSA(t, s, states, events, T, output_signals, SAF, MafterGrid=0.01,): #MafterGrid=0.001
+def isSusceptibleSA(t, s, states, events, T, output_signals, SAF, MafterGrid): #MafterGrid=0.001
 		
 	events_check = events + [
 		(t + MafterGrid, s, SAF),           # add SA0 or SA1
 	]
 	
 	times_M, states_M = tr.traceSA(states[0], events=events_check, SA_sig=s, SA_time=t+MafterGrid, T=T, verbose=False)
-	
+	# print('outputs=',output_signals)
+	# print('-----------------------------------')
+	# print('states_M=',states_M)
+	# print('-----------------------------------')
 	was_M = False
 	for state_M in states_M:
 		was_M = was_M or any([ state_M[s] == 0.5 for s in output_signals ])
@@ -141,7 +150,8 @@ def isSusceptibleSA(t, s, states, events, T, output_signals, SAF, MafterGrid=0.0
 
 
 def findBoundarySA(tfrom, tto, s, states, events, T, output_signals, SAF, start_is_M_initially, initially=True):
-	# print(tfrom, tto)
+	# if initially:
+	# 	print(tfrom, tto)
 
 	# global start_is_M_initially
 
@@ -149,8 +159,8 @@ def findBoundarySA(tfrom, tto, s, states, events, T, output_signals, SAF, start_
 	# 	start_is_M_initially = isSusceptibleSA(t=tfrom, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, MafterGrid=0.001)
 
 	# check if anywhere marked
-	start_is_M = isSusceptibleSA(t=tfrom, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, MafterGrid=0.001)
-	end_is_M = isSusceptibleSA(t=tto, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, MafterGrid=-0.05)
+	start_is_M = isSusceptibleSA(t=tfrom, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, MafterGrid=ERROR)
+	end_is_M = isSusceptibleSA(t=tto, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, MafterGrid=-ERROR)
 
 	if not start_is_M and not end_is_M:
 		# no -> return boundary at end
@@ -165,11 +175,11 @@ def findBoundarySA(tfrom, tto, s, states, events, T, output_signals, SAF, start_
 	else:
 		middle = (tto + tfrom)/2
 
-		if tto - tfrom <= 0.05:
-			return middle
+		if tto - tfrom <= ERROR:
+			return round(middle, 2)
 
 		else:
-			middle_is_M = isSusceptibleSA(t=middle, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, MafterGrid=0.001)
+			middle_is_M = isSusceptibleSA(t=middle, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, MafterGrid=ERROR)
 
 			if middle_is_M:
 				if not start_is_M_initially:
@@ -214,7 +224,7 @@ def checkSA(times, states, events, signals, output_signals,
 		for i in range(len(times)-1):
 			tfrom = times[i]
 			tto = times[i+1]
-			start_is_M_initially = isSusceptibleSA(t=tfrom, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, MafterGrid=0.001)
+			start_is_M_initially = isSusceptibleSA(t=tfrom, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, MafterGrid=ERROR)
 			boundary = findBoundarySA(tfrom=tfrom, tto=tto, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, start_is_M_initially=start_is_M_initially)
 
 			if boundary < tto:

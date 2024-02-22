@@ -9,6 +9,7 @@ import numpy as np
 from libs import tracem as tr
 
 def check(times, states, events, signals, output_signals, Mdelta=0.1, Textra=30, MafterGrid=0.01, cutoff_min=5, cutoff_max=float('Inf')):
+
 	susceptible_intervals = []
 	pos = 0
 	neg = 0
@@ -111,7 +112,7 @@ def checkSA(times, states, events, signals, output_signals,
 				# 	t_to =   min(cutoff_max, j+0.1)
 
 				if was_M:
-					susceptible_intervals += [ (s, [j, j+0.1]) ]
+					susceptible_intervals += [ (s, [j, round(j+0.1, 1)]) ]
 					# pos += t_to - t_from
 					pos += 0.1
 				else:

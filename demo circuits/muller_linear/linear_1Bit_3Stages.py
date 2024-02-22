@@ -1,127 +1,165 @@
+from docopt import docopt
 import os
 import sys
+
 dir_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(dir_path + '/../../')
 
 import pprint
+# from prs import linear_1Bit_3Stages as 
+from prs import muller_linear as linear
 from libs import tracem as tr
 from libs import plotting
 # from libs import checkbi as check
-from depricated import check
+# from depricated import check
 
-# CHECK = True --> show sensitivity windows
-# CHECK = False --> show effect of specific glitches
-CHECK = False
-# if CHECK then choose fault_check
-# CHECK = True
-# fault_check = 'SET'
-fault_check = 'SA0'
-# fault_check = 'SA1'
+    # linear1_Bit_3Stages.py [-c | --check]
+    # linear1_Bit_3Stages.py -h | -v
 
-# circuit
-# Muller Pipeline (linear)
-# 1-bit 3-stage linear pipeline
+usage_msg = """
 
-# inv1 (source)
-tr.rise(f=tr.INVr, i=['c1'], o='c_in', d=4)
-tr.fall(f=tr.INVf, i=['c1'], o='c_in', d=4)
+TODO
+Explain what the script does
+cutoff
 
-# inv2
-tr.rise(f=tr.INVr, i=['c2'], o='en1', d=1)
-tr.fall(f=tr.INVf, i=['c2'], o='en1', d=1)
 
-# c1
-tr.rise(f=tr.Cr, i=['c_in','en1'], o='c1', d=5)
-tr.fall(f=tr.Cf, i=['c_in','en1'], o='c1', d=5)
+usage:
+    linear_1Bit_3Stages.py [options]
 
-# inv3
-tr.rise(f=tr.INVr, i=['c3'], o='en2', d=1)
-tr.fall(f=tr.INVf, i=['c3'], o='en2', d=1)
+Options:
+-h --help                   Show this screen.
+-v --version                Show version information.
 
-# c2
-tr.rise(f=tr.Cr, i=['c1','en2'], o='c2', d=5)
-tr.fall(f=tr.Cf, i=['c1','en2'], o='c2', d=5)
+--runtime=T                 Time for execution prefix.
+                            [default: 100].                   
+-c --check                  Check all sensitivty windows.
+--exhaustive                Check by injecting faults exhaustively (depricated version of check for SET).
+--fault=F                   Fault type to check (possible values: SET, SA0, SA1)
+                            [default: SA1].
+--cutoff-min=N              The minimal cutoff. the start of the window to investigate
+                            [default: 0].
+--cutoff-max=N              The maximal cutoff. the end of the window to investigate
+                            [default: float('Inf')].               
+"""
+#--------|---------|---------|---------|---------|---------|---------|---------|
 
-# inv4 (sink)
-tr.rise(f=tr.INVr, i=['c3'], o='en3', d=4)
-tr.fall(f=tr.INVf, i=['c3'], o='en3', d=4)
+def main():
+    options = docopt(usage_msg, version="0.1")
 
-# c3
-tr.rise(f=tr.Cr, i=['c2','en3'], o='c3', d=5)
-tr.fall(f=tr.Cf, i=['c2','en3'], o='c3', d=5)
+    # CHECK = True --> show sensitivity windows
+    # CHECK = False --> show effect of specific glitches
+    if (options["--check"]):
+        CHECK = True
+    else:
+        CHECK = False
 
-# pprint.pprint(rules)
-# pprint.pprint(signals)
+#--------|---------|---------|---------|---------|
+    if (options["--exhaustive"]):
+        from depricated import check
+    else:
+        from libs import checkbi as check
+#--------|---------|---------|---------|---------|
 
-# run it
-init = {
-	'c_in': 0,
-	'en1': 1,
-	'c1': 0,
-	'en2': 1,
-	'c2': 0,
-	'en3': 1,
-	'c3': 0,
-}
+    fault = str(options["--fault"])
+    T = int(options["--runtime"])
 
-events = [
-]
+    cutoff_min = int(options["--cutoff-min"])
+    cutoff_max = float(options["--cutoff-min"])
 
-if not CHECK:
-    glitch_t = 22
-    events += [
-            # (20, 'c1', 0),  
-            # (20, 'en2', 0),
-            # (20.1, 'c1', 0),
-            # (20.1, 'en2', 0),
-            # (glitch_t, 'c1', 0),  # add glitch
-            # (glitch_t + 0.1, 'c1', 1),  # reset glitch
+    # create circuit
+    init, events, output_signals = linear.linear_1Bit_3Stages.GeneratePipeline()
 
-            # (glitch_t, 'en2', 1),  # add SA1
-            # (18.6, 'en2', 0),  # add SA0
-            # (24.5, 'en2', 1),  # add SA1
-        #     (13, 'c2', 0),  # add SA0
-            # (3.5, 'c2', 1),  # add SA1               #########################
-            (15, 'en3', 0),  # add SA0
-    ]
+    if not CHECK:
+        if fault == 'SET':
+            glitch_t = 7.9
+            glitch_sig = 'c2'
+            events += [
+                    (glitch_t, glitch_sig, 1),  # add glitch
+                    (glitch_t + 0.1, glitch_sig, 0),  # reset glitch
+            ]
 
-# if CHECK and SAF, must run trace not traceSA
-# times, states = tr.trace(init, events=events, T=32)
-# times, states = tr.traceSA(init, events=events, SA_sig='c2', SA_time=3.5, T=32)
-times, states = tr.traceSA(init, events=events, SA_sig='en3', SA_time=15, T=32)
-# times, states = tr.traceSA(init, events=events, T=32)
+            times, states = tr.trace(init, events=events, T=T)
 
-plotting.plot(times, states, list(init.keys()))
+        elif fault == 'SA1':
+            stuck_t = 4
+            stuck_sig = 'c2'
+            events += [
+                    # (stuck_t, 'en2', 1),  # add SA1
+                    # (24.5, 'en2', 1),  # add SA1
+                    # (3.5, 'c2', 1),  # add SA1               #########################
+                    (stuck_t, stuck_sig, 1),  # add SA1 
+            ]
 
-# print it
-for i in range(len(times)):
-	print()
-	print(f'time {times[i]}:')
-	pprint.pprint(states[i])
+            times, states = tr.traceSA(init, events, stuck_sig, stuck_t, T=T)
 
-# cutoff
-cutoff_min = 0
-cutoff_max = float('Inf')
+        else:
+            stuck_t = 15
+            stuck_sig = 'c2'
+            events += [
+                    # (20, 'c1', 0),  
+                    # (20, 'en2', 0),
+                    # (20.1, 'c1', 0),
+                    # (20.1, 'en2', 0),
+                    
+                    (stuck_t, stuck_sig, 0),  # add SA0
+            ]
 
-if CHECK:
-    ret = check.checkSA(
-            times=times,
-            events=events,
-            states=states,
-            signals=list(init.keys()),
-            output_signals=['c3', 'c1'],
-            cutoff_min=cutoff_min,
-            cutoff_max=cutoff_max,
-            fault=fault_check,
-    )
-    pprint.pprint(ret)
+            times, states = tr.traceSA(init, events=events, SA_sig=stuck_sig, SA_time=stuck_t, T=T)
 
-    plotting.plot(
-            times,
-            states,
-            list(init.keys()),
-            susceptible=ret['susceptible'],
-            fault=fault_check,
-            cutoff=[cutoff_min, cutoff_max],
+    # if CHECK, run golden run without any faults
+    else:
+        times, states = tr.trace(init, events=events, T=T)
+
+
+    plotting.plot(times, states, list(init.keys()))
+
+    # print it
+    for i in range(len(times)):
+        print()
+        print(f'time {times[i]}:')
+        pprint.pprint(states[i])
+
+    if CHECK:
+        if fault == 'SET':
+            ret = check.check(
+                    times=times,
+                    events=events,
+                    states=states,
+                    signals=list(init.keys()),
+                    output_signals=output_signals,
+                    cutoff_min=cutoff_min,
+                    cutoff_max=cutoff_max,
             )
+            pprint.pprint(ret)
 
+            plotting.plot(
+                    times,
+                    states,
+                    list(init.keys()),
+                    susceptible=ret['susceptible'],
+                    cutoff=[cutoff_min, cutoff_max],
+                    )
+        else:
+            ret = check.checkSA(
+                times=times,
+                events=events,
+                states=states,
+                signals=list(init.keys()),
+                output_signals=output_signals, 
+                cutoff_min=cutoff_min,
+                cutoff_max=cutoff_max,
+                fault=fault,
+            )
+            pprint.pprint(ret)
+
+            plotting.plot(
+                times,
+                states,
+                list(init.keys()),
+                susceptible=ret['susceptible'],
+                fault=fault,
+                cutoff=[cutoff_min, cutoff_max],
+                )
+
+if (__name__ == "__main__"):
+    main()

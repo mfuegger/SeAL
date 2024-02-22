@@ -7,6 +7,7 @@ import pprint
 from libs import tracem as tr
 from libs import plotting
 from libs import checkbi as check
+# from depricated import check
 import numpy as np
 import math as m
 
@@ -15,6 +16,13 @@ import math as m
 
 # circuit (at least 3 stages/2 input bits)
 # 4 dual-rail bit pipeline ring
+
+# CHECK = False
+# if CHECK then choose fault_check
+CHECK = True
+# fault_check = 'SET'
+fault_check = 'SA0'
+# fault_check = 'SA1'
 
 num_stages = 3
 num_bits = 2
@@ -267,31 +275,87 @@ init = {
 
 }
 
-T = 500
-glitch_t = 4
 events = [
-	# (5, 'aF', 0),
-	# (10, 'bF', 0),
-	# (44, 'ackin', 0),
-	# (50, 'aT', 1),
-    # (55, 'bT', 1),
-	# (10, 'a', 1),
-    # (glitch_t, 'c3', .5),  # add glitch
-    # (glitch_t + 0.1, 'c3', 0),  # reset glitch
 ]
-times, states = tr.trace(init, events=events, T=T)
+
+T = 150
+
+if not CHECK:
+    glitch_t = 106.5
+    # glitch_t = 8
+    events = [
+        # (5, 'aF', 0),
+        # (10, 'bF', 0),
+        # (44, 'ackin', 0),
+        # (50, 'aT', 1),
+        # (55, 'bT', 1),
+        # (10, 'a', 1),
+        # (glitch_t, 'c3', .5),  # add glitch
+        # (glitch_t + 0.1, 'c3', 0),  # reset glitch
+		# (glitch_t, 'ack2', 1),  # add SA1
+        # (glitch_t, 'en1', 1),  # add SA1
+		(glitch_t, 'ack3', 0),  # add SA0
+    ]
+
+    # times, states = tr.trace(init, events=events, T=T)
+    times, states = tr.traceSA(init, events=events, SA_sig='ack3', SA_time=glitch_t, T=T)     # SAF
+
+else:
+	times, states = tr.trace(init, events=events, T=T)
+
+plotting.plot(times, states, list(init.keys()))
 
 # print it
 for i in range(len(times)):
 	print()
 	print(f'time {times[i]}:')
 	pprint.pprint(states[i])
-        
-ret = check.check(times=times, events=events, states=states, signals=list(init.keys()), output_signals=output_signals)
+
+if CHECK:
+	# For SAFs
+	ret = check.checkSA(
+			times=times,
+			events=events,
+			states=states,
+			signals=list(init.keys()),
+			output_signals=output_signals,
+			fault='SA0',                         #fault_check,
+	)
+	pprint.pprint(ret)     
+
+	plotting.plot(
+			times,
+			states,
+			list(init.keys()),
+			susceptible=ret['susceptible'],
+			fault='SA0',                        #fault_check,
+			)
+     
+ 
+
+	# ret = check.checkSA(times=times,
+	# 		events=events,
+	# 		states=states,
+	# 		signals=list(init.keys()),
+	# 		output_signals=output_signals,
+	# 		fault='SA1',                         #fault_check,
+	# )
+	# pprint.pprint(ret)
+     
+	# plotting.plot(
+	# 		times,
+	# 		states,
+	# 		list(init.keys()),
+	# 		susceptible=ret['susceptible'],
+	# 		fault='SA1',                        #fault_check,
+	# 		)
+     
+
+# ret = check.check(times=times, events=events, states=states, signals=list(init.keys()), output_signals=output_signals)
 # pprint.pprint(ret)
 
-pprint.pprint(ret['p_per_sig'])
-print(ret['p'])
+# pprint.pprint(ret['p_per_sig'])
+# print(ret['p'])
 
-plotting.plot(times, states, list(init.keys()), susceptible=ret['susceptible'])
+# plotting.plot(times, states, list(init.keys()), susceptible=ret['susceptible'])
 

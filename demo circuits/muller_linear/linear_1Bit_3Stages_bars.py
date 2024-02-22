@@ -138,4 +138,4 @@ plotting.plot(
 	cutoff=[cutoff_min, cutoff_max],
 	)
 
-# plt.show()
+plt.show()

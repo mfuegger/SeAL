@@ -6,11 +6,15 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(dir_path + '/../../')
 
 import pprint
-from prs import linear_2DRBits_3Stages as linear
+# from prs import linear_1Bit_3Stages as 
+from prs import pipeline_logic as logic
 from libs import tracem as tr
 from libs import plotting
 # from libs import checkbi as check
 # from depricated import check
+
+    # linear1_Bit_3Stages.py [-c | --check]
+    # linear1_Bit_3Stages.py -h | -v
 
 usage_msg = """
 
@@ -20,7 +24,7 @@ cutoff
 
 
 usage:
-    linear_2DRBits_3Stages.py [options]
+    half_adder.py [options]
 
 Options:
 -h --help                   Show this screen.
@@ -55,7 +59,7 @@ def main():
     else:
         from libs import checkbi as check
 #--------|---------|---------|---------|---------|
-    
+
     fault = str(options["--fault"])
     T = int(options["--runtime"])
 
@@ -63,35 +67,40 @@ def main():
     cutoff_max = float(options["--cutoff-min"])
 
     # create circuit
-    init, events, output_signals = linear.GeneratePipeline()
+    init, events, output_signals = logic.half_adder.GeneratePipeline()
 
     if not CHECK:
         if fault == 'SET':
-            # glitch_t = 3
-            glitch_t = 58.7
-            glitch_sig = 'ack2'
+            glitch_t = 7.9
+            glitch_sig = 'c2'
             events += [
-                    # example for understanding lemma 2
-                    (glitch_t, glitch_sig, 0.5),  # add glitch
-                    (glitch_t + 0.1, glitch_sig, 1),  # reset glitch
+                    (glitch_t, glitch_sig, 1),  # add glitch
+                    (glitch_t + 0.1, glitch_sig, 0),  # reset glitch
             ]
 
             times, states = tr.trace(init, events=events, T=T)
 
         elif fault == 'SA1':
-            stuck_t = 48.1
-            # stuck_t = 57.9
-            stuck_sig = 'ack2'
+            stuck_t = 4
+            stuck_sig = 'c2'
             events += [
-                    (stuck_t, stuck_sig, 1), 
+                    # (stuck_t, 'en2', 1),  # add SA1
+                    # (24.5, 'en2', 1),  # add SA1
+                    # (3.5, 'c2', 1),  # add SA1               #########################
+                    (stuck_t, stuck_sig, 1),  # add SA1 
             ]
 
             times, states = tr.traceSA(init, events=events, SA_sig=stuck_sig, SA_time=stuck_t, T=T)
 
         else:
-            stuck_t = 4
-            stuck_sig = 'ack2'
+            stuck_t = 15
+            stuck_sig = 'c2'
             events += [
+                    # (20, 'c1', 0),  
+                    # (20, 'en2', 0),
+                    # (20.1, 'c1', 0),
+                    # (20.1, 'en2', 0),
+                    
                     (stuck_t, stuck_sig, 0),  # add SA0
             ]
 
@@ -136,7 +145,7 @@ def main():
                 events=events,
                 states=states,
                 signals=list(init.keys()),
-                output_signals=output_signals,
+                output_signals=output_signals, 
                 cutoff_min=cutoff_min,
                 cutoff_max=cutoff_max,
                 fault=fault,
@@ -154,4 +163,3 @@ def main():
 
 if (__name__ == "__main__"):
     main()
-

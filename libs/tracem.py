@@ -17,6 +17,15 @@ ORf = lambda a,b: 1-max(a,b)  # not(a or b) -> fall
 ANDr = lambda a,b: min(a,b)    # a and b      -> rise
 ANDf = lambda a,b: 1-min(a,b)  # not(a and b) -> fall
 
+# switch rise and fall of OR
+NORr = lambda a,b: 1-max(a,b)  # not(a or b) -> rise
+NORf = lambda a,b: max(a,b)    # a or b      -> fall
+
+# switch rise and fall of AND
+NANDr = lambda a,b: 1-min(a,b)  # not(a and b) -> rise
+NANDf = lambda a,b: min(a,b)    # a and b      -> fall
+
+
 rules = []
 signals = []
 
@@ -233,12 +242,13 @@ def trace(init, events=[], T=20, Mdelay=0.1, verbose=True):
 	return filtered_times, filtered_states
 
 
-def traceSA(init, events=[], SA_sig=None, SA_time=None, T=20, Mdelay=0.1, verbose=True):
+def traceSA(init, events, SA_sig, SA_time, T=20, Mdelay=0.01, verbose=True):
 	"""
 	init:   initial state. Dict of the form: signal -> value
 	events: list of items (time, signal, value)
 	T:      time until execution
-	"""
+	"""	
+
 	global rules, signals
 	t = 0
 	states = []
@@ -275,7 +285,8 @@ def traceSA(init, events=[], SA_sig=None, SA_time=None, T=20, Mdelay=0.1, verbos
 		# --- apply unstable rule effects ---
 
 		# unstable events:
-		#   list of the rules that were scheduled, but that now evaluate not to 1 (they are 0 or 0.5)
+		#   list of the rules that were scheduled, but that now evaluate not to 1
+		# 	they are either 0 (generation) or 0.5 (propagation)
 		unstable_rules = [ event[1] for event in scheduled if eval_rule(state=state, rule=event[1]) < 1 ]
 
 		# for all these: make glitch at output immediately if the current value and the intended value do not match
@@ -336,59 +347,10 @@ def traceSA(init, events=[], SA_sig=None, SA_time=None, T=20, Mdelay=0.1, verbos
 		# check if the current state of the circuit affects any of the gates
 		# schedule new events
 		for rule in rules:
-			# if rule guard is true and effect not already the case in state
-			# if ( eval_rule(state, rule) > 0 ) and ( state[ rule['o'] ] != rule['val'] ):
-			# 	if eval_rule(state, rule) == 1:
-			# 		scheduled += [ (t + rule['d'], rule) ]
-
-			# 	elif eval_rule(state, rule) == 0.5 and ( state[ rule['o'] ] != 0.5 ):
-			# 		new_rule = copy.deepcopy(rule)
-			# 		new_rule['val'] = 0.5
-			# 		scheduled += [ (t + Mdelay, new_rule) ]
-
-			# if SA_sig is not None:
-			# 	if rule['o'] != SA_sig:
-			# 		if ( eval_rule(state, rule) > 0 ) and ( state[ rule['o'] ] != rule['val'] ):
-			# 			if eval_rule(state, rule) == 1:
-			# 				scheduled += [ (t + rule['d'], rule) ]
-
-			# 			elif eval_rule(state, rule) == 0.5 and ( state[ rule['o'] ] != 0.5 ):
-			# 				new_rule = copy.deepcopy(rule)
-			# 				new_rule['val'] = 0.5
-			# 				scheduled += [ (t + Mdelay, new_rule) ]
-			# 	elif t < SA_time:
-			# 		if ( eval_rule(state, rule) > 0 ) and ( state[ rule['o'] ] != rule['val'] ):
-			# 			if eval_rule(state, rule) == 1:
-			# 				scheduled += [ (t + rule['d'], rule) ]
-
-			# 			elif eval_rule(state, rule) == 0.5 and ( state[ rule['o'] ] != 0.5 ):
-			# 				new_rule = copy.deepcopy(rule)
-			# 				new_rule['val'] = 0.5
-			# 				scheduled += [ (t + Mdelay, new_rule) ]
-
-			
-			if SA_sig is not None:
-				if rule['o'] == SA_sig:
-					if t >= SA_time:
-						pass
-					else:
-						if ( eval_rule(state, rule) > 0 ) and ( state[ rule['o'] ] != rule['val'] ):
-							if eval_rule(state, rule) == 1:
-								scheduled += [ (t + rule['d'], rule) ]
-
-							elif eval_rule(state, rule) == 0.5 and ( state[ rule['o'] ] != 0.5 ):
-								new_rule = copy.deepcopy(rule)
-								new_rule['val'] = 0.5
-								scheduled += [ (t + Mdelay, new_rule) ]
-				else:
-					if ( eval_rule(state, rule) > 0 ) and ( state[ rule['o'] ] != rule['val'] ):
-						if eval_rule(state, rule) == 1:
-							scheduled += [ (t + rule['d'], rule) ]
-
-						elif eval_rule(state, rule) == 0.5 and ( state[ rule['o'] ] != 0.5 ):
-							new_rule = copy.deepcopy(rule)
-							new_rule['val'] = 0.5
-							scheduled += [ (t + Mdelay, new_rule) ]
+			# if this is the SA signal and time is past when it was injected
+			# keep it stuck
+			if rule['o'] == SA_sig and t >= SA_time:
+				pass
 			else:
 				if ( eval_rule(state, rule) > 0 ) and ( state[ rule['o'] ] != rule['val'] ):
 					if eval_rule(state, rule) == 1:
@@ -398,6 +360,7 @@ def traceSA(init, events=[], SA_sig=None, SA_time=None, T=20, Mdelay=0.1, verbos
 						new_rule = copy.deepcopy(rule)
 						new_rule['val'] = 0.5
 						scheduled += [ (t + Mdelay, new_rule) ]
+			
 
 		# next time from:
 		#  T,
