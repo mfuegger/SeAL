@@ -6,7 +6,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(dir_path + '/../../')
 
 import pprint
-from prs import linear_2DRBits_3Stages as linear
+from prs import muller_linear as linear
 from libs import tracem as tr
 from libs import plotting
 # from libs import checkbi as check
@@ -63,7 +63,7 @@ def main():
     cutoff_max = float(options["--cutoff-min"])
 
     # create circuit
-    init, events, output_signals = linear.GeneratePipeline()
+    init, events, output_signals = linear.linear_2DRBits_3Stages.GeneratePipeline()
 
     if not CHECK:
         if fault == 'SET':
@@ -79,23 +79,31 @@ def main():
             times, states = tr.trace(init, events=events, T=T)
 
         elif fault == 'SA1':
+            stuck_sig = 'ack2'
+            stuck_value = 1
             stuck_t = 48.1
             # stuck_t = 57.9
-            stuck_sig = 'ack2'
             events += [
                     (stuck_t, stuck_sig, 1), 
             ]
 
-            times, states = tr.traceSA(init, events=events, SA_sig=stuck_sig, SA_time=stuck_t, T=T)
+            events += [(stuck_t, stuck_sig, not stuck_value)]
+            events += [(stuck_t+10, stuck_sig, not stuck_value)]
+
+            times, states = tr.traceSA(init, events=events, SA_sig=stuck_sig, SA_value=stuck_value, SA_time=stuck_t, T=T)
 
         else:
-            stuck_t = 4
             stuck_sig = 'ack2'
+            stuck_value = 0
+            stuck_t = 4
             events += [
                     (stuck_t, stuck_sig, 0),  # add SA0
             ]
 
-            times, states = tr.traceSA(init, events=events, SA_sig=stuck_sig, SA_time=stuck_t, T=T)
+            events += [(stuck_t, stuck_sig, not stuck_value)]
+            events += [(stuck_t+10, stuck_sig, not stuck_value)]
+
+            times, states = tr.traceSA(init, events=events, SA_sig=stuck_sig, SA_value=stuck_value, SA_time=stuck_t, T=T)
 
     # if CHECK, run golden run without any faults
     else:

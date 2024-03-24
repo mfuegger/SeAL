@@ -2,6 +2,7 @@ from docopt import docopt
 import os
 import sys
 import subprocess
+import pprint
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(dir_path + '/../')
@@ -52,10 +53,11 @@ def main():
     script_path = os.path.join(dir_path, "..", 'prs', 'muller_linear')
     for filename in os.listdir(script_path):
         if filename.startswith('linear') and filename.endswith('.py'):
-            # if(filename != "linear_scale_DRBits_stages.py"):
-            #     continue
-            # if(filename != "linear_1Bit_3Stages.py"):
-            #     continue
+            print(f"---------------------Circuit: {filename}---------------------")
+            if(filename == "linear_scale_DRBits_stages.py"):
+                continue
+            if(filename == "linear_2DRBits_3Stages.py"):
+                continue
             module_name = os.path.splitext(filename)[0]
             module = getattr(linear, module_name)
             # print(module)
@@ -72,7 +74,7 @@ def main():
             # init, events = linear.linear_1Bit_3Stages.GeneratePipeline()
             # linear_1Bit_3Stages.GeneratePipeline()
 
-            times, states = tr.trace(init, events=events, T=T)
+            times, states = tr.trace(init, events, output_signals, T=T)
             # print(states)
 
             for f in fault:
@@ -86,7 +88,7 @@ def main():
                     cutoff_max=cutoff_max,
                     fault=f,
                 )
-                # pprint.pprint(ret1)
+                pprint.pprint(ret1)
 
                 ret2 = check2.checkSA(
                     times=times,
@@ -98,7 +100,7 @@ def main():
                     cutoff_max=cutoff_max,
                     fault=f,
                 )
-                # pprint.pprint(ret2)
+                pprint.pprint(ret2)
 
                 # susceptible is a list
                 # each item is a tuple of signal and range, e.g., ('c_in', [0, 4])
@@ -166,6 +168,9 @@ def main():
                     print("ERROR")
                     print("Unique to checkbi:", unique_to_checkbi)
                     print("Unique to check:", unique_to_check)
+
+                print(f"p (checkbi) = {ret1['p']}")
+                print(f"p (check) = {ret2['p']}")
                 print('-------------------------------------------------------------------------------------')
 
 

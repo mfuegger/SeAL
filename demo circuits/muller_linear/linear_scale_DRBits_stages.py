@@ -6,7 +6,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(dir_path + '/../../')
 
 import pprint
-from prs import linear_scale_DRBits_stages as linear
+from prs import muller_linear as linear
 from libs import tracem as tr
 from libs import plotting
 # from libs import checkbi as check
@@ -75,7 +75,7 @@ def main():
     num_bits = int(options["--num_bits"])
 
     # create circuit
-    init, events, output_signals = linear.GeneratePipeline()  #(num_stages, num_bits)
+    init, events, output_signals = linear.linear_scale_DRBits_stages.GeneratePipeline()  #(num_stages, num_bits)
 
     times, states = tr.trace(init, events=events, T=T)
 

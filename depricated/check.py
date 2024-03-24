@@ -64,9 +64,9 @@ def checkSA(times, states, events, signals, output_signals,
 	T = times[-1] + Textra
 
 	if fault == 'SA0':
-		SA = 0
+		SAF = 0
 	elif fault == 'SA1':
-		SA = 1
+		SAF = 1
 	# else:
 	# 	SA = None
 
@@ -96,10 +96,10 @@ def checkSA(times, states, events, signals, output_signals,
 
 
 				events_check = events + [
-					(j + MafterGrid,          s, SA),           # add SA0 or SA1
+					(j + MafterGrid,          s, SAF),           # add SA0 or SA1
 				]
 				
-				times_M, states_M = tr.traceSA(states[0], events=events_check, SA_sig=s, SA_time=j+MafterGrid, T=T, verbose=False)
+				times_M, states_M = tr.traceSA(states[0], events_check, output_signals, SA_signal=s, SA_value=SAF, SA_time=j+MafterGrid, T=T, verbose=False)
 				
 				# Did X appear at any output signal at any of the circuit's states?
 				was_M = False

@@ -1,1 +1,1 @@
-from prs.pipeline_logic import half_adder
+from prs.pipeline_logic import half_adder, alu
