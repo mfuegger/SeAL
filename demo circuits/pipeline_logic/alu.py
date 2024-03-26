@@ -170,6 +170,10 @@ def main():
                     cutoff_min=cutoff_min,
                     cutoff_max=cutoff_max,
                     fault='SA1',
+                    monitor=True,
+                    tokens=tokens,
+                    input_widths=input_widths,
+                    output_widths=output_widths,
                     victim_signals=['op(0).F']
                 )
                 # pprint.pprint(SA1_M)
@@ -184,6 +188,10 @@ def main():
                     cutoff_min=cutoff_min,
                     cutoff_max=cutoff_max,
                     fault='SA0',
+                    monitor=True,
+                    tokens=tokens,
+                    input_widths=input_widths,
+                    output_widths=output_widths,
                     victim_signals=['op(0).F']
                 )
                 # pprint.pprint(SA0_M)

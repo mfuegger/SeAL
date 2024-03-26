@@ -344,7 +344,7 @@ def checkSA(times, states, events, signals, output_signals,
 	count=0
 	if len(victim_signals) != 0:
 		# to test only a set of signals
-		victims = tqdm(victim_signals, leave=True, desc="Victim Signals Progress")
+		victims = tqdm(victim_signals, leave=True, desc=f"Victim Signals Progress for {fault}")
 		for s in victims:
 			victims.write("--------------------------------------------------")
 			victims.write(f"SIGNAL {count} = {s}")
@@ -404,7 +404,7 @@ def checkSA(times, states, events, signals, output_signals,
 				# print("--------------------------------------------------")
 	
 	else:
-		victims = tqdm(non_output_signals, leave=True, desc="Victim Signals Progress")
+		victims = tqdm(non_output_signals, leave=True, desc=f"Victim Signals Progress for {fault}")
 		for s in victims:
 			victims.write("--------------------------------------------------")
 			victims.write(f"SIGNAL {count} = {s}")
