@@ -10,6 +10,7 @@ import pprint
 from prs import muller_linear as linear
 from libs import tracem as tr
 from libs import plotting
+from libs import preprocessing as p
 # from libs import checkbi as check
 # from depricated import check
 
@@ -60,8 +61,9 @@ def main():
         from libs import checkbi as check
 #--------|---------|---------|---------|---------|
 
-    fault = str(options["--fault"])
     T = int(options["--runtime"])
+    fault = str(options["--fault"])
+    assert (fault in ['SET', 'SAF', 'SA1', 'SA0']), "Fault type not supported"
 
     cutoff_min = int(options["--cutoff-min"])
     cutoff_max = float(options["--cutoff-min"])
@@ -104,7 +106,7 @@ def main():
 
             times, states = tr.traceSA(init, events, output_signals, stuck_sig, stuck_value, stuck_t, T=T)
 
-        else:
+        elif fault == 'SA0':
             stuck_sig = 'c2'
             stuck_value = 0
             stuck_t = 15
@@ -122,6 +124,9 @@ def main():
             events += [(stuck_t+10, stuck_sig, not stuck_value)]
 
             times, states = tr.traceSA(init, events, output_signals, stuck_sig, stuck_value, stuck_t, T=T)
+
+        else:
+            raise Exception("SAF can only be combined with CHECK")
 
     # if CHECK, run golden run without any faults
     else:
@@ -157,28 +162,55 @@ def main():
                     susceptible=ret['susceptible'],
                     cutoff=[cutoff_min, cutoff_max],
                     )
+            
         else:
-            ret = check.checkSA(
-                times=times,
-                states=states,
-                events=events,
-                signals=list(init.keys()),
-                output_signals=output_signals, 
-                cutoff_min=cutoff_min,
-                cutoff_max=cutoff_max,
-                fault=fault,
-                victim_signals=[]
-            )
-            pprint.pprint(ret)
+            SA1_M = {}
+            SA0_M = {}
+
+            if fault == 'SAF' or fault == 'SA1':
+                SA1_M = check.checkSA(
+                    times=times,
+                    states=states,
+                    events=events,
+                    signals=list(init.keys()),
+                    output_signals=output_signals, 
+                    cutoff_min=cutoff_min,
+                    cutoff_max=cutoff_max,
+                    fault='SA1',
+                    victim_signals=[]
+                )
+                pprint.pprint(SA1_M)
+
+            if fault == 'SAF' or fault == 'SA0':
+                SA0_M = check.checkSA(
+                    times=times,
+                    states=states,
+                    events=events,
+                    signals=list(init.keys()),
+                    output_signals=output_signals, 
+                    cutoff_min=cutoff_min,
+                    cutoff_max=cutoff_max,
+                    fault='SA0',
+                    victim_signals=[]
+                )
+                pprint.pprint(SA0_M)
+
+            susceptible_SA1 = p.appendSAF(p.collapseRanges(SA1_M['susceptible'] if SA1_M else []), 'SA1')
+            susceptible_SA0 = p.appendSAF(p.collapseRanges(SA0_M['susceptible']if SA0_M else []), 'SA0')
+            # print(f"Susceptible SA1: {susceptible_SA1}")
+            # print(f"Susceptible SA0: {susceptible_SA0}")
+
+            susceptible = susceptible_SA1 + susceptible_SA0
 
             plotting.plot(
                 times,
                 states,
                 list(init.keys()),
-                susceptible=ret['susceptible'],
+                susceptible=susceptible,
                 fault=fault,
                 cutoff=[cutoff_min, cutoff_max],
                 )
+   
 
 if (__name__ == "__main__"):
     main()

@@ -19,7 +19,8 @@ def getStateAtTime(times, states, time: float):
 	return states[-1]
 
 
-def isSusceptible(t, s, states, s_state, events, T, output_signals, MafterGrid=0.001, Mdelta=0.001, monitor=False, tokens=None, input_widths=None, output_widths=None):
+def isSusceptible(t, s, states, s_state, events, T, output_signals, MafterGrid=0.001, Mdelta=0.001,
+				  monitor=False, tokens=None, input_widths=None, output_widths=None):
 	events_check = events + [
 		(t + MafterGrid,          s, 0.5),      # add glitch
 		(t + MafterGrid + Mdelta, s, s_state),  # reset glitch
@@ -29,7 +30,8 @@ def isSusceptible(t, s, states, s_state, events, T, output_signals, MafterGrid=0
 	# print(f"SET @ {s} @ {t}")
 	# print(s_state)
 	# changed
-	times_M, states_M = tr.trace(states[0], events=events_check, output_signals=output_signals, T=T, verbose=False, monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
+	times_M, states_M = tr.trace(states[0], events=events_check, output_signals=output_signals, T=T, verbose=False,
+							  monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
 
 	was_M = False
 	for state_M in states_M:
@@ -38,7 +40,8 @@ def isSusceptible(t, s, states, s_state, events, T, output_signals, MafterGrid=0
 	return was_M
 
 
-def findBoundary(tfrom, tto, s, states, s_state, events, T, output_signals, initially=True, monitor=False, tokens=None, input_widths=None, output_widths=None):
+def findBoundary(tfrom, tto, s, states, s_state, events, T, output_signals, initially=True,
+				 monitor=False, tokens=None, input_widths=None, output_widths=None):
 	# if initially:
 	# 	print(tfrom, tto)
 
@@ -56,12 +59,14 @@ def findBoundary(tfrom, tto, s, states, s_state, events, T, output_signals, init
 	# ----------------------------------------------------------------------------------------------------------------------
 	
 	# check if anywhere marked
-	if not isSusceptible(t=tto, s=s, states=states, s_state=s_state, events=events, T=T, output_signals=output_signals, MafterGrid=-0.05, monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths):
+	if not isSusceptible(t=tto, s=s, states=states, s_state=s_state, events=events, T=T, output_signals=output_signals, MafterGrid=-0.05,
+					  monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths):
 		# no -> return boundary at end
 		return tto
 
 	# check if all marked (only initially)
-	elif initially and isSusceptible(t=tfrom, s=s, states=states, s_state=s_state, events=events, T=T, output_signals=output_signals, MafterGrid=0.001, monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths):
+	elif initially and isSusceptible(t=tfrom, s=s, states=states, s_state=s_state, events=events, T=T, output_signals=output_signals, MafterGrid=0.001,
+								  monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths):
 		# yes -> return boundary at start
 		return tfrom
 
@@ -76,15 +81,18 @@ def findBoundary(tfrom, tto, s, states, s_state, events, T, output_signals, init
 		# 	return round(middle, 2)
 
 		else:
-			middle_is_M = isSusceptible(t=middle, s=s, states=states, s_state=s_state, events=events, T=T, output_signals=output_signals, MafterGrid=0.001, monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
+			middle_is_M = isSusceptible(t=middle, s=s, states=states, s_state=s_state, events=events, T=T, output_signals=output_signals, MafterGrid=0.001,
+							   monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
 
 			if middle_is_M:
 				# boundary must be on the left half
-				return findBoundary(tfrom=tfrom, tto=middle, s=s, states=states, s_state=s_state, events=events, T=T, output_signals=output_signals, initially=False, monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
+				return findBoundary(tfrom=tfrom, tto=middle, s=s, states=states, s_state=s_state, events=events, T=T, output_signals=output_signals, initially=False,
+						monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
 
 			else:
 				# boundary must be on the right half
-				return findBoundary(tfrom=middle, tto=tto, s=s, states=states, s_state=s_state, events=events, T=T, output_signals=output_signals, initially=False, monitor=True, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
+				return findBoundary(tfrom=middle, tto=tto, s=s, states=states, s_state=s_state, events=events, T=T, output_signals=output_signals, initially=False,
+						monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
 
 def check(times, states, events, signals, output_signals,
 	Textra=30,
@@ -118,15 +126,17 @@ def check(times, states, events, signals, output_signals,
 	if len(victim_signals) != 0:
 		# to test only a set of signals
 		victims = tqdm(victim_signals, leave=True, desc="Victim Signals Progress")
-		for s in v:
+		for s in victims:
 			victims.write("--------------------------------------------------")
 			victims.write(f"SIGNAL {count} = {s}")
 			victims.write("--------------------------------------------------")
 			count+=1
+
 			for i in range(len(times)-1):
 				tfrom = times[i]
 				tto = times[i+1]
-				boundary = findBoundary(tfrom=tfrom, tto=tto, s=s, states=states, s_state=states[i][s], events=events, T=T, output_signals=output_signals, monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
+				boundary = findBoundary(tfrom=tfrom, tto=tto, s=s, states=states, s_state=states[i][s], events=events, T=T, output_signals=output_signals,
+							monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
 
 				if boundary < tto:
 					# it has a marked area:
@@ -159,7 +169,8 @@ def check(times, states, events, signals, output_signals,
 			for i in range(len(times)-1):
 				tfrom = times[i]
 				tto = times[i+1]
-				boundary = findBoundary(tfrom=tfrom, tto=tto, s=s, states=states, s_state=states[i][s], events=events, T=T, output_signals=output_signals, monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
+				boundary = findBoundary(tfrom=tfrom, tto=tto, s=s, states=states, s_state=states[i][s], events=events, T=T, output_signals=output_signals,
+							monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
 
 				if boundary < tto:
 					# it has a marked area:
@@ -217,23 +228,26 @@ def check(times, states, events, signals, output_signals,
 
 
 
-def isSusceptibleSA(t, s, states, events, T, output_signals, SAF, MafterGrid): #MafterGrid=0.001
+def isSusceptibleSA(t, s, states, events, T, output_signals, SAF, MafterGrid,	#	MafterGrid=0.001
+					monitor=False, tokens=None, input_widths=None, output_widths=None): 
 		
 	events_check = events + [
 		(t + MafterGrid, s, SAF),           # add SA0 or SA1
 	]
-
-	# print((f"SA_signal {s} stuck at {SAF} at time {t} "))
 	# print(f"\t\t\t init value = {states[0][s]}")
-	times_M, states_M = tr.traceSA(states[0], events_check, output_signals, SA_signal=s, SA_value=SAF, SA_time=t+MafterGrid, T=T, Mdelay=t+MafterGrid, verbose=False)
+	times_M, states_M = tr.traceSA(states[0], events_check, output_signals, SA_signal=s, SA_value=SAF, SA_time=t+MafterGrid, T=T, verbose=False,
+								monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths) #	Mdelay=t+MafterGrid,
 	
 	was_M = False
 	for state_M in states_M:
 		was_M = was_M or any([ state_M[s] == 0.5 for s in output_signals ])	
+
+	# print((f"SA_signal {s} stuck at {SAF} at time {t+MafterGrid} {was_M}"))
 	return was_M
 
 
-def findBoundarySA(tfrom, tto, s, states, events, T, output_signals, SAF, start_is_M_initially, initially=True):
+def findBoundarySA(tfrom, tto, s, states, events, T, output_signals, SAF, start_is_M_initially, initially=True,
+				   monitor=False, tokens=None, input_widths=None, output_widths=None):
 	# print(3*"*",tfrom,tto,initially)
 	# if initially:
 	# 	print(tfrom, tto)
@@ -247,9 +261,11 @@ def findBoundarySA(tfrom, tto, s, states, events, T, output_signals, SAF, start_
 	if initially:
 		start_is_M = start_is_M_initially
 	else:
-		start_is_M = isSusceptibleSA(t=tfrom, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, MafterGrid=ERROR)
+		start_is_M = isSusceptibleSA(t=tfrom, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, MafterGrid=ERROR,
+							   monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
 	
-	end_is_M = isSusceptibleSA(t=tto, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, MafterGrid=-ERROR)
+	end_is_M = isSusceptibleSA(t=tto, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, MafterGrid=-ERROR,
+							monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
 
 	if not start_is_M and not end_is_M:
 		# no -> return boundary at end
@@ -268,22 +284,27 @@ def findBoundarySA(tfrom, tto, s, states, events, T, output_signals, SAF, start_
 			return round(middle, 2)
 
 		else:
-			middle_is_M = isSusceptibleSA(t=middle, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, MafterGrid=ERROR)
+			middle_is_M = isSusceptibleSA(t=middle, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, MafterGrid=ERROR,
+								 monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
 
 			if middle_is_M:
 				if not start_is_M_initially:
 					# boundary must be on the left half
-					return findBoundarySA(tfrom=tfrom, tto=middle, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, start_is_M_initially=start_is_M_initially, initially=False)
+					return findBoundarySA(tfrom=tfrom, tto=middle, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, start_is_M_initially=start_is_M_initially, initially=False,
+						   monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
 				else:
 					# boundary must be on the right half
-					return findBoundarySA(tfrom=middle, tto=tto, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, start_is_M_initially=start_is_M_initially, initially=False)
+					return findBoundarySA(tfrom=middle, tto=tto, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, start_is_M_initially=start_is_M_initially, initially=False,
+						   monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
 			else:
 				if start_is_M_initially:
 					# boundary must be on the left half
-					return findBoundarySA(tfrom=tfrom, tto=middle, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, start_is_M_initially=start_is_M_initially, initially=False)
+					return findBoundarySA(tfrom=tfrom, tto=middle, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, start_is_M_initially=start_is_M_initially, initially=False,
+						   monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
 				else:
 					# boundary must be on the right half
-					return findBoundarySA(tfrom=middle, tto=tto, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, start_is_M_initially=start_is_M_initially, initially=False)
+					return findBoundarySA(tfrom=middle, tto=tto, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, start_is_M_initially=start_is_M_initially, initially=False,
+						   monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
 
 
 def checkSA(times, states, events, signals, output_signals,
@@ -291,7 +312,13 @@ def checkSA(times, states, events, signals, output_signals,
 	exclude_output_signals=True,
 	cutoff_min=0, cutoff_max=float('Inf'),
 	fault='SA0',
-	victim_signals=[]):
+	monitor=False,
+	tokens=None,
+	input_widths=None,
+	output_widths=None,
+	victim_signals=[]
+	):
+
 	"""
 	checking all equivalence regions
 	"""
@@ -309,9 +336,12 @@ def checkSA(times, states, events, signals, output_signals,
 
 	non_output_signals = [ s for s in signals if s not in output_signals ]
 
-	count=0
+	if monitor:
+		if tokens is None or input_widths is None or output_widths is None:
+			raise Exception("Tokens and In/Output Widths missing!")
 
 	# go over regions
+	count=0
 	if len(victim_signals) != 0:
 		# to test only a set of signals
 		victims = tqdm(victim_signals, leave=True, desc="Victim Signals Progress")
@@ -320,12 +350,15 @@ def checkSA(times, states, events, signals, output_signals,
 			victims.write(f"SIGNAL {count} = {s}")
 			victims.write("--------------------------------------------------")
 			count+=1
+
 			for i in range(len(times)-1):
 				tfrom = times[i]
 				tto = times[i+1]
-				start_is_M_initially = isSusceptibleSA(t=tfrom, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, MafterGrid=ERROR)
-				boundary = findBoundarySA(tfrom=tfrom, tto=tto, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, start_is_M_initially=start_is_M_initially)
-
+				start_is_M_initially = isSusceptibleSA(t=tfrom, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, MafterGrid=ERROR,
+										   monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
+				boundary = findBoundarySA(tfrom=tfrom, tto=tto, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, start_is_M_initially=start_is_M_initially,
+							  monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
+		
 				if boundary < tto:
 					# it has a marked area:
 					if boundary != tfrom and start_is_M_initially:
@@ -338,12 +371,11 @@ def checkSA(times, states, events, signals, output_signals,
 				assert (tto - boundary >= 0)
 				assert (boundary - tfrom >= 0)
 
-
 				if direction:
 					pos += tto - boundary
 					neg += boundary - tfrom
 
-					print("normal")
+					# print("normal")
 					current_pos = tto - boundary
 					current_neg = boundary - tfrom
 
@@ -353,7 +385,7 @@ def checkSA(times, states, events, signals, output_signals,
 					neg += tto - boundary
 					direction = 1
 
-					print("backwards")
+					# print("backwards")
 					current_pos = boundary - tfrom
 					current_neg = tto - boundary
 
@@ -361,8 +393,6 @@ def checkSA(times, states, events, signals, output_signals,
 				# neg += boundary - tfrom				
 
 				pos_per_sig[s] += current_pos
-
-				assert (pos_per_sig[s] <= 1)
 
 				# print(f"From {tfrom} to {tto}")
 				# print(f"Boundary = {boundary}")
@@ -383,8 +413,10 @@ def checkSA(times, states, events, signals, output_signals,
 			for i in range(len(times)-1):
 				tfrom = times[i]
 				tto = times[i+1]
-				start_is_M_initially = isSusceptibleSA(t=tfrom, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, MafterGrid=ERROR)
-				boundary = findBoundarySA(tfrom=tfrom, tto=tto, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, start_is_M_initially=start_is_M_initially)
+				start_is_M_initially = isSusceptibleSA(t=tfrom, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, MafterGrid=ERROR,
+										   monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
+				boundary = findBoundarySA(tfrom=tfrom, tto=tto, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, start_is_M_initially=start_is_M_initially,
+							  monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
 
 				if boundary < tto:
 					# it has a marked area:
@@ -402,7 +434,7 @@ def checkSA(times, states, events, signals, output_signals,
 					pos += tto - boundary
 					neg += boundary - tfrom
 
-					print("normal")
+					# print("normal")
 					current_pos = tto - boundary
 					current_neg = boundary - tfrom
 
@@ -412,7 +444,7 @@ def checkSA(times, states, events, signals, output_signals,
 					neg += tto - boundary
 					direction = 1
 
-					print("backwards")
+					# print("backwards")
 					current_pos = boundary - tfrom
 					current_neg = tto - boundary
 
@@ -420,8 +452,6 @@ def checkSA(times, states, events, signals, output_signals,
 				# neg += boundary - tfrom				
 
 				pos_per_sig[s] += current_pos
-
-				assert (pos_per_sig[s] <= 1)
 
 				# print(f"From {tfrom} to {tto}")
 				# print(f"Boundary = {boundary}")

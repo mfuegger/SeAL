@@ -140,12 +140,16 @@ def trace(init, events, output_signals, T=20, Mdelay=0.1, verbose=True, monitor=
 		if s not in init.keys():
 			print(f'warning: did not find initial state for signal {s}. Assuming 0.')
 
-	# visited
+	# visited dict
+	# keeps track of a signal when it gets scheduled
+	# as stable for the first time
+	# to avoid duplicates for the same scheduled value
+	# and avoid state explosion
 	visited_stable = dict()
-	visited_unstable = dict()
+	# visited_unstable = dict()
 	for s in signals:
 		visited_stable[s] = False
-		visited_unstable[s] = False
+		# visited_unstable[s] = False
 
 	# --------------------------------------- Monitor Prepocessing ---------------------------------------		
 	if monitor:
@@ -297,6 +301,7 @@ def trace(init, events, output_signals, T=20, Mdelay=0.1, verbose=True, monitor=
 				done_bits.append(bit.T | bit.F)
 
 		if ack_in == 0:
+			# ANDing all the bits
 			done = done_bits[0]
 			for bit in done_bits[1:]:
 				done &= bit
@@ -306,6 +311,7 @@ def trace(init, events, output_signals, T=20, Mdelay=0.1, verbose=True, monitor=
 				return 0
 	
 		else:
+			# NORing all the bits
 			done = not done_bits[0]
 			for bit in done_bits[1:]:
 				done &= not bit
@@ -322,6 +328,9 @@ def trace(init, events, output_signals, T=20, Mdelay=0.1, verbose=True, monitor=
 		input_events = monitorACK(state['ack_out'], t)
 		events.extend(input_events)
 		# print(f"First token added: {events}")
+		# print(100*"-")
+		# print("adding new input events:", input_events)
+		# print(100*"-")
 
 	scheduled = []
 	while t <= T:
@@ -396,7 +405,9 @@ def trace(init, events, output_signals, T=20, Mdelay=0.1, verbose=True, monitor=
 						# print("before new input:---------------------------", events)
 						input_events = monitorACK(state[ rule['o'] ], t)
 						events.extend(input_events)
-						# print("adding new input events:", events)
+						# print(100*"-")
+						# print("adding new input events:", input_events)
+						# print(100*"-")
 
 				elif rule['o'] in output_signals:
 					# print(f"Reached first output rail")
@@ -521,13 +532,23 @@ def traceSA(init, events, output_signals, SA_signal, SA_value, SA_time, T=20, Md
 		if s not in init.keys():
 			print(f'warning: did not find initial state for signal {s}. Assuming 0.')
 
+	# visited dict
+	# keeps track of a signal when it gets scheduled
+	# as stable for the first time
+	# to avoid duplicates for the same scheduled value
+	# and avoid state explosion
+	visited_stable = dict()
+	for s in signals:
+		visited_stable[s] = False
+
 	# --------------------------------------- Monitor Prepocessing ---------------------------------------		
 	if monitor:
 		if tokens is None or input_widths is None or output_widths is None:
 			raise Exception("Tokens and In/Output Widths missing!")
 		else:
 			DR_tokens = DR.toDualRail(tokens, input_widths)
-			DR_tokens_copy = DR_tokens
+			DR_tokens_copy = DR_tokens.copy()
+			tokens_copy = tokens.copy()
 
 			# list of data inputs (add it to prs? then no need to have it here)
 			inputs = []
@@ -558,15 +579,15 @@ def traceSA(init, events, output_signals, SA_signal, SA_value, SA_time, T=20, Md
 				
 				# Add the set of single bits to the dictionary with the input signal as the key
 				signal_bits_dict[signal] = signal_bits
-				print(signal_bits_dict)
+				# print(signal_bits_dict)
 
 			'''
 			DR_output is a dictionary that contains signal name and a list
 			of dual-rail bits initialized to 0
 			ex: {'z': [DualRail('z(0)', T=0, F=0),
-		 				DualRail('z(1)', T=0, F=0),
-		 				DualRail('z(2)', T=0, F=0),
-		 				DualRail('z(3)', T=0, F=0)
+						DualRail('z(1)', T=0, F=0),
+						DualRail('z(2)', T=0, F=0),
+						DualRail('z(3)', T=0, F=0)
 						],
 				'out2' : [...],
 				'out3' : [...]
@@ -581,9 +602,9 @@ def traceSA(init, events, output_signals, SA_signal, SA_value, SA_time, T=20, Md
 				
 				DR_output[signal] = DR_bit
 
-			for signal, value in DR_output.items(): # str, list
-				for i, v in enumerate(value):	# DualRail
-					print(v.ToCode())
+			# for signal, value in DR_output.items(): # str, list
+			# 	for i, v in enumerate(value):	# DualRail
+			# 		print(v.ToCode())
 
 	# ---------------------------------------------------------------------------------------------------
 					
@@ -592,10 +613,7 @@ def traceSA(init, events, output_signals, SA_signal, SA_value, SA_time, T=20, Md
 	def monitorACK(ack_out, t):
 
 		input_events=[]
-
-		# copy and remove next token in the list
-		current_token = DR_tokens_copy.pop(0)
-
+		
 		'''
 		current_token is a dict of dual-rail inputs
 		each dual-rail input has a list of its bits
@@ -607,17 +625,40 @@ def traceSA(init, events, output_signals, SA_signal, SA_value, SA_time, T=20, Md
 		
 		# spacer received, schedule next data token
 		if not ack_out:
-			for signal, token in current_token.items():	# dict
-				for i, v in enumerate(token):	# list (int, DualRail)
-					input_events += [(t+src_delay, f"{signal}({i}).T", int(v.T))]
-					input_events += [(t+src_delay, f"{signal}({i}).F", int(v.F))]
+			if(len(DR_tokens_copy) == 0):
+				for signal, token in DR_tokens[0].items():	# dict
+					for i, v in enumerate(token):	# list (int, DualRail)
+						input_events += [(0, f"{signal}({i}).T", 0)]
+						input_events += [(0, f"{signal}({i}).F", 0)]
+			else:
+				# copy and remove next token in the list
+				current_token_notDR = tokens_copy.pop(0)
+				current_token = DR_tokens_copy.pop(0)
+				next_token = current_token_notDR
+
+				for signal, token in current_token.items():	# dict
+					for i, v in enumerate(token):	# list (int, DualRail)
+						input_events += [(t+src_delay, f"{signal}({i}).T", int(v.T))]
+						input_events += [(t+src_delay, f"{signal}({i}).F", int(v.F))]
+						# input_events += [(t+random.uniform(0.9*src_delay, 1.1*src_delay), f"{signal}({i}).T", int(v.T))]
+						# input_events += [(t+random.uniform(0.9*src_delay, 1.1*src_delay), f"{signal}({i}).F", int(v.F))]
 
 		# data token received, schedule spacer
 		else:
-			for signal, token in current_token.items():	# dict
+			next_token = "SPACER"
+			# print("DR_tokens = ", DR_tokens)
+			for signal, token in DR_tokens[0].items():	# dict
 				for i, v in enumerate(token):	# list (int, DualRail)
 					input_events += [(t+src_delay, f"{signal}({i}).T", 0)]
 					input_events += [(t+src_delay, f"{signal}({i}).F", 0)]
+					# input_events += [(t+random.uniform(0.9*src_delay, 1.1*src_delay), f"{signal}({i}).T", 0)]
+					# input_events += [(t+random.uniform(0.9*src_delay, 1.1*src_delay), f"{signal}({i}).F", 0)]
+
+		# print(100*"-")
+		# print(f"ack_out set to {ack_out} at time {t}")
+		# print("Next token to schedule:", next_token)
+		# print("Scheduled Data:", input_events)
+		# print(100*"-")
 
 		return input_events
 	
@@ -626,12 +667,23 @@ def traceSA(init, events, output_signals, SA_signal, SA_value, SA_time, T=20, Md
 		# add this to events as {t+snkDelay, acki_in, 0}
 		if data_done == 1:
 			ack_event = (t+snk_delay, 'ack_in', 1)
+			# ack_event = (t+random.uniform(0.9*snk_delay, 1.1*snk_delay), 'ack_in', 1)
 		else:
 			ack_event = (t+snk_delay, 'ack_in', 0)
+			# ack_event = (t+random.uniform(0.9*snk_delay, 1.1*snk_delay), 'ack_in', 0)
 
 		return ack_event
 	
 	def CD(DR_output, ack_in):
+		
+		# if any(DR_output = 0.5):
+		# 	return ack_in
+
+		for bits in DR_output.values():
+			for bit in bits:
+				if bit.T == 0.5 or bit.F == 0.5:
+					return ack_in
+
 		done_bits = []
 
 		for bits in DR_output.values():
@@ -648,8 +700,6 @@ def traceSA(init, events, output_signals, SA_signal, SA_value, SA_time, T=20, Md
 			else:
 				return 0
 	
-			# if done == 1:
-			# 	return True
 		else:
 			# NORing all the bits
 			done = not done_bits[0]
@@ -661,21 +711,20 @@ def traceSA(init, events, output_signals, SA_signal, SA_value, SA_time, T=20, Md
 				return 1
 
 	# ---------------------------------------------------------------------------------------------------
-
+	
 	# follow up
 	# schedule first token or spacer
 	if monitor:		
 		input_events = monitorACK(state['ack_out'], t)
 		events.extend(input_events)
 		# print(f"First token added: {events}")
+		# print(100*"-")
+		# print("adding new input events:", input_events)
+		# print(100*"-")
 
 	scheduled = []
 	while t <= T:
 		# check events: keep only if still true
-		# print()
-		# print(state)
-		# print('scheduled at time', t, scheduled)
-
 
 		# --- apply external events ---
 
@@ -683,15 +732,6 @@ def traceSA(init, events, output_signals, SA_signal, SA_value, SA_time, T=20, Md
 		for event in events:
 			if event[0] == t:
 				# state[ event[1] ] = event[2]
-
-				# if the event concerns the SA_signal after it got stuck
-				# ignore this event and keep the signal stuck
-				# if event[1] == SA_signal and event[0] == SA_time:
-				# 	state[ event[1] ] = SA_value
-				# elif event[1] == SA_signal and event[0] > SA_time:
-				# 	pass
-				# else:
-				# 	state[ event[1] ] = event[2]
 
 				if event[1] == SA_signal and event[0] >= SA_time:
 					# if state[ event[1] ] != SA_value:
@@ -760,31 +800,43 @@ def traceSA(init, events, output_signals, SA_signal, SA_value, SA_time, T=20, Md
 			temp_state = state[ rule['o'] ]
 			# print('apply at time', t, rule)
 			state[ rule['o'] ] = rule['val']
+			visited_stable[rule['o']] = False
 
-				# # monitor
-				# if monitor:
-				# 	if rule['o'] == 'ack_out':
-				# 		# if ack_out made a transition
-				# 		if temp_state != state[ rule['o'] ]:
-				# 			print("before new input:---------------------------", events)
-				# 			input_events = monitorACK(state[ rule['o'] ], t)
-				# 			events.extend(input_events)
-				# 			print("adding new input events:", events)
+			# monitor
+			if monitor:
+				if rule['o'] == 'ack_out':
+					# if ack_out made a transition
+					if temp_state != state[ rule['o'] ]:
+						# print("before new input:---------------------------", events)
+						input_events = monitorACK(state[ rule['o'] ], t)
+						events.extend(input_events)
+						# print(100*"-")
+						# print("adding new input events:", input_events)
+						# print(100*"-")
 
-				# 	elif rule['o'] in outputs:
-				# 		for signal, bits in DR_output.items():
-				# 			for bit in bits:
-				# 				bit.T = state[f'{bit}.T']
-				# 				bit.F = state[f'{bit}.F']
+				elif rule['o'] in output_signals:
+					# print(f"Reached first output rail")
+					# update the specific rail in DR_output
+					for signal, bits in DR_output.items():	# dict
+						# print(bits)
+						for bit in bits:	# list (DualRail)
+							# print(bit)
+							bit.T = state[f'{bit.name}.T']
+							bit.F = state[f'{bit.name}.F']
 
-				# 		ack_in = state['ack_in']
-						
-				# 		done = CD(DR_output, ack_in)
-				# 		# if done made a transition
-				# 		if done != ack_in:
-				# 			ack_event = monitorDATA(done, t)
-				# 			events.extend(ack_event)
-
+					ack_in = state['ack_in']
+					# print("Reached CD call")
+					done = CD(DR_output, ack_in)
+					# if done made a transition
+					if done != ack_in:
+						# print(100*"-")
+						# print("data outputs = ", DR_output)
+						# print("data_done = ", done)
+						ack_event = monitorDATA(done, t)
+						events.append(ack_event)
+						# print(f"previous ack_in = {ack_in}")
+						# print(f"ack_in set to {ack_event[2]} at time {ack_event[0]}")
+						# print(100*"-")
 
 			if t >= SA_time: #and rule['o'] == SA_signal:
 				if state[SA_signal] != SA_value:
@@ -843,14 +895,16 @@ def traceSA(init, events, output_signals, SA_signal, SA_value, SA_time, T=20, Md
 			else:
 				if ( eval_rule(state, rule) > 0 ) and ( state[ rule['o'] ] != rule['val'] ):
 					if eval_rule(state, rule) == 1:
-						scheduled += [ (t + rule['d'], rule) ]
+						if not visited_stable[ rule['o'] ]:
+							scheduled += [ (t + rule['d'], rule) ]
+							visited_stable[ rule['o'] ] = True
 
 					elif eval_rule(state, rule) == 0.5 and ( state[ rule['o'] ] != 0.5 ):
 						new_rule = copy.deepcopy(rule)
 						new_rule['val'] = 0.5
 						scheduled += [ (t + Mdelay, new_rule) ]
 
-		if t >SA_time:
+		if t > SA_time:
 			if state[SA_signal] != SA_value:
 				print(f"SA_signal {SA_signal} = {state[SA_signal]} at time {t}")
 				raise Exception(f"SA_signal {SA_signal} became stuck at {SA_value} at {SA_time} and is not stuck anymore at time {t}!")
