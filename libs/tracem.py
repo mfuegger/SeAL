@@ -113,7 +113,7 @@ def fall(f, i, o, d=1):
 	rule(f=f, i=i, o=o, val=0, d=d)
 
 
-def trace(init, events, output_signals, T=20, Mdelay=0.1, verbose=True, monitor=False, tokens=None, input_widths=None, output_widths=None):
+def trace(init, events, output_signals, T=50, snk_delay=10, src_delay=10, Mdelay=0.1, monitor=False, tokens=None, input_widths=None, output_widths=None, verbose=True):
 	"""
 	init:   initial state. Dict of the form: signal -> value
 	events: list of items (time, signal, value)
@@ -124,9 +124,6 @@ def trace(init, events, output_signals, T=20, Mdelay=0.1, verbose=True, monitor=
 	t = 0
 	states = []
 	times = []
-
-	snk_delay = 10
-	src_delay = 10
 
 	# check if something is initialized that is not in the circuit
 	for s in init.keys():
@@ -235,7 +232,7 @@ def trace(init, events, output_signals, T=20, Mdelay=0.1, verbose=True, monitor=
 		
 		# spacer received, schedule next data token
 		if not ack_out:
-			if(len(DR_tokens_copy) == 0):
+			if len(DR_tokens_copy) == 0:
 				for signal, token in DR_tokens[0].items():	# dict
 					for i, v in enumerate(token):	# list (int, DualRail)
 						input_events += [(0, f"{signal}({i}).T", 0)]
@@ -504,7 +501,7 @@ def trace(init, events, output_signals, T=20, Mdelay=0.1, verbose=True, monitor=
 	return filtered_times, filtered_states
 
 
-def traceSA(init, events, output_signals, SA_signal, SA_value, SA_time, T=20, Mdelay=0.01, verbose=True, monitor=False, tokens=None, input_widths=None, output_widths=None):
+def traceSA(init, events, output_signals, SA_signal, SA_value, SA_time, T=50, snk_delay=10, src_delay=10, Mdelay=0.01, monitor=False, tokens=None, input_widths=None, output_widths=None, verbose=True):
 	"""
 	init:   initial state. Dict of the form: signal -> value
 	events: list of items (time, signal, value)
@@ -516,9 +513,6 @@ def traceSA(init, events, output_signals, SA_signal, SA_value, SA_time, T=20, Md
 	t = 0
 	states = []
 	times = []
-
-	snk_delay = 10
-	src_delay = 10
 
 	# check if something is initialized that is not in the circuit
 	for s in init.keys():
@@ -625,7 +619,7 @@ def traceSA(init, events, output_signals, SA_signal, SA_value, SA_time, T=20, Md
 		
 		# spacer received, schedule next data token
 		if not ack_out:
-			if(len(DR_tokens_copy) == 0):
+			if len(DR_tokens_copy) == 0:
 				for signal, token in DR_tokens[0].items():	# dict
 					for i, v in enumerate(token):	# list (int, DualRail)
 						input_events += [(0, f"{signal}({i}).T", 0)]

@@ -19,7 +19,8 @@ def getStateAtTime(times, states, time: float):
 	return states[-1]
 
 
-def isSusceptible(t, s, states, s_state, events, T, output_signals, MafterGrid=0.001, Mdelta=0.001,
+def isSusceptible(t, s, states, s_state, events, T, output_signals, 
+				  snk_delay=10, src_delay=10, MafterGrid=0.001, Mdelta=0.001,
 				  monitor=False, tokens=None, input_widths=None, output_widths=None):
 	events_check = events + [
 		(t + MafterGrid,          s, 0.5),      # add glitch
@@ -30,8 +31,8 @@ def isSusceptible(t, s, states, s_state, events, T, output_signals, MafterGrid=0
 	# print(f"SET @ {s} @ {t}")
 	# print(s_state)
 	# changed
-	times_M, states_M = tr.trace(states[0], events=events_check, output_signals=output_signals, T=T, verbose=False,
-							  monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
+	times_M, states_M = tr.trace(states[0], events=events_check, output_signals=output_signals, T=T, snk_delay=snk_delay, src_delay=src_delay,
+							  monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths, verbose=False)
 
 	was_M = False
 	for state_M in states_M:
@@ -40,7 +41,8 @@ def isSusceptible(t, s, states, s_state, events, T, output_signals, MafterGrid=0
 	return was_M
 
 
-def findBoundary(tfrom, tto, s, states, s_state, events, T, output_signals, initially=True,
+def findBoundary(tfrom, tto, s, states, s_state, events, T, output_signals,
+				 snk_delay=10, src_delay=10, initially=True,
 				 monitor=False, tokens=None, input_widths=None, output_widths=None):
 	# if initially:
 	# 	print(tfrom, tto)
@@ -59,13 +61,15 @@ def findBoundary(tfrom, tto, s, states, s_state, events, T, output_signals, init
 	# ----------------------------------------------------------------------------------------------------------------------
 	
 	# check if anywhere marked
-	if not isSusceptible(t=tto, s=s, states=states, s_state=s_state, events=events, T=T, output_signals=output_signals, MafterGrid=-0.05,
+	if not isSusceptible(t=tto, s=s, states=states, s_state=s_state, events=events, T=T, output_signals=output_signals,
+					  snk_delay=snk_delay, src_delay=src_delay, MafterGrid=-0.05,
 					  monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths):
 		# no -> return boundary at end
 		return tto
 
 	# check if all marked (only initially)
-	elif initially and isSusceptible(t=tfrom, s=s, states=states, s_state=s_state, events=events, T=T, output_signals=output_signals, MafterGrid=0.001,
+	elif initially and isSusceptible(t=tfrom, s=s, states=states, s_state=s_state, events=events, T=T, output_signals=output_signals,
+								  snk_delay=snk_delay, src_delay=src_delay, MafterGrid=0.001,
 								  monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths):
 		# yes -> return boundary at start
 		return tfrom
@@ -81,20 +85,24 @@ def findBoundary(tfrom, tto, s, states, s_state, events, T, output_signals, init
 		# 	return round(middle, 2)
 
 		else:
-			middle_is_M = isSusceptible(t=middle, s=s, states=states, s_state=s_state, events=events, T=T, output_signals=output_signals, MafterGrid=0.001,
+			middle_is_M = isSusceptible(t=middle, s=s, states=states, s_state=s_state, events=events, T=T, output_signals=output_signals,
+							   snk_delay=snk_delay, src_delay=src_delay, MafterGrid=0.001,
 							   monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
 
 			if middle_is_M:
 				# boundary must be on the left half
-				return findBoundary(tfrom=tfrom, tto=middle, s=s, states=states, s_state=s_state, events=events, T=T, output_signals=output_signals, initially=False,
+				return findBoundary(tfrom=tfrom, tto=middle, s=s, states=states, s_state=s_state, events=events, T=T, output_signals=output_signals,
+						snk_delay=snk_delay, src_delay=src_delay, initially=False,
 						monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
 
 			else:
 				# boundary must be on the right half
-				return findBoundary(tfrom=middle, tto=tto, s=s, states=states, s_state=s_state, events=events, T=T, output_signals=output_signals, initially=False,
+				return findBoundary(tfrom=middle, tto=tto, s=s, states=states, s_state=s_state, events=events, T=T, output_signals=output_signals,
+						snk_delay=snk_delay, src_delay=src_delay, initially=False,
 						monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
 
 def check(times, states, events, signals, output_signals,
+	snk_delay=10, src_delay=10,
 	Textra=30,
 	exclude_output_signals=True,
 	cutoff_min=0,
@@ -123,7 +131,7 @@ def check(times, states, events, signals, output_signals,
 
 	# go over regions
 	count=0	
-	if len(victim_signals) != 0:
+	if victim_signals:
 		# to test only a set of signals
 		victims = tqdm(victim_signals, leave=True, desc="Victim Signals Progress")
 		for s in victims:
@@ -136,6 +144,7 @@ def check(times, states, events, signals, output_signals,
 				tfrom = times[i]
 				tto = times[i+1]
 				boundary = findBoundary(tfrom=tfrom, tto=tto, s=s, states=states, s_state=states[i][s], events=events, T=T, output_signals=output_signals,
+							snk_delay=snk_delay, src_delay=src_delay,
 							monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
 
 				if boundary < tto:
@@ -170,6 +179,7 @@ def check(times, states, events, signals, output_signals,
 				tfrom = times[i]
 				tto = times[i+1]
 				boundary = findBoundary(tfrom=tfrom, tto=tto, s=s, states=states, s_state=states[i][s], events=events, T=T, output_signals=output_signals,
+							snk_delay=snk_delay, src_delay=src_delay,
 							monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
 
 				if boundary < tto:
@@ -229,14 +239,16 @@ def check(times, states, events, signals, output_signals,
 
 
 def isSusceptibleSA(t, s, states, events, T, output_signals, SAF, MafterGrid,	#	MafterGrid=0.001
+					snk_delay=10, src_delay=10,
 					monitor=False, tokens=None, input_widths=None, output_widths=None): 
 		
 	events_check = events + [
 		(t + MafterGrid, s, SAF),           # add SA0 or SA1
 	]
 	# print(f"\t\t\t init value = {states[0][s]}")
-	times_M, states_M = tr.traceSA(states[0], events_check, output_signals, SA_signal=s, SA_value=SAF, SA_time=t+MafterGrid, T=T, verbose=False,
-								monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths) #	Mdelay=t+MafterGrid,
+	times_M, states_M = tr.traceSA(states[0], events_check, output_signals, SA_signal=s, SA_value=SAF, SA_time=t+MafterGrid,
+								T=T, snk_delay=snk_delay, src_delay=src_delay,
+								monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths, verbose=False) #	Mdelay=t+MafterGrid,
 	
 	was_M = False
 	for state_M in states_M:
@@ -246,7 +258,8 @@ def isSusceptibleSA(t, s, states, events, T, output_signals, SAF, MafterGrid,	#	
 	return was_M
 
 
-def findBoundarySA(tfrom, tto, s, states, events, T, output_signals, SAF, start_is_M_initially, initially=True,
+def findBoundarySA(tfrom, tto, s, states, events, T, output_signals, SAF, start_is_M_initially,
+				   snk_delay=10, src_delay=10, initially=True,
 				   monitor=False, tokens=None, input_widths=None, output_widths=None):
 	# print(3*"*",tfrom,tto,initially)
 	# if initially:
@@ -262,9 +275,11 @@ def findBoundarySA(tfrom, tto, s, states, events, T, output_signals, SAF, start_
 		start_is_M = start_is_M_initially
 	else:
 		start_is_M = isSusceptibleSA(t=tfrom, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, MafterGrid=ERROR,
+							   snk_delay=snk_delay, src_delay=src_delay,
 							   monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
 	
 	end_is_M = isSusceptibleSA(t=tto, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, MafterGrid=-ERROR,
+							snk_delay=snk_delay, src_delay=src_delay,
 							monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
 
 	if not start_is_M and not end_is_M:
@@ -285,29 +300,35 @@ def findBoundarySA(tfrom, tto, s, states, events, T, output_signals, SAF, start_
 
 		else:
 			middle_is_M = isSusceptibleSA(t=middle, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, MafterGrid=ERROR,
+								 snk_delay=snk_delay, src_delay=src_delay,
 								 monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
 
 			if middle_is_M:
 				if not start_is_M_initially:
 					# boundary must be on the left half
-					return findBoundarySA(tfrom=tfrom, tto=middle, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, start_is_M_initially=start_is_M_initially, initially=False,
+					return findBoundarySA(tfrom=tfrom, tto=middle, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, start_is_M_initially=start_is_M_initially,
+						   snk_delay=snk_delay, src_delay=src_delay, initially=False,
 						   monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
 				else:
 					# boundary must be on the right half
-					return findBoundarySA(tfrom=middle, tto=tto, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, start_is_M_initially=start_is_M_initially, initially=False,
+					return findBoundarySA(tfrom=middle, tto=tto, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, start_is_M_initially=start_is_M_initially,
+						   snk_delay=snk_delay, src_delay=src_delay, initially=False,
 						   monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
 			else:
 				if start_is_M_initially:
 					# boundary must be on the left half
-					return findBoundarySA(tfrom=tfrom, tto=middle, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, start_is_M_initially=start_is_M_initially, initially=False,
+					return findBoundarySA(tfrom=tfrom, tto=middle, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, start_is_M_initially=start_is_M_initially,
+						   snk_delay=snk_delay, src_delay=src_delay, initially=False,
 						   monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
 				else:
 					# boundary must be on the right half
-					return findBoundarySA(tfrom=middle, tto=tto, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, start_is_M_initially=start_is_M_initially, initially=False,
+					return findBoundarySA(tfrom=middle, tto=tto, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, start_is_M_initially=start_is_M_initially,
+						   snk_delay=snk_delay, src_delay=src_delay, initially=False,
 						   monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
 
 
 def checkSA(times, states, events, signals, output_signals,
+	snk_delay=10, src_delay=10,
 	Textra=30,
 	exclude_output_signals=True,
 	cutoff_min=0, cutoff_max=float('Inf'),
@@ -342,7 +363,7 @@ def checkSA(times, states, events, signals, output_signals,
 
 	# go over regions
 	count=0
-	if len(victim_signals) != 0:
+	if victim_signals:
 		# to test only a set of signals
 		victims = tqdm(victim_signals, leave=True, desc=f"Victim Signals Progress for {fault}")
 		for s in victims:
@@ -355,8 +376,10 @@ def checkSA(times, states, events, signals, output_signals,
 				tfrom = times[i]
 				tto = times[i+1]
 				start_is_M_initially = isSusceptibleSA(t=tfrom, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, MafterGrid=ERROR,
+										   snk_delay=snk_delay, src_delay=src_delay,
 										   monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
 				boundary = findBoundarySA(tfrom=tfrom, tto=tto, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, start_is_M_initially=start_is_M_initially,
+							  snk_delay=snk_delay, src_delay=src_delay,
 							  monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
 		
 				if boundary < tto:
@@ -414,8 +437,10 @@ def checkSA(times, states, events, signals, output_signals,
 				tfrom = times[i]
 				tto = times[i+1]
 				start_is_M_initially = isSusceptibleSA(t=tfrom, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, MafterGrid=ERROR,
+										   snk_delay=snk_delay, src_delay=src_delay,
 										   monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
 				boundary = findBoundarySA(tfrom=tfrom, tto=tto, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, start_is_M_initially=start_is_M_initially,
+							  snk_delay=snk_delay, src_delay=src_delay,
 							  monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
 
 				if boundary < tto:
