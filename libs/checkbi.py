@@ -77,6 +77,7 @@ def findBoundary(tfrom, tto, s, states, s_state, events, T, output_signals,
 	# else intersect
 	else:
 		middle = (tto + tfrom)/2
+		# middle = tfrom + (tto - tfrom)/2
 
 		if tto - tfrom <= 0.05:
 			return middle
@@ -133,73 +134,42 @@ def check(times, states, events, signals, output_signals,
 	count=0	
 	if victim_signals:
 		# to test only a set of signals
-		victims = tqdm(victim_signals, leave=True, desc="Victim Signals Progress")
-		for s in victims:
-			victims.write("--------------------------------------------------")
-			victims.write(f"SIGNAL {count} = {s}")
-			victims.write("--------------------------------------------------")
-			count+=1
-
-			for i in range(len(times)-1):
-				tfrom = times[i]
-				tto = times[i+1]
-				boundary = findBoundary(tfrom=tfrom, tto=tto, s=s, states=states, s_state=states[i][s], events=events, T=T, output_signals=output_signals,
-							snk_delay=snk_delay, src_delay=src_delay,
-							monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
-
-				if boundary < tto:
-					# it has a marked area:
-					susceptible_intervals += [ (s, [boundary, tto]) ]
-				
-				assert (tto - boundary >= 0)
-				assert (boundary - tfrom >= 0)
-
-				pos += tto - boundary
-				neg += boundary - tfrom
-
-				pos_per_sig[s] += tto - boundary
-				# print(pos_per_sig[s])
-
-				# print(f"New susceptible = {tto - boundary}")
-				# print(f"pos = {pos}")
-				# print(f"New non-susceptible = {boundary - tfrom}")
-				# print(f"neg = {neg}")
-				# print(f"pos_per_sig[{s}] = {pos_per_sig[s]}")
-				# print("--------------------------------------------------")
-	
+		victims = tqdm(victim_signals, leave=True, desc="Victim Signals Progress")	
 	else:
 		# to test all signals in the circuit
 		victims = tqdm(non_output_signals, leave=True, desc="Victim Signals Progress")
-		for s in victims:
-			victims.write("--------------------------------------------------")
-			victims.write(f"SIGNAL {count} = {s}")
-			victims.write("--------------------------------------------------")
-			count+=1
-			for i in range(len(times)-1):
-				tfrom = times[i]
-				tto = times[i+1]
-				boundary = findBoundary(tfrom=tfrom, tto=tto, s=s, states=states, s_state=states[i][s], events=events, T=T, output_signals=output_signals,
-							snk_delay=snk_delay, src_delay=src_delay,
-							monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
 
-				if boundary < tto:
-					# it has a marked area:
-					susceptible_intervals += [ (s, [boundary, tto]) ]
-				
-				assert (tto - boundary >= 0)
-				assert (boundary - tfrom >= 0)
+	for s in victims:
+		victims.write("--------------------------------------------------")
+		victims.write(f"SIGNAL {count} = {s}")
+		victims.write("--------------------------------------------------")
+		count+=1
+		
+		for i in range(len(times)-1):
+			tfrom = times[i]
+			tto = times[i+1]
+			boundary = findBoundary(tfrom=tfrom, tto=tto, s=s, states=states, s_state=states[i][s], events=events, T=T, output_signals=output_signals,
+						snk_delay=snk_delay, src_delay=src_delay,
+						monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
 
-				pos += tto - boundary
-				neg += boundary - tfrom
+			if boundary < tto:
+				# it has a marked area:
+				susceptible_intervals += [ (s, [boundary, tto]) ]
 			
-				pos_per_sig[s] += tto - boundary
+			assert (tto - boundary >= 0)
+			assert (boundary - tfrom >= 0)
 
-				# print(f"New susceptible = {tto - boundary}")
-				# print(f"pos = {pos}")
-				# print(f"New non-susceptible = {boundary - tfrom}")
-				# print(f"neg = {neg}")
-				# print(f"pos_per_sig[{s}] = {pos_per_sig[s]}")
-				# print("--------------------------------------------------")
+			pos += tto - boundary
+			neg += boundary - tfrom
+		
+			pos_per_sig[s] += tto - boundary
+
+			# print(f"New susceptible = {tto - boundary}")
+			# print(f"pos = {pos}")
+			# print(f"New non-susceptible = {boundary - tfrom}")
+			# print(f"neg = {neg}")
+			# print(f"pos_per_sig[{s}] = {pos_per_sig[s]}")
+			# print("--------------------------------------------------")
 
 	for s in output_signals:
 		pos_per_sig[s] += times[-1] - times[0]
@@ -296,7 +266,9 @@ def findBoundarySA(tfrom, tto, s, states, events, T, output_signals, SAF, start_
 		middle = (tto + tfrom)/2
 
 		if tto - tfrom <= ERROR:
-			return round(middle, 2)
+			# changed
+			# return round(middle, 2)
+			return middle
 
 		else:
 			middle_is_M = isSusceptibleSA(t=middle, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, MafterGrid=ERROR,
@@ -392,7 +364,8 @@ def checkSA(times, states, events, signals, output_signals,
 						susceptible_intervals += [ (s, [boundary, tto]) ]
 				
 				assert (tto - boundary >= 0)
-				assert (boundary - tfrom >= 0)
+				# changed
+				assert (boundary - tfrom >= 0),(f"signal = {s}, tfrom = {tfrom}, boundary = {boundary}, tto = {tto}")
 
 				if direction:
 					pos += tto - boundary
@@ -512,7 +485,10 @@ def checkSA(times, states, events, signals, output_signals,
 			#         neg += t_to - t_from
 
 	p = pos/(pos+neg) if pos + neg > 0 else 'undefined'
-	p_per_sig = { s: pos_per_sig[s] / (times[-1] - times[0]) for s in signals }
+	if victim_signals:
+		p_per_sig = { s: pos_per_sig[s] / (times[-1] - times[0]) for s in victims }
+	else:
+		p_per_sig = { s: pos_per_sig[s] / (times[-1] - times[0]) for s in signals }
 
 	assert (p <= 1)
 	assert (p_per_sig[s] <= 1 for s in signals)

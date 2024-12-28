@@ -1,1 +1,1 @@
-from prs.pipeline_logic import half_adder, alu
+from prs.pipeline_logic import half_adder, alu, fa_nclx_8bits

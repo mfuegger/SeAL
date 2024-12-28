@@ -6,7 +6,15 @@ sys.path.append(dir_path + '/../../')
 import pprint
 from libs import tracem as tr
 from libs import plotting
-from libs import checkbi as check
+# from libs import checkbi as check
+# from depricated import check
+from libs import checkdelta as check
+from libs import preprocessing as p
+
+# fault = 'SET'
+# fault = 'SA0'
+# fault = 'SA1'
+fault = 'SAF'
 
 # circuit
 # 1 dual-rail-bit 3-stage ring (fast environment)
@@ -89,12 +97,21 @@ init = {
 	'c3T': 1,
 	'ack3': 1,
 }
+
+output_signals=['c3F', 'c3T', 'ack1']
+
+T=100
+
+# cutoff
+cutoff_min = 0
+cutoff_max = float('Inf')
+
 glitch_t = 4
 events = [
     # (glitch_t, 'c3', .5),  # add glitch
     # (glitch_t + 0.1, 'c3', 0),  # reset glitch
 ]
-times, states = tr.trace(init, events=events, T=32)
+times, states = tr.trace(init, events, output_signals, T=T)
 
 # print it
 for i in range(len(times)):
@@ -102,8 +119,83 @@ for i in range(len(times)):
 	print(f'time {times[i]}:')
 	pprint.pprint(states[i])
 
-ret = check.check(times=times, events=events, states=states, signals=list(init.keys()), output_signals=['c3F', 'c3T', 'ack1'])
-pprint.pprint(ret)
+# ret = check.check(times=times, events=events, states=states, signals=list(init.keys()), output_signals=output_signals)
+# pprint.pprint(ret)
 
-plotting.plot(times, states, list(init.keys()), susceptible=ret['susceptible'])
+# plotting.plot(times, states, list(init.keys()), susceptible=ret['susceptible'])
+
+
+if fault == 'SET':
+	ret = check.check(
+			times=times,
+			states=states,
+			events=events,
+			signals=list(init.keys()),
+			output_signals=output_signals,
+			cutoff_min=cutoff_min,
+			cutoff_max=cutoff_max,
+			# victim_signals=['c_in', 'en1']
+	)
+	pprint.pprint(ret)
+
+	plotting.plot(
+			times,
+			states,
+			list(init.keys()),
+			susceptible=ret['susceptible'],
+			cutoff=[cutoff_min, cutoff_max],
+			fname="ring_1DRBit_3Stages.svg"
+			)
+	
+else:
+	SA1_M = {}
+	SA0_M = {}
+
+	if fault == 'SAF' or fault == 'SA1':
+		SA1_M = check.checkSA(
+			times=times,
+			states=states,
+			events=events,
+			signals=list(init.keys()),
+			output_signals=output_signals, 
+			cutoff_min=cutoff_min,
+			cutoff_max=cutoff_max,
+			fault='SA1',
+			# victim_signals=[]
+		)
+		pprint.pprint(SA1_M)
+
+	if fault == 'SAF' or fault == 'SA0':
+		SA0_M = check.checkSA(
+			times=times,
+			states=states,
+			events=events,
+			signals=list(init.keys()),
+			output_signals=output_signals, 
+			cutoff_min=cutoff_min,
+			cutoff_max=cutoff_max,
+			fault='SA0',
+			# victim_signals=[]
+		)
+		pprint.pprint(SA0_M)
+
+	susceptible_SA1 = p.appendSAF(p.collapseRanges(SA1_M['susceptible'] if SA1_M else []), 'SA1')
+	susceptible_SA0 = p.appendSAF(p.collapseRanges(SA0_M['susceptible']if SA0_M else []), 'SA0')
+	# print(f"Susceptible SA1: {susceptible_SA1}")
+	# print(f"Susceptible SA0: {susceptible_SA0}")
+
+	susceptible = susceptible_SA1 + susceptible_SA0
+
+	plotting.plot(
+		times,
+		states,
+		list(init.keys()),
+		init,
+		events,
+		delays={},
+		susceptible=susceptible,
+		fault=fault,
+		cutoff=[cutoff_min, cutoff_max],
+		fname="ring_1DRBit_3Stages.svg"
+		)
 

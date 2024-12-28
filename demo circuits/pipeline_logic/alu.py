@@ -5,6 +5,7 @@ import sys
 dir_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(dir_path + '/../../')
 
+import time
 import pprint
 # from prs import linear_1Bit_3Stages as 
 from prs import pipeline_logic as logic
@@ -35,8 +36,8 @@ Options:
                             [default: 400].                   
 -c --check                  Check all sensitivty windows.
 --exhaustive                Check by injecting faults exhaustively (depricated version of check for SET).
---fault=F                   Fault type to check (possible values: SET, SA0, SA1)
-                            [default: SET].
+--fault=F                   Fault type to check (possible values: SET, SA0, SA1, SAF)
+                            [default: SAF].
 --cutoff-min=N              The minimal cutoff. the start of the window to investigate
                             [default: 0].
 --cutoff-max=N              The maximal cutoff. the end of the window to investigate
@@ -53,13 +54,13 @@ def main():
         CHECK = True
     else:
         CHECK = False
-    # CHECK = True
+    CHECK = True
 
 #--------|---------|---------|---------|---------|
     if (options["--exhaustive"]):
         from depricated import check
     else:
-        from libs import checkbi as check
+        from libs import checkdelta as check
 #--------|---------|---------|---------|---------|
 
     T = int(options["--runtime"])
@@ -132,85 +133,93 @@ def main():
     #     pprint.pprint(states[i])
 
     if CHECK:
-        if fault == 'SET':
-            ret = check.check(
-                    times=times,
-                    states=states,
-                    events=events,
-                    signals=list(init.keys()),
-                    output_signals=output_signals,
-                    cutoff_min=cutoff_min,
-                    cutoff_max=cutoff_max,
-                    monitor=True,
-                    tokens=tokens,
-                    input_widths=input_widths,
-                    output_widths=output_widths,
-                    victim_signals=['op(0).F']   # 'd1__chin_op.T', 'b1__c_b_out_0'
+        # if fault == 'SET':
+        #     ret = check.check(
+        #             times=times,
+        #             states=states,
+        #             events=events,
+        #             signals=list(init.keys()),
+        #             output_signals=output_signals,
+        #             cutoff_min=cutoff_min,
+        #             cutoff_max=cutoff_max,
+        #             monitor=True,
+        #             tokens=tokens,
+        #             input_widths=input_widths,
+        #             output_widths=output_widths,
+        #             victim_signals=['op(0).F']   # 'd1__chin_op.T', 'b1__c_b_out_0'
+        #     )
+        #     pprint.pprint(ret)
+
+        #     plotting.plot(
+        #             times,
+        #             states,
+        #             list(init.keys()),
+        #             susceptible=ret['susceptible'],
+        #             cutoff=[cutoff_min, cutoff_max],
+        #             )
+        # else:
+        start = time.time()
+        SA1_M = {}
+        SA0_M = {}
+
+        if fault == 'SAF' or fault == 'SA1':
+            SA1_M = check.checkSA(
+                times=times,
+                states=states,
+                events=events,
+                signals=list(init.keys()),
+                output_signals=output_signals, 
+                cutoff_min=cutoff_min,
+                cutoff_max=cutoff_max,
+                fault='SA1',
+                monitor=True,
+                tokens=tokens,
+                input_widths=input_widths,
+                output_widths=output_widths,
+                # victim_signals=[]
+                victim_signals=['op(0).F']
             )
-            pprint.pprint(ret)
+            # pprint.pprint(SA1_M)
 
-            plotting.plot(
-                    times,
-                    states,
-                    list(init.keys()),
-                    susceptible=ret['susceptible'],
-                    cutoff=[cutoff_min, cutoff_max],
-                    )
-        else:
-            SA1_M = {}
-            SA0_M = {}
+        if fault == 'SAF' or fault == 'SA0':
+            SA0_M = check.checkSA(
+                times=times,
+                states=states,
+                events=events,
+                signals=list(init.keys()),
+                output_signals=output_signals, 
+                cutoff_min=cutoff_min,
+                cutoff_max=cutoff_max,
+                fault='SA0',
+                monitor=True,
+                tokens=tokens,
+                input_widths=input_widths,
+                output_widths=output_widths,
+                victim_signals=[]
+                # victim_signals=['op(0).F']
+            )
+            # pprint.pprint(SA0_M)
 
-            if fault == 'SAF' or fault == 'SA1':
-                SA1_M = check.checkSA(
-                    times=times,
-                    states=states,
-                    events=events,
-                    signals=list(init.keys()),
-                    output_signals=output_signals, 
-                    cutoff_min=cutoff_min,
-                    cutoff_max=cutoff_max,
-                    fault='SA1',
-                    monitor=True,
-                    tokens=tokens,
-                    input_widths=input_widths,
-                    output_widths=output_widths,
-                    victim_signals=['op(0).F']
-                )
-                # pprint.pprint(SA1_M)
+        end = time.time()
 
-            if fault == 'SAF' or fault == 'SA0':
-                SA0_M = check.checkSA(
-                    times=times,
-                    states=states,
-                    events=events,
-                    signals=list(init.keys()),
-                    output_signals=output_signals, 
-                    cutoff_min=cutoff_min,
-                    cutoff_max=cutoff_max,
-                    fault='SA0',
-                    monitor=True,
-                    tokens=tokens,
-                    input_widths=input_widths,
-                    output_widths=output_widths,
-                    victim_signals=['op(0).F']
-                )
-                # pprint.pprint(SA0_M)
+        susceptible_SA1 = p.appendSAF(p.collapseRanges(SA1_M['susceptible'] if SA1_M else []), 'SA1')
+        susceptible_SA0 = p.appendSAF(p.collapseRanges(SA0_M['susceptible']if SA0_M else []), 'SA0')
+        print(f"Susceptible SA1: {susceptible_SA1}")
+        print(f"Susceptible SA0: {susceptible_SA0}")
 
-            susceptible_SA1 = p.appendSAF(p.collapseRanges(SA1_M['susceptible'] if SA1_M else []), 'SA1')
-            susceptible_SA0 = p.appendSAF(p.collapseRanges(SA0_M['susceptible']if SA0_M else []), 'SA0')
-            print(f"Susceptible SA1: {susceptible_SA1}")
-            print(f"Susceptible SA0: {susceptible_SA0}")
+        susceptible = susceptible_SA1 + susceptible_SA0
 
-            susceptible = susceptible_SA1 + susceptible_SA0
+        total_time = end - start
+        print(f"\n time to check circuit using checkdelta is {total_time}")
 
-            plotting.plot(
-                times,
-                states,
-                list(init.keys()),
-                susceptible=susceptible,
-                fault=fault,
-                cutoff=[cutoff_min, cutoff_max],
-                )
+        plotting.plot(
+            times,
+            states,
+            list(init.keys()),
+            susceptible=susceptible,
+            fault=fault,
+            cutoff=[cutoff_min, cutoff_max],
+            )
 
 if (__name__ == "__main__"):
     main()

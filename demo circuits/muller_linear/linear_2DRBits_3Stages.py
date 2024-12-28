@@ -5,6 +5,7 @@ import sys
 dir_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(dir_path + '/../../')
 
+import time
 import pprint
 from prs import muller_linear as linear
 from libs import tracem as tr

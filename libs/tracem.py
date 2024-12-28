@@ -33,6 +33,11 @@ NANDr = lambda a,b: 1-min(a,b)  # not(a and b) -> rise
 NANDf = lambda a,b: min(a,b)    # a and b      -> fall
 
 
+# switch rise and fall of XOR
+XORr = lambda a,b: ANDr(ORr(a, b), NANDr(a, b))
+XORf = lambda a,b: 1- ANDr(ORr(a, b), NANDr(a, b))
+
+
 rules = []
 signals = []
 
@@ -77,6 +82,21 @@ def getInflunceTimeList(o: str):
 
 	ret = [ rule['d'] for rule in rules if rule['o'] == o ]
 	return ret
+
+def getOutputList(i: str):
+	global rules
+
+	ret = [ (rule['o'], rule['d']) for rule in rules if i in rule['i'] ]
+	return ret
+
+def getOutputListAll():
+
+	global signals
+	outputListDict = dict()
+
+	for sig in signals:
+		outputListDict[sig] = getOutputList(sig)
+	return outputListDict
 
 
 def clear():
@@ -219,6 +239,7 @@ def trace(init, events, output_signals, T=50, snk_delay=10, src_delay=10, Mdelay
 	# monitor ack_out to send new data
 	def monitorACK(ack_out, t):
 
+		# list of events in the form (time, signal, value)
 		input_events=[]
 		
 		'''
@@ -362,6 +383,7 @@ def trace(init, events, output_signals, T=50, snk_delay=10, src_delay=10, Mdelay
 			# 	raise Exception(f"Signal {rule['o']} was in unstable_rules but visited set to False. Current time = {t}")
 			# else:
 				# print('unstable at time', t, rule)
+										# logical mitigation 
 			new_value = rule['val'] if ( state[ rule['o'] ] == rule['val'] ) else 0.5
 			if (new_value == 0.5) and ( state[rule['o']] != rule['val'] ) and verbose:
 				input_parameter_str = ', '.join([ f'{s}={state[s]}' for s in rule['i'] ])

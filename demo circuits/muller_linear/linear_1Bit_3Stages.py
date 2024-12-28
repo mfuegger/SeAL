@@ -5,6 +5,7 @@ import sys
 dir_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(dir_path + '/../../')
 
+import time
 import pprint
 # from prs import linear_1Bit_3Stages as 
 from prs import muller_linear as linear
@@ -35,8 +36,8 @@ Options:
                             [default: 100].                   
 -c --check                  Check all sensitivty windows.
 --exhaustive                Check by injecting faults exhaustively (depricated version of check for SET).
---fault=F                   Fault type to check (possible values: SET, SA0, SA1)
-                            [default: SET].
+--fault=F                   Fault type to check (possible values: SET, SA0, SA1, SAF)
+                            [default: SAF].
 --cutoff-min=N              The minimal cutoff. the start of the window to investigate
                             [default: 0].
 --cutoff-max=N              The maximal cutoff. the end of the window to investigate
@@ -58,7 +59,8 @@ def main():
     if (options["--exhaustive"]):
         from depricated import check
     else:
-        from libs import checkbi as check
+        # from libs import checkbi as check
+        from libs import checkdelta as check
 #--------|---------|---------|---------|---------|
 
     T = int(options["--runtime"])
@@ -107,9 +109,14 @@ def main():
             times, states = tr.traceSA(init, events, output_signals, stuck_sig, stuck_value, stuck_t, T=T)
 
         elif fault == 'SA0':
-            stuck_sig = 'c2'
             stuck_value = 0
-            stuck_t = 15
+
+            stuck_sig = 'c2'
+            stuck_t = 19
+
+            stuck_sig = 'en2'
+            stuck_t = 9.001
+
             events += [
                     # (20, 'c1', 0),  
                     # (20, 'en2', 0),
@@ -133,7 +140,15 @@ def main():
         times, states = tr.trace(init, events, output_signals, T=T)
 
 
-    plotting.plot(times, states, list(init.keys()))
+    plotting.plot(
+        times,
+        states,
+        list(init.keys()),
+        init,
+        events,
+        delays={},
+        fname="linear_1Bit_3Stages.svg"
+        )
 
     # print it
     for i in range(len(times)):
@@ -151,7 +166,7 @@ def main():
                     output_signals=output_signals,
                     cutoff_min=cutoff_min,
                     cutoff_max=cutoff_max,
-                    victim_signals=['c_in', 'en1']
+                    # victim_signals=['c_in', 'en1']
             )
             pprint.pprint(ret)
 
@@ -159,11 +174,18 @@ def main():
                     times,
                     states,
                     list(init.keys()),
+                    init,
+                    events,
+                    delays={},
                     susceptible=ret['susceptible'],
+                    fault=fault,
                     cutoff=[cutoff_min, cutoff_max],
+                    fname="linear_1Bit_3Stages.svg"
                     )
             
         else:
+            start = time.time()
+
             SA1_M = {}
             SA0_M = {}
 
@@ -177,7 +199,7 @@ def main():
                     cutoff_min=cutoff_min,
                     cutoff_max=cutoff_max,
                     fault='SA1',
-                    victim_signals=[]
+                    # victim_signals=[]
                 )
                 pprint.pprint(SA1_M)
 
@@ -191,9 +213,11 @@ def main():
                     cutoff_min=cutoff_min,
                     cutoff_max=cutoff_max,
                     fault='SA0',
-                    victim_signals=[]
+                    # victim_signals=[]
                 )
                 pprint.pprint(SA0_M)
+
+            end = time.time()
 
             susceptible_SA1 = p.appendSAF(p.collapseRanges(SA1_M['susceptible'] if SA1_M else []), 'SA1')
             susceptible_SA0 = p.appendSAF(p.collapseRanges(SA0_M['susceptible']if SA0_M else []), 'SA0')
@@ -202,13 +226,20 @@ def main():
 
             susceptible = susceptible_SA1 + susceptible_SA0
 
+            total_time = end - start
+            print(f"\n time to check circuit using checkdelta is {total_time}")
+
             plotting.plot(
                 times,
                 states,
                 list(init.keys()),
+                init,
+                events,
+                delays={},
                 susceptible=susceptible,
                 fault=fault,
                 cutoff=[cutoff_min, cutoff_max],
+                fname="linear_1Bit_3Stages.svg"
                 )
    
 

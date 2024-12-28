@@ -31,7 +31,7 @@ def plotSensitivityBars(p_per_sig, fname='bar.pdf', title=None):
 	)
 
 
-def plot(times, states, signals, fname='out.svg', dt=30, dv=60, x0=60, susceptible=None, fault='SET', cutoff=None):
+def plot(times, states, signals, init=None, events=None, delays=None, fname='out.svg', dt=30, dv=60, x0=60, susceptible=None, fault='SET', cutoff=None):
 	GRID_COLOR = svgwrite.rgb(30, 30, 30, '%')
 	GRID_LW = 0.1
 
@@ -226,5 +226,23 @@ def plot(times, states, signals, fname='out.svg', dt=30, dv=60, x0=60, susceptib
 				stroke_width=2,
 				stroke_dasharray=5
 			))
+
+	# print circuit parameters
+	if delays != None:		
+		text_block_init = f'Init: {init}'
+		text_block_events = '\t'.join([f'{event}' for event in events])
+		text_block_delays = f'Delays: {delays}'
+
+		# Adjust the text insertion point to avoid overlap
+		text_y_position = maxy + 70
+		dwg.add(dwg.text(text_block_init, insert=(20, text_y_position), font_size="16", fill='black'))
+		text_y_position += 20
+		dwg.add(dwg.text("Events:", insert=(20, text_y_position), font_size="16", fill='black'))
+		text_y_position += 20
+		for line in text_block_events.split('\n'):
+			dwg.add(dwg.text(line, insert=(20, text_y_position), font_size="16", fill='black'))
+			text_y_position += 20
+		dwg.add(dwg.text(text_block_delays, insert=(20, text_y_position), font_size="16", fill='black'))
+		text_y_position += 20
 
 	dwg.save()
