@@ -14,17 +14,20 @@ def isSusceptibleSA(
     T,
     output_signals,
     SAF,
-    MafterGrid,  # MafterGrid=0.001
-    snk_delay: float=10,
-    src_delay: float=10,
-    monitor: bool=False,
+    MafterGrid: float,
+    snk_delay: float = 10,
+    src_delay: float = 10,
+    monitor: bool = False,
     tokens=None,
     input_widths=None,
     output_widths=None,
 ) -> bool:
+    print("isSusceptibleSA", s, t, SAF)
+    # add the error event
     events_check = events + [
-        (t + MafterGrid, s, SAF),  # add SA0 or SA1
+        (t + MafterGrid, s, SAF),
     ]
+    # simulate
     times_M, states_M = tr.traceSA(
         states[0],
         events_check,
@@ -40,21 +43,20 @@ def isSusceptibleSA(
         input_widths=input_widths,
         output_widths=output_widths,
         verbose=False,
-    )  # Mdelay=t+MafterGrid,
-
+    )
+    # check if was M
     was_M = False
     for state_M in states_M:
         was_M = was_M or any([state_M[s] == 0.5 for s in output_signals])
 
-    # print((f"SA_signal {s} stuck at {SAF} at time {t+MafterGrid} {was_M}"))
     return was_M
 
 
-def findDelta(signal: str, time: float, times: list[float]) -> float:
+def findDelta(signal: str, time: float, times: list[float], history: list[str]=[]) -> float:
     """
     Returns by how much we can proceed.
     """
-    # print(f"signal {signal} at time {time}")
+    # print(f"{history} findDelta({signal}, {time})")
     times_larger = [t for t in times if t > time]
     if len(times_larger) == 0:
         # no more region boundaries ahead -> can proceed as much as wanted
@@ -72,40 +74,41 @@ def findDelta(signal: str, time: float, times: list[float]) -> float:
     for output in outputList:
         out_sig = output[0]
         delay = output[1]
-        delta = findDelta(out_sig, time + delay, times)
+        delta = findDelta(out_sig, time + delay, times, history=history+[f"{signal}:{time}"])
         assert delta > 0
         ret += [delta]
 
     # combine as minimum
+    assert min(ret) > 0
     return min(ret)
 
 
 def checkSA(
-    times,
+    times: list[float],
     states,
     events,
-    signals,
+    signals: list[str],
     output_signals,
-    snk_delay: float=10,
-    src_delay: float=10,
-    Textra: float=30,
+    snk_delay: float = 10,
+    src_delay: float = 10,
+    Textra: float = 30,
     exclude_output_signals=True,
     cutoff_min=0,
     cutoff_max=float("Inf"),
-    fault: str="SA0",
-    monitor: bool=False,
+    fault: str = "SA0",
+    monitor: bool = False,
     tokens=None,
     input_widths=None,
     output_widths=None,
-    victim_signals: list[str]=[],
+    victim_signals: list[str] = [],
 ) -> dict[str, Any]:
     """
     checking all equivalence regions
     """
     susceptible_intervals = []
-    pos = 0
-    neg = 0
-    pos_per_sig = {s: 0 for s in signals}
+    pos: float = 0.0
+    neg: float = 0.0
+    pos_per_sig: dict[str, float] = {s: 0.0 for s in signals}
     T = times[-1] + Textra
 
     if fault == "SA0":
@@ -122,7 +125,6 @@ def checkSA(
             raise Exception("Tokens and In/Output Widths missing!")
 
     # go over regions
-    count = 0
     if victim_signals:
         # to test only a set of signals
         victims = tqdm(
@@ -135,49 +137,45 @@ def checkSA(
         )
 
     for s in victims:
-        count += 1
+        print(">> checking signal", s)
+        tfrom = times[0]
+        while tfrom < times[-1]:
+            print(">> checking time", tfrom)
+            # step 1: find the smallest delta
+            delta = findDelta(s, tfrom, times)
+            mid_point = tfrom + delta / 2
 
-        for i in range(len(times) - 1):
-            tfrom = times[i]
-            tto = times[i + 1]
+            # step 2: inject a fault anywhere within delta
+            region_is_M = isSusceptibleSA(
+                t=mid_point,
+                s=s,
+                states=states,
+                events=events,
+                T=T,
+                output_signals=output_signals,
+                SAF=SAF,
+                MafterGrid=ERROR,
+                snk_delay=snk_delay,
+                src_delay=src_delay,
+                monitor=monitor,
+                tokens=tokens,
+                input_widths=input_widths,
+                output_widths=output_widths,
+            )
 
-            while True:
-                # step 1: find the smallest delta
-                delta = findDelta(s, tfrom, times)
-                mid_point = delta / 2 + tfrom
+            # step 3: label the delta region (and add to pos & neg & pos_per_sig[s] accordingly)
+            if region_is_M:
+                susceptible_intervals += [(s, [tfrom, tfrom + delta])]
+                pos += delta
+                pos_per_sig[s] += delta
+            else:
+                neg += delta
 
-                # step 2: inject a fault anywhere within delta
-                region_is_M = isSusceptibleSA(
-                    t=mid_point,
-                    s=s,
-                    states=states,
-                    events=events,
-                    T=T,
-                    output_signals=output_signals,
-                    SAF=SAF,
-                    MafterGrid=ERROR,
-                    snk_delay=snk_delay,
-                    src_delay=src_delay,
-                    monitor=monitor,
-                    tokens=tokens,
-                    input_widths=input_widths,
-                    output_widths=output_widths,
-                )
-
-                # step 3: label the delta region (and add to pos & neg & pos_per_sig[s] accordingly)
-                if region_is_M:
-                    susceptible_intervals += [(s, [tfrom, tfrom + delta])]
-                    pos += delta - tfrom
-                    pos_per_sig[s] += delta - tfrom
-                else:
-                    neg += delta - tfrom
-
-                tfrom += delta
-
-                if tfrom >= tto:
-                    break
+            # step 4: proceed to next time
+            tfrom += delta
 
     for s in output_signals:
+        # assume: all is positive
         pos_per_sig[s] += times[-1] - times[0]
 
         if not exclude_output_signals:
