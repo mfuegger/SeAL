@@ -150,7 +150,7 @@ def checkSA(times, states, events, signals, output_signals,
 			while True:
 				# step 1: find the smallest delta
 				delta = findDelta(s, delta[1], tto, times, inititally_r=False)
-				print(f"delta for signal {s} is {delta}")
+				# print(f"delta for signal {s} is {delta}")
 				# print("delta type is ", type(delta))
 				mid_point = (delta[0] + delta[1]) / 2
 

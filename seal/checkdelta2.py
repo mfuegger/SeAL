@@ -1,6 +1,6 @@
 from typing import Any
 from tqdm import tqdm
-from libs import tracem as tr
+from seal import tracem as tr
 
 ERROR = 1e-6
 error_cause = False
@@ -22,7 +22,7 @@ def isSusceptibleSA(
     input_widths=None,
     output_widths=None,
 ) -> bool:
-    print("isSusceptibleSA", s, t, SAF)
+    # print("isSusceptibleSA", s, t, SAF)
     # add the error event
     events_check = events + [
         (t + MafterGrid, s, SAF),
@@ -137,10 +137,8 @@ def checkSA(
         )
 
     for s in victims:
-        print(">> checking signal", s)
         tfrom = times[0]
         while tfrom < times[-1]:
-            print(">> checking time", tfrom)
             # step 1: find the smallest delta
             delta = findDelta(s, tfrom, times)
             mid_point = tfrom + delta / 2

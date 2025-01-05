@@ -1,15 +1,9 @@
 from docopt import docopt
-import os
-import sys
-
-dir_path = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(dir_path + "/../")
-
 import time
 import pprint
-from libs import tracem as tr
-from libs import plotting
-from libs import preprocessing as p
+from seal import tracem as tr
+from seal import plotting
+from seal import preprocessing as p
 
 
 usage_msg = """
@@ -42,9 +36,9 @@ def main():
 
     # --------|---------|---------|---------|---------|
     if options["--delta2"]:
-        from libs import checkdelta2 as check
+        from seal import checkdelta2 as check
     else:
-        from libs import checkdelta as check
+        from seal import checkdelta as check
     # --------|---------|---------|---------|---------|
 
     T = int(options["--runtime"])
