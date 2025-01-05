@@ -1,21 +1,10 @@
 from docopt import docopt
-import os
-import sys
-
-dir_path = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(dir_path + '/../../')
-
 import time
-# from prs import linear_1Bit_3Stages as 
-from prs import pipeline_logic as logic
-from libs import tracem as tr
-from libs import plotting
-from libs import preprocessing as p
-# from libs import checkbi as check
-# from depricated import check
+from ...prs import pipeline_logic as logic
+from ...libs import tracem as tr
+from ...libs import plotting
+from ...libs import preprocessing as p
 
-    # alu.py [-c | --check]
-    # alu.py -h | -v
 
 usage_msg = """
 
