@@ -1,11 +1,4 @@
-
-import os
-import sys
-
-dir_path = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(dir_path + '/../../')
-
-from libs import tracem as tr
+from seal import tracem as tr
 
 def GeneratePipeline():
 

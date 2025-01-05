@@ -12,3 +12,12 @@ faults.
 SeAL is used in the article "On the Susceptibility of QDI Circuits to Transient Faults" (El Shehaby, Fuegger, Steininger, FORMATS'23)
 to analyze the sensitivity of QDI circuits to transient faults.
 Please see the paper for a discussion and proof of the algorithm.
+
+
+## Install
+
+
+To install locally, run
+```bash
+pip install -e .
+```

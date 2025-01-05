@@ -1,6 +1,6 @@
 import copy
 
-from libs import DualRail as DR
+from seal import DualRail as DR
 
 Cr = lambda a,b: min(a,b)
 Cf = lambda a,b: min(1-a,1-b)

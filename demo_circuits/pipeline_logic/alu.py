@@ -1,9 +1,9 @@
 from docopt import docopt
 import time
-from ...prs import pipeline_logic as logic
-from ...libs import tracem as tr
-from ...libs import plotting
-from ...libs import preprocessing as p
+from seal.prs import pipeline_logic as logic
+from seal import tracem as tr
+from seal import plotting
+from seal import preprocessing as p
 
 
 usage_msg = """
@@ -49,9 +49,9 @@ def main():
     if (options["--exhaustive"]):
         from depricated import check
     elif (options["--delta2"]):
-        from libs import checkdelta2 as check
+        from seal import checkdelta2 as check
     else:
-        from libs import checkdelta as check
+        from seal import checkdelta as check
 #--------|---------|---------|---------|---------|
 
     T = int(options["--runtime"])
