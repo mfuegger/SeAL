@@ -4,7 +4,7 @@ from seal.prs import pipeline_logic as logic
 from seal import tracem as tr
 from seal import plotting
 from seal import preprocessing as p
-
+import logging
 
 usage_msg = """
 
@@ -32,6 +32,14 @@ Options:
                             [default: float('Inf')].               
 --delta2                    Check using checkdelta2.
 """
+
+logging.basicConfig(level=logging.WARNING, format='%(name)s - %(levelname)s - %(message)s')
+
+# only enable for debugging
+module_logger = logging.getLogger('seal')
+module_logger.setLevel(logging.DEBUG)
+
+
 #--------|---------|---------|---------|---------|---------|---------|---------|
 
 def main():

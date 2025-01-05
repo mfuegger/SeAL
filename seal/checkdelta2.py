@@ -1,9 +1,10 @@
 from typing import Any
 from tqdm import tqdm
 from seal import tracem as tr
+import logging
 
 ERROR = 1e-6
-error_cause = False
+logger = logging.getLogger(__name__)
 
 
 def isSusceptibleSA(
@@ -56,7 +57,7 @@ def findDelta(signal: str, time: float, times: list[float], history: list[str]=[
     """
     Returns by how much we can proceed.
     """
-    # print(f"{history} findDelta({signal}, {time})")
+    # logger.debug("%s:%s", signal, time)
     times_larger = [t for t in times if t > time]
     if len(times_larger) == 0:
         # no more region boundaries ahead -> can proceed as much as wanted
@@ -137,8 +138,10 @@ def checkSA(
         )
 
     for s in victims:
+        logger.debug("checking signal %s", s)
         tfrom = times[0]
         while tfrom < times[-1]:
+            logger.debug("checking time %s", tfrom)
             # step 1: find the smallest delta
             delta = findDelta(s, tfrom, times)
             mid_point = tfrom + delta / 2
