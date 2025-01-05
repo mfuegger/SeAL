@@ -36,8 +36,8 @@ Options:
 logging.basicConfig(level=logging.WARNING, format='%(name)s - %(levelname)s - %(message)s')
 
 # only enable for debugging
-module_logger = logging.getLogger('seal')
-module_logger.setLevel(logging.DEBUG)
+# module_logger = logging.getLogger('seal')
+# module_logger.setLevel(logging.DEBUG)
 
 
 #--------|---------|---------|---------|---------|---------|---------|---------|
