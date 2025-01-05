@@ -6,7 +6,6 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(dir_path + '/../../')
 
 import time
-import pprint
 # from prs import linear_1Bit_3Stages as 
 from prs import pipeline_logic as logic
 from libs import tracem as tr
@@ -42,6 +41,7 @@ Options:
                             [default: 0].
 --cutoff-max=N              The maximal cutoff. the end of the window to investigate
                             [default: float('Inf')].               
+--delta2                    Check using checkdelta2.
 """
 #--------|---------|---------|---------|---------|---------|---------|---------|
 
@@ -59,6 +59,8 @@ def main():
 #--------|---------|---------|---------|---------|
     if (options["--exhaustive"]):
         from depricated import check
+    elif (options["--delta2"]):
+        from libs import checkdelta2 as check
     else:
         from libs import checkdelta as check
 #--------|---------|---------|---------|---------|
