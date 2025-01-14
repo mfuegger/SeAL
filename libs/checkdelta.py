@@ -27,19 +27,6 @@ def isSusceptibleSA(t, s, states, events, T, output_signals, SAF, MafterGrid,	#	
 def findDelta(s, tfrom, tto, times, inititally_r=True, inititally_d=True):
 
 	# assert tto-tfrom > ERROR, f"[{tfrom}, {tto}]"
-
-	# if inititally_r:
-	# 	print("**************************************************")
-	# 	print(f"New region [{tfrom}, {tto}]")
-	# 	print("**************************************************")
-	# if inititally_d:
-	# 	print("New delta")
-
-	# print("**************************************************")
-	# print("Going deeper")
-	# print(f"s is {s}, tfrom is {tfrom}, tto is {tto}")
-	# print("**************************************************")
-	
 	# error_cause=False
 	outputList = tr.getOutputList(s)
 	delta_candidates = []
@@ -70,25 +57,14 @@ def findDelta(s, tfrom, tto, times, inititally_r=True, inititally_d=True):
 		for t in times:
 			# crosses time boundary/region
 			if t > temp_tfrom and t < temp_tto:
-				# print("**************************************************")
-				# print(f"temp_tfrom is {temp_tfrom}, t is {t}, temp_tto is {temp_tto}")
-				# print("**************************************************")
 				# adjust delta bound
 				temp_tto = t
 				break
 
 		# test next level
 		temp_delta = findDelta(temp_sig, temp_tfrom, temp_tto, times, inititally_r=False, inititally_d=False) #, visited=visited)
-		# print("**************************************************")		
-		# print(f"Type of delta is {type(temp_delta)}")
-		# print("Going higher")
-		# print(f"signal is {s}, temp_tfrom is {temp_delta[0] - temp_d}, temp_tto is {temp_delta[1] - temp_d}")
-		# print("**************************************************")
-
 		delta_candidates.append([temp_delta[0] - temp_d, temp_delta[1] - temp_d])
-		# print(f"Delta Candidates List for {s} is {delta_candidates}")
-		# print(f"Type of min delta is {type(min(delta_candidates))}")
-		# print("**************************************************")
+
 		assert len(delta_candidates)==1	
 		return min(delta_candidates)
 

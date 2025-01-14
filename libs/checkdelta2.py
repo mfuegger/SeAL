@@ -1,9 +1,10 @@
 from tqdm import tqdm
-
+import logging
 from libs import tracem as tr
 
 ERROR = 1e-6
 error_cause=False
+logger = logging.getLogger('seal')
 
 def isSusceptibleSA(t, s, states, events, T, output_signals, SAF, MafterGrid,	#	MafterGrid=0.001
                     snk_delay=10, src_delay=10,
@@ -24,28 +25,34 @@ def isSusceptibleSA(t, s, states, events, T, output_signals, SAF, MafterGrid,	#	
     return was_M
                 
 
-def findDelta(signal: str, time: float, times: list[float]) -> float:
+def findDelta(signal: str, time: float, times: list[float], history: list[str]=[]) -> float:
     """
-    By how much we can proceed.
+    Returns by how much we can proceed.
     """
-    # print(f"signal {signal} at time {time}")
+    # logger.debug("%s:%s", signal, time)
     times_larger = [t for t in times if t > time]
     if len(times_larger) == 0:
+        # no more region boundaries ahead -> can proceed as much as wanted
         return float("inf")
 
+    # next region boundary
     end_of_region = min(times_larger)
-    duration_on_own_signal = end_of_region - time
 
-    ret = [ duration_on_own_signal ]
+    # how long to next region boundary
+    duration_on_own_signal = end_of_region - time
+    ret = [duration_on_own_signal]
+
+    # check recursively on downstream gates
     outputList = tr.getOutputList(signal)
     for output in outputList:
         out_sig = output[0]
         delay = output[1]
-        delta =findDelta(out_sig, time + delay, times)
-        assert delta>0
-
-        # ret += [ findDelta(out_sig, time + delay, times) ]
+        delta = findDelta(out_sig, time + delay, times, history=history+[f"{signal}:{time}"])
+        assert delta > 0
         ret += [delta]
+
+    # combine as minimum
+    assert min(ret) > 0
     return min(ret)
 
 
@@ -83,7 +90,6 @@ def checkSA(times, states, events, signals, output_signals,
             raise Exception("Tokens and In/Output Widths missing!")
 
     # go over regions
-    count=0
     if victim_signals:
         # to test only a set of signals
         victims = tqdm(victim_signals, leave=True, desc=f"Victim Signals Progress for {fault}")
@@ -92,36 +98,43 @@ def checkSA(times, states, events, signals, output_signals,
         victims = tqdm(non_output_signals, leave=True, desc=f"Victim Signals Progress for {fault}")
 
     for s in victims:
-        count+=1
+        logger.debug("checking signal %s", s)
+        tfrom = times[0]
+        while tfrom < times[-1]:
+            logger.debug("checking time %s", tfrom)
+            # step 1: find the smallest delta
+            delta = findDelta(s, tfrom, times)
+            logger.debug("checking time %s finddelta", tfrom)
+            mid_point = tfrom + delta / 2
+            # step 2: inject a fault anywhere within delta
+            region_is_M = isSusceptibleSA(
+                t=mid_point,
+                s=s,
+                states=states,
+                events=events,
+                T=T,
+                output_signals=output_signals,
+                SAF=SAF,
+                MafterGrid=ERROR,
+                snk_delay=snk_delay,
+                src_delay=src_delay,
+                monitor=monitor,
+                tokens=tokens,
+                input_widths=input_widths,
+                output_widths=output_widths,
+            )
+            logger.debug("checking time %s isSus", tfrom)
+            # step 3: label the delta region (and add to pos & neg & pos_per_sig[s] accordingly)
+            if region_is_M:
+                susceptible_intervals += [(s, [tfrom, tfrom + delta])]
+                pos += delta
+                pos_per_sig[s] += delta
+            else:
+                neg += delta
+            # step 4: proceed to next time
+            tfrom += delta
 
-        for i in range(len(times)-1):
-            tfrom = times[i]
-            tto = times[i+1]
-
-            while True:
-                # step 1: find the smallest delta
-                delta = findDelta(s, tfrom, times)
-                mid_point = delta/2 + tfrom
-
-                # step 2: inject a fault anywhere within delta
-                region_is_M = isSusceptibleSA(t=mid_point, s=s, states=states, events=events, T=T, output_signals=output_signals, SAF=SAF, MafterGrid=ERROR,
-                               snk_delay=snk_delay, src_delay=src_delay,
-                               monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
-
-                # step 3: label the delta region (and add to pos & neg & pos_per_sig[s] accordingly)
-                if region_is_M:
-                    susceptible_intervals += [ (s, [tfrom, tfrom+delta]) ]
-                    pos += delta - tfrom
-                    pos_per_sig[s] += delta - tfrom
-                else:
-                    neg += delta - tfrom
-
-                tfrom += delta
-
-                if tfrom >= tto:
-                    break
-
-    for s in output_signals:
+    for s in output_signals:    
         pos_per_sig[s] += times[-1] - times[0]
 
         if not exclude_output_signals:

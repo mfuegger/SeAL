@@ -54,10 +54,10 @@ def main():
     for filename in os.listdir(script_path):
         if filename.startswith('linear') and filename.endswith('.py'):
             print(f"---------------------Circuit: {filename}---------------------")
-            if(filename == "linear_scale_DRBits_stages.py"):
-                continue
-            if(filename == "linear_2DRBits_3Stages.py"):
-                continue
+            # if(filename == "linear_scale_DRBits_stages.py"):
+            #     continue
+            # if(filename == "linear_2DRBits_3Stages.py"):
+            #     continue
             module_name = os.path.splitext(filename)[0]
             module = getattr(linear, module_name)
             # print(module)

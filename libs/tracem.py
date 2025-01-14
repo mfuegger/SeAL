@@ -85,8 +85,9 @@ def getInflunceTimeList(o: str):
 
 def getOutputList(i: str):
 	global rules
-
-	ret = [ (rule['o'], rule['d']) for rule in rules if i in rule['i'] ]
+	
+	# remove duplicates because of rising/falling -> set
+	ret = list(set([ (rule['o'], rule['d']) for rule in rules if i in rule['i'] ]))
 	return ret
 
 def getOutputListAll():
