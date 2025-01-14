@@ -1,20 +1,10 @@
 from docopt import docopt
-import os
-import sys
-
-dir_path = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(dir_path + '/../../')
-
+import time
 import pprint
-# from prs import linear_1Bit_3Stages as 
-from prs import pipeline_logic as logic
-from libs import tracem as tr
-from libs import plotting
-# from libs import checkbi as check
-# from depricated import check
-
-    # linear1_Bit_3Stages.py [-c | --check]
-    # linear1_Bit_3Stages.py -h | -v
+from seal.prs import pipeline_logic as logic
+from seal import tracem as tr
+from seal import plotting
+from seal import preprocessing as p
 
 usage_msg = """
 
@@ -57,7 +47,7 @@ def main():
     if (options["--exhaustive"]):
         from depricated import check
     else:
-        from libs import checkbi as check
+        from seal import checkbi as check
 #--------|---------|---------|---------|---------|
 
     fault = str(options["--fault"])

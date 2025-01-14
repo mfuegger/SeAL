@@ -1,19 +1,10 @@
 from docopt import docopt
-import os
-import sys
-
-dir_path = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(dir_path + '/../../')
-
 import time
-import pprint
-from prs import pipeline_logic as logic
-from libs import tracem as tr
-from libs import plotting
-from libs import preprocessing as p
-
-    # multiplier.py [-c | --check]
-    # multiplier.py -h | -v
+from seal.prs import pipeline_logic as logic
+from seal import tracem as tr
+from seal import plotting
+from seal import preprocessing as p
+import logging
 
 usage_msg = """
 
@@ -23,53 +14,78 @@ cutoff
 
 
 usage:
-    multiplier.py [options]
+    alu.py [options]
 
 Options:
 -h --help                   Show this screen.
 -v --version                Show version information.
 
 --runtime=T                 Time for execution prefix.
-                            [default: 400].    
---fault=F                   Fault type to check (possible values: SA0, SA1, SAF)
-                            [default: SAF].               
---testcase                  Check a specific fault injection.
---delta2                    Check using checkdelta2.
-
+                            [default: 400].                   
+-c --check                  Check all sensitivty windows.
+--exhaustive                Check by injecting faults exhaustively (depricated version of check for SET).
+--fault=F                   Fault type to check (possible values: SET, SA0, SA1, SAF)
+                            [default: SAF].
 --cutoff-min=N              The minimal cutoff. the start of the window to investigate
                             [default: 0].
 --cutoff-max=N              The maximal cutoff. the end of the window to investigate
                             [default: float('Inf')].               
+--delta2                    Check using checkdelta2.
 """
+
+logging.basicConfig(level=logging.WARNING, format='%(name)s - %(levelname)s - %(message)s')
+
+# only enable for debugging
+# module_logger = logging.getLogger('seal')
+# module_logger.setLevel(logging.DEBUG)
+
+
 #--------|---------|---------|---------|---------|---------|---------|---------|
 
 def main():
-    options = docopt(usage_msg, version="0.1")    
+    options = docopt(usage_msg, version="0.1")
+
+    # CHECK = True --> show sensitivity windows
+    # CHECK = False --> show effect of specific glitches
+    if (options["--check"]):
+        CHECK = True
+    else:
+        CHECK = False
+    CHECK = True
 
 #--------|---------|---------|---------|---------|
-    if (options["--delta2"]):
-        from libs import checkdelta2 as check
+    if (options["--exhaustive"]):
+        from depricated import check
+    elif (options["--delta2"]):
+        from seal import checkdelta2 as check
     else:
-        from libs import checkdelta as check
+        from seal import checkdelta as check
 #--------|---------|---------|---------|---------|
 
     T = int(options["--runtime"])
     fault = str(options["--fault"])
-    assert (fault in ['SAF', 'SA1', 'SA0']), "Fault type not supported"
-
-    if (options["--testcase"]):
-        CHECK = False
-    else:
-        CHECK = True
+    assert (fault in ['SET', 'SAF', 'SA1', 'SA0']), "Fault type not supported"
 
     cutoff_min = int(options["--cutoff-min"])
     cutoff_max = float(options["--cutoff-min"])
 
     # create circuit
-    init, events, tokens, input_widths, output_signals, output_widths = logic.umul4x4_new.GeneratePipeline()
+    init, events, tokens, input_widths, output_signals, output_widths = logic.alu.GeneratePipeline()
     
     if not CHECK:
-        if fault == 'SA1':
+        if fault == 'SET':
+            glitch_t = 29.521037528996843
+            glitch_sig = 'd1__chin_op.T'
+            events += [
+                    (glitch_t, glitch_sig, 0.5),  # add glitch
+                    (glitch_t + 0.1, glitch_sig, 0),  # reset glitch
+            ]
+
+            # print("print before trace call", events)
+            times, states = tr.trace(init, events, output_signals, T=T, monitor=True, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
+            # print("print after trace call", events)
+
+        elif fault == 'SA1':
             stuck_sig = 'a(3).F'
             stuck_val = 1
             stuck_t = 300
@@ -109,9 +125,39 @@ def main():
     plotting.plot(times, states, list(init.keys()))
     # print(events)
 
-    if CHECK:
-        start = time.time()
+    # # print it
+    # for i in range(len(times)):
+    #     print()
+    #     print(f'time {times[i]}:')
+    #     pprint.pprint(states[i])
 
+    if CHECK:
+        # if fault == 'SET':
+        #     ret = check.check(
+        #             times=times,
+        #             states=states,
+        #             events=events,
+        #             signals=list(init.keys()),
+        #             output_signals=output_signals,
+        #             cutoff_min=cutoff_min,
+        #             cutoff_max=cutoff_max,
+        #             monitor=True,
+        #             tokens=tokens,
+        #             input_widths=input_widths,
+        #             output_widths=output_widths,
+        #             victim_signals=['op(0).F']   # 'd1__chin_op.T', 'b1__c_b_out_0'
+        #     )
+        #     pprint.pprint(ret)
+
+        #     plotting.plot(
+        #             times,
+        #             states,
+        #             list(init.keys()),
+        #             susceptible=ret['susceptible'],
+        #             cutoff=[cutoff_min, cutoff_max],
+        #             )
+        # else:
+        start = time.time()
         SA1_M = {}
         SA0_M = {}
 
@@ -129,8 +175,8 @@ def main():
                 tokens=tokens,
                 input_widths=input_widths,
                 output_widths=output_widths,
-                victim_signals=[]
-                # victim_signals=['op(0).F']
+                # victim_signals=[]
+                victim_signals=['op(0).F']
             )
             # pprint.pprint(SA1_M)
 

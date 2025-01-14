@@ -1,23 +1,11 @@
 from docopt import docopt
-import os
-import sys
-import logging
-
-dir_path = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(dir_path + '/../../')
-
 import time
 import pprint
-# from prs import linear_1Bit_3Stages as 
-from prs import pipeline_logic as logic
-from libs import tracem as tr
-from libs import plotting
-from libs import preprocessing as p
-# from libs import checkbi as check
-# from depricated import check
+from seal.prs import pipeline_logic as logic
+from seal import tracem as tr
+from seal import plotting
+from seal import preprocessing as p
 
-    # alu.py [-c | --check]
-    # alu.py -h | -v
 
 usage_msg = """
 
@@ -27,59 +15,50 @@ cutoff
 
 
 usage:
-    alu.py [options]
+    multiplier.py [options]
 
 Options:
 -h --help                   Show this screen.
 -v --version                Show version information.
 
 --runtime=T                 Time for execution prefix.
-                            [default: 400].                   
--c --check                  Check all sensitivty windows.
---exhaustive                Check by injecting faults exhaustively (depricated version of check for SET).
+                            [default: 400].    
 --fault=F                   Fault type to check (possible values: SA0, SA1, SAF)
-                            [default: SAF].
+                            [default: SAF].               
+--testcase                  Check a specific fault injection.
+--delta2                    Check using checkdelta2.
+
 --cutoff-min=N              The minimal cutoff. the start of the window to investigate
                             [default: 0].
 --cutoff-max=N              The maximal cutoff. the end of the window to investigate
-                            [default: float('Inf')].    
---delta2                    Check using checkdelta2.           
+                            [default: float('Inf')].               
 """
 #--------|---------|---------|---------|---------|---------|---------|---------|
 
-
-logging.basicConfig(level=logging.WARNING, format='%(name)s - %(levelname)s - %(message)s')
-# only enable for debugging
-module_logger = logging.getLogger('seal')
-module_logger.setLevel(logging.DEBUG)
-
 def main():
-    options = docopt(usage_msg, version="0.1")
-
-    # CHECK = True --> show sensitivity windows
-    # CHECK = False --> show effect of specific glitches
-    if (options["--check"]):
-        CHECK = True
-    else:
-        CHECK = False
-    CHECK = True
+    options = docopt(usage_msg, version="0.1")    
 
 #--------|---------|---------|---------|---------|
     if (options["--delta2"]):
-        from libs import checkdelta2 as check
+        from seal import checkdelta2 as check
     else:
-        from libs import checkdelta as check
+        from seal import checkdelta as check
 #--------|---------|---------|---------|---------|
 
     T = int(options["--runtime"])
     fault = str(options["--fault"])
-    assert (fault in ['SET', 'SAF', 'SA1', 'SA0']), "Fault type not supported"
+    assert (fault in ['SAF', 'SA1', 'SA0']), "Fault type not supported"
+
+    if (options["--testcase"]):
+        CHECK = False
+    else:
+        CHECK = True
 
     cutoff_min = int(options["--cutoff-min"])
     cutoff_max = float(options["--cutoff-min"])
 
     # create circuit
-    init, events, tokens, input_widths, output_signals, output_widths = logic.alu_flat_new.GeneratePipeline()
+    init, events, tokens, input_widths, output_signals, output_widths = logic.umul4x4_new.GeneratePipeline()
     
     if not CHECK:
         if fault == 'SA1':
@@ -124,6 +103,7 @@ def main():
 
     if CHECK:
         start = time.time()
+
         SA1_M = {}
         SA0_M = {}
 
@@ -141,8 +121,8 @@ def main():
                 tokens=tokens,
                 input_widths=input_widths,
                 output_widths=output_widths,
-                # victim_signals=[]
-                victim_signals=['op(0).F']
+                victim_signals=[]
+                # victim_signals=['op(0).F']
             )
             # pprint.pprint(SA1_M)
 
@@ -160,8 +140,8 @@ def main():
                 tokens=tokens,
                 input_widths=input_widths,
                 output_widths=output_widths,
-                # victim_signals=[]
-                victim_signals=['op(0).F']
+                victim_signals=[]
+                # victim_signals=['op(0).F']
             )
             # pprint.pprint(SA0_M)
 

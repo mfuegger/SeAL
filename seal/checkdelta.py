@@ -1,7 +1,8 @@
 from tqdm import tqdm
+from seal import tracem as tr
+import logging
 
-from libs import tracem as tr
-
+logger = logging.getLogger(__name__)
 ERROR = 1e-6
 error_cause=False
 
@@ -112,6 +113,7 @@ def checkSA(times, states, events, signals, output_signals,
 		victims = tqdm(non_output_signals, leave=True, desc=f"Victim Signals Progress for {fault}")
 
 	for s in victims:
+		logger.debug("checking signal %s", s)
 		# victims.write("--------------------------------------------------")
 		# victims.write(f"SIGNAL {count} = {s}")
 		# victims.write("--------------------------------------------------")
@@ -120,13 +122,14 @@ def checkSA(times, states, events, signals, output_signals,
 		for i in range(len(times)-1):
 			tfrom = times[i]
 			tto = times[i+1]
+			logger.debug("checking time %s", tfrom)
 
 			delta = [tfrom, tfrom]
 
 			while True:
 				# step 1: find the smallest delta
 				delta = findDelta(s, delta[1], tto, times, inititally_r=False)
-				print(f"delta for signal {s} is {delta}")
+				# print(f"delta for signal {s} is {delta}")
 				# print("delta type is ", type(delta))
 				mid_point = (delta[0] + delta[1]) / 2
 
