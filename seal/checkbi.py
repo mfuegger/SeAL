@@ -1,6 +1,6 @@
 from tqdm import tqdm
 
-from libs import tracem as tr
+from seal import tracem as tr
 
 ERROR = 0.001
 
