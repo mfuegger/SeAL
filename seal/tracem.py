@@ -131,16 +131,16 @@ def fall(f, i, o, d: float=1):
 
 
 def trace(init, events, output_signals, T: float=50.0, snk_delay: float=10.0, src_delay: float=10.0, Mdelay=0.1, monitor=False, tokens=None, input_widths=None, output_widths=None, verbose=True):
-	"""
-	init:   initial state. Dict of the form: signal -> value
-	events: list of items (time, signal, value)
-	T:      time until execution
-	tokens: input tokens to feed the circuit
-	"""
-	global rules, signals
-	t = 0
-	states = []
-	times = []
+    """
+    init:   initial state. Dict of the form: signal -> value
+    events: list of items (time, signal, value)
+    T:      time until execution
+    tokens: input tokens to feed the circuit
+    """
+    global rules, signals
+    t = 0
+    states = []
+    times = []
 
     # check if something is initialized that is not in the circuit
     for s in init.keys():
@@ -165,7 +165,7 @@ def trace(init, events, output_signals, T: float=50.0, snk_delay: float=10.0, sr
         visited_stable[s] = False
         # visited_unstable[s] = False
 
-    # --------------------------------------- Monitor Prepocessing ---------------------------------------		
+    # --------------------------------------- Monitor Prepocessing ---------------------------------------      
     if monitor:
         if tokens is None or input_widths is None or output_widths is None:
             raise Exception("Tokens and In/Output Widths missing!")
@@ -216,19 +216,19 @@ def trace(init, events, output_signals, T: float=50.0, snk_delay: float=10.0, sr
                 'out2' : [...],
                 'out3' : [...]
                 }
-            '''	
+            ''' 
             DR_output = {}
-            for signal, bits in signal_bits_dict.items():	# dict (str, set)
+            for signal, bits in signal_bits_dict.items():   # dict (str, set)
                 DR_bit = []
             
-                for bit in bits:	# set (str)
+                for bit in bits:    # set (str)
                     DR_bit.append(DR.DualRail(bit))
                 
                 DR_output[signal] = DR_bit
 
             # for signal, value in DR_output.items(): # str, list
-            # 	for i, v in enumerate(value):	# DualRail
-            # 		print(v.ToCode())
+            #   for i, v in enumerate(value):   # DualRail
+            #       print(v.ToCode())
 
     # ---------------------------------------------------------------------------------------------------
                     
@@ -251,8 +251,8 @@ def trace(init, events, output_signals, T: float=50.0, snk_delay: float=10.0, sr
         # spacer received, schedule next data token
         if not ack_out:
             if len(DR_tokens_copy) == 0:
-                for signal, token in DR_tokens[0].items():	# dict
-                    for i, v in enumerate(token):	# list (int, DualRail)
+                for signal, token in DR_tokens[0].items():  # dict
+                    for i, v in enumerate(token):   # list (int, DualRail)
                         input_events += [(0, f"{signal}({i}).T", 0)]
                         input_events += [(0, f"{signal}({i}).F", 0)]
             else:
@@ -261,8 +261,8 @@ def trace(init, events, output_signals, T: float=50.0, snk_delay: float=10.0, sr
                 current_token = DR_tokens_copy.pop(0)
                 next_token = current_token_notDR
 
-                for signal, token in current_token.items():	# dict
-                    for i, v in enumerate(token):	# list (int, DualRail)
+                for signal, token in current_token.items(): # dict
+                    for i, v in enumerate(token):   # list (int, DualRail)
                         input_events += [(t+src_delay, f"{signal}({i}).T", int(v.T))]
                         input_events += [(t+src_delay, f"{signal}({i}).F", int(v.F))]
                         # input_events += [(t+random.uniform(0.9*src_delay, 1.1*src_delay), f"{signal}({i}).T", int(v.T))]
@@ -272,8 +272,8 @@ def trace(init, events, output_signals, T: float=50.0, snk_delay: float=10.0, sr
         else:
             next_token = "SPACER"
             # print("DR_tokens = ", DR_tokens)
-            for signal, token in DR_tokens[0].items():	# dict
-                for i, v in enumerate(token):	# list (int, DualRail)
+            for signal, token in DR_tokens[0].items():  # dict
+                for i, v in enumerate(token):   # list (int, DualRail)
                     input_events += [(t+src_delay, f"{signal}({i}).T", 0)]
                     input_events += [(t+src_delay, f"{signal}({i}).F", 0)]
                     # input_events += [(t+random.uniform(0.9*src_delay, 1.1*src_delay), f"{signal}({i}).T", 0)]
@@ -302,7 +302,7 @@ def trace(init, events, output_signals, T: float=50.0, snk_delay: float=10.0, sr
     def CD(DR_output, ack_in):
         
         # if any(DR_output = 0.5):
-        # 	return ack_in
+        #   return ack_in
 
         for bits in DR_output.values():
             for bit in bits:
@@ -339,7 +339,7 @@ def trace(init, events, output_signals, T: float=50.0, snk_delay: float=10.0, sr
     
     # follow up
     # schedule first token or spacer
-    if monitor:		
+    if monitor:     
         input_events = monitorACK(state['ack_out'], t)
         events.extend(input_events)
         # print(f"First token added: {events}")
@@ -375,9 +375,9 @@ def trace(init, events, output_signals, T: float=50.0, snk_delay: float=10.0, sr
         # for all these: make glitch at output immediately if the current value and the intended value do not match
         for rule in unstable_rules:
             # if not visited_unstable[rule['o']]:
-            # 	print(f"Visited Stable of {rule['o']} = {visited_stable[rule['o']]}")
-            # 	print(f"Visited Unstable of {rule['o']} = {visited_unstable[rule['o']]}")
-            # 	raise Exception(f"Signal {rule['o']} was in unstable_rules but visited set to False. Current time = {t}")
+            #   print(f"Visited Stable of {rule['o']} = {visited_stable[rule['o']]}")
+            #   print(f"Visited Unstable of {rule['o']} = {visited_unstable[rule['o']]}")
+            #   raise Exception(f"Signal {rule['o']} was in unstable_rules but visited set to False. Current time = {t}")
             # else:
                 # print('unstable at time', t, rule)
                                         # logical mitigation 
@@ -404,9 +404,9 @@ def trace(init, events, output_signals, T: float=50.0, snk_delay: float=10.0, sr
         # print(rules_to_apply)
         for rule in rules_to_apply:
             # if not visited_stable[rule['o']]:
-            # 	print(f"Visited Stable of {rule['o']} = {visited_stable[rule['o']]}")
-            # 	print(f"Visited Unstable of {rule['o']} = {visited_unstable[rule['o']]}")
-            # 	raise Exception(f"Signal {rule['o']} was in rules_to_apply but visited set to False. Current time = {t}")
+            #   print(f"Visited Stable of {rule['o']} = {visited_stable[rule['o']]}")
+            #   print(f"Visited Unstable of {rule['o']} = {visited_unstable[rule['o']]}")
+            #   raise Exception(f"Signal {rule['o']} was in rules_to_apply but visited set to False. Current time = {t}")
             # else:
             temp_state = state[ rule['o'] ]
             # print('apply at time',DR_outputlist t, rule)
@@ -428,9 +428,9 @@ def trace(init, events, output_signals, T: float=50.0, snk_delay: float=10.0, sr
                 elif rule['o'] in output_signals:
                     # print(f"Reached first output rail")
                     # update the specific rail in DR_output
-                    for signal, bits in DR_output.items():	# dict
+                    for signal, bits in DR_output.items():  # dict
                         # print(bits)
-                        for bit in bits:	# list (DualRail)
+                        for bit in bits:    # list (DualRail)
                             # print(bit)
                             bit.T = state[f'{bit.name}.T']
                             bit.F = state[f'{bit.name}.F']
@@ -521,12 +521,12 @@ def trace(init, events, output_signals, T: float=50.0, snk_delay: float=10.0, sr
 
 
 def traceSA(init, events, output_signals, SA_signal, SA_value, SA_time, T: float=50.0, snk_delay: float=10.0, src_delay: float=10.0, Mdelay=0.01, monitor=False, tokens=None, input_widths=None, output_widths=None, verbose=True):
-	"""
-	init:   initial state. Dict of the form: signal -> value
-	events: list of items (time, signal, value)
-	T:      time until execution
-	tokens: input tokens to feed the circuit
-	"""	
+    """
+    init:   initial state. Dict of the form: signal -> value
+    events: list of items (time, signal, value)
+    T:      time until execution
+    tokens: input tokens to feed the circuit
+    """ 
 
     global rules, signals
     t = 0
@@ -554,7 +554,7 @@ def traceSA(init, events, output_signals, SA_signal, SA_value, SA_time, T: float
     for s in signals:
         visited_stable[s] = False
 
-    # --------------------------------------- Monitor Prepocessing ---------------------------------------		
+    # --------------------------------------- Monitor Prepocessing ---------------------------------------      
     if monitor:
         if tokens is None or input_widths is None or output_widths is None:
             raise Exception("Tokens and In/Output Widths missing!")
@@ -605,19 +605,19 @@ def traceSA(init, events, output_signals, SA_signal, SA_value, SA_time, T: float
                 'out2' : [...],
                 'out3' : [...]
                 }
-            '''	
+            ''' 
             DR_output = {}
-            for signal, bits in signal_bits_dict.items():	# dict (str, set)
+            for signal, bits in signal_bits_dict.items():   # dict (str, set)
                 DR_bit = []
             
-                for bit in bits:	# set (str)
+                for bit in bits:    # set (str)
                     DR_bit.append(DR.DualRail(bit))
                 
                 DR_output[signal] = DR_bit
 
             # for signal, value in DR_output.items(): # str, list
-            # 	for i, v in enumerate(value):	# DualRail
-            # 		print(v.ToCode())
+            #   for i, v in enumerate(value):   # DualRail
+            #       print(v.ToCode())
 
     # ---------------------------------------------------------------------------------------------------
                     
@@ -639,8 +639,8 @@ def traceSA(init, events, output_signals, SA_signal, SA_value, SA_time, T: float
         # spacer received, schedule next data token
         if not ack_out:
             if len(DR_tokens_copy) == 0:
-                for signal, token in DR_tokens[0].items():	# dict
-                    for i, v in enumerate(token):	# list (int, DualRail)
+                for signal, token in DR_tokens[0].items():  # dict
+                    for i, v in enumerate(token):   # list (int, DualRail)
                         input_events += [(0, f"{signal}({i}).T", 0)]
                         input_events += [(0, f"{signal}({i}).F", 0)]
             else:
@@ -649,8 +649,8 @@ def traceSA(init, events, output_signals, SA_signal, SA_value, SA_time, T: float
                 current_token = DR_tokens_copy.pop(0)
                 next_token = current_token_notDR
 
-                for signal, token in current_token.items():	# dict
-                    for i, v in enumerate(token):	# list (int, DualRail)
+                for signal, token in current_token.items(): # dict
+                    for i, v in enumerate(token):   # list (int, DualRail)
                         input_events += [(t+src_delay, f"{signal}({i}).T", int(v.T))]
                         input_events += [(t+src_delay, f"{signal}({i}).F", int(v.F))]
                         # input_events += [(t+random.uniform(0.9*src_delay, 1.1*src_delay), f"{signal}({i}).T", int(v.T))]
@@ -660,8 +660,8 @@ def traceSA(init, events, output_signals, SA_signal, SA_value, SA_time, T: float
         else:
             next_token = "SPACER"
             # print("DR_tokens = ", DR_tokens)
-            for signal, token in DR_tokens[0].items():	# dict
-                for i, v in enumerate(token):	# list (int, DualRail)
+            for signal, token in DR_tokens[0].items():  # dict
+                for i, v in enumerate(token):   # list (int, DualRail)
                     input_events += [(t+src_delay, f"{signal}({i}).T", 0)]
                     input_events += [(t+src_delay, f"{signal}({i}).F", 0)]
                     # input_events += [(t+random.uniform(0.9*src_delay, 1.1*src_delay), f"{signal}({i}).T", 0)]
@@ -690,7 +690,7 @@ def traceSA(init, events, output_signals, SA_signal, SA_value, SA_time, T: float
     def CD(DR_output, ack_in):
         
         # if any(DR_output = 0.5):
-        # 	return ack_in
+        #   return ack_in
 
         for bits in DR_output.values():
             for bit in bits:
@@ -727,7 +727,7 @@ def traceSA(init, events, output_signals, SA_signal, SA_value, SA_time, T: float
     
     # follow up
     # schedule first token or spacer
-    if monitor:		
+    if monitor:     
         input_events = monitorACK(state['ack_out'], t)
         events.extend(input_events)
         # print(f"First token added: {events}")
@@ -748,10 +748,10 @@ def traceSA(init, events, output_signals, SA_signal, SA_value, SA_time, T: float
 
                 if event[1] == SA_signal and event[0] >= SA_time:
                     # if state[ event[1] ] != SA_value:
-                    # 	if event[0] > SA_time:
-                    # 		raise Exception(f"SA_signal {SA_signal} became stuck at {SA_value} at {SA_time} and is not stuck anymore at time {t}!")
-                    # 	else:
-                    # 		state[ event[1] ] = SA_value
+                    #   if event[0] > SA_time:
+                    #       raise Exception(f"SA_signal {SA_signal} became stuck at {SA_value} at {SA_time} and is not stuck anymore at time {t}!")
+                    #   else:
+                    #       state[ event[1] ] = SA_value
 
                     state[ event[1] ] = SA_value
                     # print("stuck at updated at events 1")
@@ -774,7 +774,7 @@ def traceSA(init, events, output_signals, SA_signal, SA_value, SA_time, T: float
 
         # unstable events:
         #   list of the rules that were scheduled, but that now evaluate not to 1
-        # 	they are either 0 (generation) or 0.5 (propagation)
+        #   they are either 0 (generation) or 0.5 (propagation)
         unstable_rules = [ event[1] for event in scheduled if eval_rule(state=state, rule=event[1]) < 1 ]
 
         # for all these: make glitch at output immediately if the current value and the intended value do not match
@@ -786,7 +786,7 @@ def traceSA(init, events, output_signals, SA_signal, SA_value, SA_time, T: float
                 print(f"time {t}: M due to unstable rule G({input_parameter_str}) -> {rule['o']} (currently {state[rule['o']]}, setting to {rule['val']})")
             
             # if rule['o'] == SA_signal and t >= SA_time:
-            # 	pass	
+            #   pass    
             # else:
             state[ rule['o'] ] = new_value
             
@@ -808,7 +808,7 @@ def traceSA(init, events, output_signals, SA_signal, SA_value, SA_time, T: float
         rules_to_apply = [ event[1] for event in scheduled if event[0] == t ]
         for rule in rules_to_apply:
             # if rule['o'] == SA_signal and t >= SA_time:
-            # 	pass	
+            #   pass    
             # else:
             temp_state = state[ rule['o'] ]
             # print('apply at time', t, rule)
@@ -830,9 +830,9 @@ def traceSA(init, events, output_signals, SA_signal, SA_value, SA_time, T: float
                 elif rule['o'] in output_signals:
                     # print(f"Reached first output rail")
                     # update the specific rail in DR_output
-                    for signal, bits in DR_output.items():	# dict
+                    for signal, bits in DR_output.items():  # dict
                         # print(bits)
-                        for bit in bits:	# list (DualRail)
+                        for bit in bits:    # list (DualRail)
                             # print(bit)
                             bit.T = state[f'{bit.name}.T']
                             bit.F = state[f'{bit.name}.F']
@@ -864,10 +864,10 @@ def traceSA(init, events, output_signals, SA_signal, SA_value, SA_time, T: float
             if event[0] == t:
                 if event[1] == SA_signal and event[0] >= SA_time:
                     # if state[ event[1] ] != SA_value:
-                    # 	if event[0] > SA_time:
-                    # 		raise Exception(f"SA_signal {SA_signal} became stuck at {SA_value} at {SA_time} and is not stuck anymore at time {t}!")
-                    # 	else:
-                    # 		state[ event[1] ] = SA_value
+                    #   if event[0] > SA_time:
+                    #       raise Exception(f"SA_signal {SA_signal} became stuck at {SA_value} at {SA_time} and is not stuck anymore at time {t}!")
+                    #   else:
+                    #       state[ event[1] ] = SA_value
                     
                     state[ event[1] ] = SA_value
                     # print("stuck at updated at events 2")
@@ -924,11 +924,11 @@ def traceSA(init, events, output_signals, SA_signal, SA_value, SA_time, T: float
         
         # print("-----------------------------------------------------------------------------------------")
         # print(f"Time = {t}")
-        # print("Scheduled")	
-        # for event in scheduled:	
-        # 	print(f"{event[0]}, {event[1]['o']}, {event[1]['val']}")
+        # print("Scheduled")    
+        # for event in scheduled:   
+        #   print(f"{event[0]}, {event[1]['o']}, {event[1]['val']}")
         # print(f"events {events}")
-        # print(f"state {state}")	
+        # print(f"state {state}")   
         # print("-----------------------------------------------------------------------------------------")
 
 
