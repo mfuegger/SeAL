@@ -5,6 +5,7 @@ import logging
 logger = logging.getLogger(__name__)
 ERROR = 1e-6
 error_cause=False
+step_count = 0
 
 def isSusceptibleSA(t, s, states, events, T, output_signals, SAF, MafterGrid,	#	MafterGrid=0.001
 					snk_delay=10, src_delay=10,
@@ -34,6 +35,9 @@ def findDelta(s, tfrom, tto, times, inititally_r=True, inititally_d=True):
 	# print(outputList)
 	global error_cause
 	# error_cause=True
+	global step_count
+
+	step_count +=1
 
 	# final output and no feedback
 	if not outputList:
@@ -102,6 +106,8 @@ def checkSA(times, states, events, signals, output_signals,
 	if monitor:
 		if tokens is None or input_widths is None or output_widths is None:
 			raise Exception("Tokens and In/Output Widths missing!")
+		
+	global step_count
 
 	# go over regions
 	count=0
@@ -149,6 +155,8 @@ def checkSA(times, states, events, signals, output_signals,
 					neg += delta[1] - delta[0]
 
 				if delta[1] >= tto:
+					print(f"Steps for signal {s} for time region {tfrom} to {tto} = {step_count}")
+					step_count = 0
 					break
 
 		

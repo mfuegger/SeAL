@@ -26,7 +26,7 @@ Options:
                             [default: SAF].            
 --testcase                  Check a specific fault injection.
 --delta2                    Check using checkdelta2.
-             
+--deltaopt                  Check using checkdeltaopt.             
 """
 # --------|---------|---------|---------|---------|---------|---------|---------|
 
@@ -35,8 +35,10 @@ def main():
     options = docopt(usage_msg, version="0.1")
 
     # --------|---------|---------|---------|---------|
-    if options["--delta2"]:
+    if (options["--delta2"]):
         from seal import checkdelta2 as check
+    elif(options["--deltaopt"]):
+        from seal import checkdeltaopt as check
     else:
         from seal import checkdelta as check
     # --------|---------|---------|---------|---------|
