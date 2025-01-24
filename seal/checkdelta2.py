@@ -53,7 +53,7 @@ def isSusceptibleSA(
     return was_M
 
 
-def findDelta(signal: str, time: float, times: list[float], history: list[str]=[]) -> float:
+def findDelta(signal: str, time: float, times: list[float], simulation: tuple, simulation_SA: tuple, history: list[str]=[]) -> float:
     """
     Returns by how much we can proceed.
     """
@@ -70,12 +70,19 @@ def findDelta(signal: str, time: float, times: list[float], history: list[str]=[
     duration_on_own_signal = end_of_region - time
     ret = [duration_on_own_signal]
 
+    # check if this event would be masked,
+    # i.e., simulation(signal, time) == simulation_SA(signal, time)
+    # If so, return
+    if False:
+        return ret[0]
+
+    # Else (i.e., not masked),
     # check recursively on downstream gates
     outputList = tr.getOutputList(signal)
     for output in outputList:
         out_sig = output[0]
         delay = output[1]
-        delta = findDelta(out_sig, time + delay, times, history=history+[f"{signal}:{time}"])
+        delta = findDelta(out_sig, time + delay, times, simulation=simulation, simulation_SA=simulation_SA, history=history+[f"{signal}:{time}"])
         assert delta > 0
         ret += [delta]
 
@@ -90,9 +97,9 @@ def checkSA(
     events,
     signals: list[str],
     output_signals,
-    snk_delay: float = 10,
-    src_delay: float = 10,
-    Textra: float = 30,
+    snk_delay: float = 10.0,
+    src_delay: float = 10.0,
+    Textra: float = 30.0,
     exclude_output_signals=True,
     cutoff_min=0,
     cutoff_max=float("Inf"),
@@ -137,13 +144,47 @@ def checkSA(
             non_output_signals, leave=True, desc=f"Victim Signals Progress for {fault}"
         )
 
+    # create the simulation without SA fault
+    simulation = tr.trace(
+        states[0],
+        [],
+        output_signals,
+        T=T,
+        snk_delay=snk_delay,
+        src_delay=src_delay,
+        monitor=monitor,
+        tokens=tokens,
+        input_widths=input_widths,
+        output_widths=output_widths,
+        verbose=False,
+    )
+
     for s in victims:
         logger.debug("checking signal %s", s)
         tfrom = times[0]
         while tfrom < times[-1]:
             logger.debug("checking time %s", tfrom)
+
+            # step 0: create simulation with SA
+            simulation_SA = tr.traceSA(
+                states[0],
+                [],
+                output_signals,
+                SA_signal=s,
+                SA_value=SAF,
+                SA_time=tfrom + ERROR,
+                T=T,
+                snk_delay=snk_delay,
+                src_delay=src_delay,
+                monitor=monitor,
+                tokens=tokens,
+                input_widths=input_widths,
+                output_widths=output_widths,
+                verbose=False,
+            )
+
             # step 1: find the smallest delta
-            delta = findDelta(s, tfrom, times)
+            delta = findDelta(s, tfrom, times, simulation=simulation, simulation_SA=simulation_SA)
             mid_point = tfrom + delta / 2
 
             # step 2: inject a fault anywhere within delta

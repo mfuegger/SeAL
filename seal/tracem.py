@@ -131,7 +131,7 @@ def fall(f, i, o, d: float=1):
 	rule(f=f, i=i, o=o, val=0, d=d)
 
 
-def trace(init, events, output_signals, T=50, snk_delay: float=10, src_delay: float=10, Mdelay=0.1, monitor=False, tokens=None, input_widths=None, output_widths=None, verbose=True):
+def trace(init, events, output_signals, T: float=50.0, snk_delay: float=10.0, src_delay: float=10.0, Mdelay=0.1, monitor=False, tokens=None, input_widths=None, output_widths=None, verbose=True):
 	"""
 	init:   initial state. Dict of the form: signal -> value
 	events: list of items (time, signal, value)
@@ -521,7 +521,7 @@ def trace(init, events, output_signals, T=50, snk_delay: float=10, src_delay: fl
 	return filtered_times, filtered_states
 
 
-def traceSA(init, events, output_signals, SA_signal, SA_value, SA_time, T=50, snk_delay: float=10, src_delay: float=10, Mdelay=0.01, monitor=False, tokens=None, input_widths=None, output_widths=None, verbose=True):
+def traceSA(init, events, output_signals, SA_signal, SA_value, SA_time, T: float=50.0, snk_delay: float=10.0, src_delay: float=10.0, Mdelay=0.01, monitor=False, tokens=None, input_widths=None, output_widths=None, verbose=True):
 	"""
 	init:   initial state. Dict of the form: signal -> value
 	events: list of items (time, signal, value)
