@@ -58,7 +58,9 @@ def findDelta(signal: str, time: float, times: list[float], simulation: tuple, s
     """
     Returns by how much we can proceed.
     """
-    # logger.debug("%s:%s", signal, time)
+    # if len(history) < 10:
+    #     logger.warning("%s:%s", signal, time)
+    
     times_larger = [t for t in times if t > time]
     if len(times_larger) == 0:
         # no more region boundaries ahead -> can proceed as much as wanted
@@ -77,7 +79,12 @@ def findDelta(signal: str, time: float, times: list[float], simulation: tuple, s
     sim_val = tr.value_at_trace(signal=signal, time=time + 2*ERROR, trace=simulation)
     sim_sa_val = tr.value_at_trace(signal=signal, time=time + 2*ERROR, trace=simulation_SA)
 
-    logger.debug(signal, time, "val", sim_val, "val_sa", sim_sa_val, "hist", history)
+    assert sim_val != 0.5
+    if sim_sa_val == 0.5:
+        # assuming these propagate with delay 0
+        return ret[0]
+
+        # print(signal, time, "val", sim_val, "val_sa", sim_sa_val, "hist", history)
     # signals = list(simulation[1][0].keys())
     # if len(history) == 0:
     #     plotting.plot(simulation[0], simulation[1], signals, fname = f'out-{signal}-{time}-00-{history}.svg')
@@ -175,7 +182,7 @@ def checkSA(
         logger.debug("checking signal %s", s)
         tfrom = times[0]
         while tfrom < times[-1]:
-            logger.debug("checking time %s", tfrom)
+            logger.warning("checking time %s", tfrom)
 
             # step 0: create simulation with SA
             events_check = events + [
