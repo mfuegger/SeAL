@@ -80,7 +80,7 @@ def findDelta(
     # how long to next region boundary
     duration_on_own_signal = end_of_region - time
     ret = [duration_on_own_signal]
-    ret_sampling_points: set[plotting.Sampling_point] = set()
+    ret_sampling_points: set[plotting.Sampling_point] = {(signal, time)}
 
     # check if this event would be masked,
     # i.e., simulation(signal, time) == simulation_SA(signal, time)
