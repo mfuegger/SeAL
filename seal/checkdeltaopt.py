@@ -23,7 +23,6 @@ def isSusceptibleSA(
     tokens=None,
     input_widths=None,
     output_widths=None,
-    plot_sampling_points: bool= False,
 ):
     events_check = events + [
         (t + MafterGrid, s, SAF),  # add SA0 or SA1
@@ -53,22 +52,11 @@ def isSusceptibleSA(
     return was_M
 
 
-def isMasked(
-    s,
-    tfrom,
-    states,
-    events,
-    T,
-    output_signals,
-    SAF,
-    MafterGrid,
-    snk_delay=10,
-    src_delay=10,
-    monitor=False,
-    tokens=None,
-    input_widths=None,
-    output_widths=None,
-):
+def isMasked(s, tfrom,
+             states, events, T, output_signals, SAF, MafterGrid,
+             snk_delay=10, src_delay=10, 
+             monitor=False, tokens=None, input_widths=None, output_widths=None):
+
     # t = (tfrom + tto) / 2
     t = tfrom
 
@@ -102,15 +90,16 @@ def isMasked(
         monitored_states_SAF[s] = []
 
         for state in states:
-            # if 1st to append
+            # if 1st to append 
             if not monitored_states[s]:
                 monitored_states[s].append(state[s])
             # if value to append is different from last appended
             elif monitored_states[s][-1] != state[s]:
                 monitored_states[s].append(state[s])
+            
 
         for state_SAF in states_SAF:
-            # if 1st to append
+            # if 1st to append 
             if not monitored_states_SAF[s]:
                 monitored_states_SAF[s].append(state_SAF[s])
             # if value to append is different from last appended
@@ -126,27 +115,13 @@ def isMasked(
 
     return masked
 
+                    
 
-def findDelta(
-    s,
-    tfrom,
-    tto,
-    times,
-    states,
-    events,
-    T,
-    output_signals,
-    SAF,
-    MafterGrid,  # MafterGrid=0.001
-    snk_delay=10,
-    src_delay=10,
-    monitor=False,
-    tokens=None,
-    input_widths=None,
-    output_widths=None,
-    inititally_r=True,
-    inititally_d=True,
-):
+def findDelta(s, tfrom, tto,
+              times, states, events, T, output_signals, SAF, MafterGrid,	#	MafterGrid=0.001
+              snk_delay=10, src_delay=10,
+              monitor=False, tokens=None, input_widths=None, output_widths=None,
+              inititally_r=True, inititally_d=True):
     """
         1. check if signal is driving a gate ===> if not, return [tfrom, tto]
     2. for eah gate that is driven by signal
@@ -181,22 +156,10 @@ def findDelta(
         temp_tto = tto + temp_d
 
         # if sig during [t, t+1] is masked w.r.t temp_sig/its local outputs
-        if isMasked(
-            temp_sig,
-            temp_tfrom,
-            states,
-            events,
-            T,
-            output_signals,
-            SAF,
-            MafterGrid,
-            snk_delay=snk_delay,
-            src_delay=src_delay,
-            monitor=monitor,
-            tokens=tokens,
-            input_widths=input_widths,
-            output_widths=output_widths,
-        ):
+        if isMasked(temp_sig, temp_tfrom,
+                    states, events, T, output_signals, SAF, MafterGrid,
+                    snk_delay=snk_delay, src_delay=src_delay,
+                    monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths):
             delta = [tfrom, tto]
             return delta
 
@@ -217,27 +180,12 @@ def findDelta(
                 break
 
         # test next level
-        temp_delta = findDelta(
-            temp_sig,
-            temp_tfrom,
-            temp_tto,
-            times,
-            states,
-            events,
-            T,
-            output_signals,
-            SAF,
-            MafterGrid,  # MafterGrid=0.001
-            snk_delay=10,
-            src_delay=10,
-            monitor=False,
-            tokens=None,
-            input_widths=None,
-            output_widths=None,
-            inititally_r=False,
-            inititally_d=False,
-        )
-
+        temp_delta = findDelta(temp_sig, temp_tfrom, temp_tto,
+                               times, states, events, T, output_signals, SAF, MafterGrid,	#	MafterGrid=0.001
+                               snk_delay=10, src_delay=10,
+                               monitor=False, tokens=None, input_widths=None, output_widths=None,
+                               inititally_r=False, inititally_d=False)
+        
         delta_candidates.append([temp_delta[0] - temp_d, temp_delta[1] - temp_d])
 
         assert len(delta_candidates) == 1
@@ -318,25 +266,11 @@ def checkSA(
             while True:
                 # step 1: find the smallest delta
                 # delta = findDelta(s, delta[1], tto, times, monitored=output_signals, visited=set(), inititally_r=False)
-                delta = findDelta(
-                    s,
-                    delta[1],
-                    tto,
-                    times,
-                    states,
-                    events,
-                    T,
-                    output_signals,
-                    SAF,
-                    MafterGrid=ERROR,  # MafterGrid=0.001
-                    snk_delay=10,
-                    src_delay=10,
-                    monitor=False,
-                    tokens=None,
-                    input_widths=None,
-                    output_widths=None,
-                    inititally_r=False,
-                )
+                delta = findDelta(s, delta[1], tto,
+                               times, states, events, T, output_signals, SAF, MafterGrid=ERROR,	#	MafterGrid=0.001
+                               snk_delay=10, src_delay=10,
+                               monitor=False, tokens=None, input_widths=None, output_widths=None,
+                               inititally_r=False)
                 # print(f"delta for signal {s} is {delta}")
                 # print("delta type is ", type(delta))
                 mid_point = (delta[0] + delta[1]) / 2
