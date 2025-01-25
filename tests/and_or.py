@@ -1,8 +1,3 @@
-import os
-import sys
-dir_path = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(dir_path + '/../')
-
 import pprint
 from seal import tracem as tr
 from seal import plotting
