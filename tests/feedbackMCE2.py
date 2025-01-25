@@ -36,9 +36,9 @@ def main():
     options = docopt(usage_msg, version="0.1")
 
     # --------|---------|---------|---------|---------|
-    if (options["--delta2"]):
+    if options["--delta2"]:
         from seal import checkdelta2 as check
-    elif(options["--deltaopt"]):
+    elif options["--deltaopt"]:
         from seal import checkdeltaopt as check
     else:
         from seal import checkdelta as check
@@ -128,7 +128,7 @@ def main():
                 cutoff_min=cutoff_min,
                 cutoff_max=cutoff_max,
                 fault="SA1",
-                plot_sampling_points=options["--plotsamplingpoints"]
+                plot_sampling_points=options["--plotsamplingpoints"],
                 # victim_signals=[]
             )
             pprint.pprint(SA1_M)
@@ -144,7 +144,7 @@ def main():
                 cutoff_max=cutoff_max,
                 fault="SA0",
                 # victim_signals=[]
-                plot_sampling_points=options["--plotsamplingpoints"]
+                plot_sampling_points=options["--plotsamplingpoints"],
             )
             pprint.pprint(SA0_M)
 
