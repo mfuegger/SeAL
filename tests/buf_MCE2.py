@@ -54,7 +54,7 @@ def main() -> None:
     delays = {	
             'b': 10,
             'SET': 2,
-            'MCE_out': 0.1
+            'MCE_out': 0.5
             }
 
 

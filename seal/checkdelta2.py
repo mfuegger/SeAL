@@ -1,4 +1,5 @@
 from typing import Any
+from numpy import sign
 from tqdm import tqdm
 from seal import tracem as tr
 from seal import plotting
@@ -61,9 +62,9 @@ def findDelta(
     simulation: tuple,
     simulation_SA: tuple,
     history: list[str] = [],
-) -> float:
+) -> tuple[float, set[plotting.Sampling_point]]:
     """
-    Returns by how much we can proceed.
+    Returns by how much we can proceed and what were the sampling points (for analysis)
     """
     # if len(history) < 10:
     #     logger.warning("%s:%s", signal, time)
@@ -71,7 +72,7 @@ def findDelta(
     times_larger = [t for t in times if t > time]
     if len(times_larger) == 0:
         # no more region boundaries ahead -> can proceed as much as wanted
-        return float("inf")
+        return float("inf"), {(signal, time)}
 
     # next region boundary
     end_of_region = min(times_larger)
@@ -79,6 +80,7 @@ def findDelta(
     # how long to next region boundary
     duration_on_own_signal = end_of_region - time
     ret = [duration_on_own_signal]
+    ret_sampling_points: set[plotting.Sampling_point] = {(signal, time)}
 
     # check if this event would be masked,
     # i.e., simulation(signal, time) == simulation_SA(signal, time)
@@ -91,18 +93,12 @@ def findDelta(
     assert sim_val != 0.5
     if sim_sa_val == 0.5:
         # assuming these propagate with delay 0
-        return ret[0]
-
-        # print(signal, time, "val", sim_val, "val_sa", sim_sa_val, "hist", history)
-    # signals = list(simulation[1][0].keys())
-    # if len(history) == 0:
-    #     plotting.plot(simulation[0], simulation[1], signals, fname = f'out-{signal}-{time}-00-{history}.svg')
-    #     plotting.plot(simulation_SA[0], simulation_SA[1], signals, fname = f'out-{signal}-{time}-sa-{history}.svg')
+        return ret[0], {(signal, time)}
 
     if sim_val == sim_sa_val:
         # masking -> do not follow this event anymore
         logger.debug("masking")
-        return ret[0]
+        return ret[0], {(signal, time)}
 
     # Else (i.e., not masked),
     # check recursively on downstream gates
@@ -110,7 +106,7 @@ def findDelta(
     for output in outputList:
         out_sig = output[0]
         delay = output[1]
-        delta = findDelta(
+        delta, sampling_points = findDelta(
             out_sig,
             time + delay,
             times,
@@ -120,10 +116,11 @@ def findDelta(
         )
         assert delta > 0
         ret += [delta]
+        ret_sampling_points = ret_sampling_points.union(sampling_points)
 
     # combine as minimum
     assert min(ret) > 0
-    return min(ret)
+    return min(ret), ret_sampling_points
 
 
 def checkSA(
@@ -198,7 +195,7 @@ def checkSA(
         logger.debug("checking signal %s", s)
         tfrom = times[0]
         while tfrom < times[-1]:
-            logger.warning("checking time %s", tfrom)
+            # logger.warning("checking time %s", tfrom)
 
             # step 0: create simulation with SA
             events_check = events + [
@@ -222,10 +219,28 @@ def checkSA(
             )
 
             # step 1: find the smallest delta
-            delta = findDelta(
+            delta, sampling_points = findDelta(
                 s, tfrom, times, simulation=simulation, simulation_SA=simulation_SA
             )
+            print(sampling_points)
+
             mid_point = tfrom + delta / 2
+
+            # for logging, show the sampling points
+            plotting.plot(
+                simulation[0],
+                simulation[1],
+                signals,
+                fname=f"sampling-{s}-{tfrom}-ff.svg",
+                sampling_points=sampling_points,
+            )
+            plotting.plot(
+                simulation_SA[0],
+                simulation_SA[1],
+                signals,
+                fname=f"sampling-{s}-{tfrom}-sa.svg",
+                sampling_points=sampling_points,
+            )
 
             # step 2: inject a fault anywhere within delta
             region_is_M = isSusceptibleSA(

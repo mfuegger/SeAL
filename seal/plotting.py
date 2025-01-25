@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from seal import tracem as tr
 
 Point = tuple[float, float]
+Sampling_point = tuple[str, float]
 
 
 def points2path(points: list[Point]) -> str:
@@ -44,6 +45,7 @@ def plot(
     susceptible=None,
     fault="SET",
     cutoff=None,
+    sampling_points: set[Sampling_point] = set(),
 ):
     GRID_COLOR = svgwrite.rgb(30, 30, 30, "%")
     GRID_LW = 0.1
@@ -213,6 +215,8 @@ def plot(
                     elif SAF == "SA1":
                         stroke_color = "green"
                         fill_color = "green"
+                    else:
+                        raise ValueError("cannot plot this")
 
                     dwg.add(
                         dwg.rect(
@@ -253,6 +257,23 @@ def plot(
                     stroke_dasharray=5,
                 )
             )
+
+    # draw sampling points
+    stroke_color = "blue"
+    fill_color = "blue"
+    for point in sampling_points:
+        x = x0 + dt * point[1]
+        y = signal_ybase[point[0]]
+        dwg.add(
+            dwg.circle(
+                (x, y),
+                r=7.0,
+                stroke=stroke_color,
+                fill=fill_color,
+                opacity=0.5,
+                stroke_width=0,
+            )
+        )
 
     # print circuit parameters
     if delays is not None:
