@@ -26,8 +26,23 @@ def isSusceptibleSA(t, s,
     # print((f"SA_signal {s} stuck at {SAF} at time {t+MafterGrid} {was_M}"))
     return was_M
 
+def getMonitoredStates(states, output_signals):
+    monitored_states = {}
 
-def isMasked(s, tfrom,
+    for s in output_signals:
+        monitored_states[s] = []
+
+        for state in states:
+            # if 1st to append 
+            if not monitored_states[s]:
+                monitored_states[s].append(state[s])
+            # if value to append is different from last appended
+            elif monitored_states[s][-1] != state[s]:
+                monitored_states[s].append(state[s])
+
+    return monitored_states
+
+def isMasked(s, tfrom, monitored_states,
              states, events, T, output_signals, SAF, MafterGrid,
              snk_delay=10, src_delay=10, 
              monitor=False, tokens=None, input_widths=None, output_widths=None):
@@ -45,28 +60,7 @@ def isMasked(s, tfrom,
 
     # check only the monitored signals for masking
     # prepare lists for monitored signals output trace
-    monitored_states = {}
-    monitored_states_SAF = {}
-    for s in output_signals:
-        monitored_states[s] = []
-        monitored_states_SAF[s] = []
-
-        for state in states:
-            # if 1st to append 
-            if not monitored_states[s]:
-                monitored_states[s].append(state[s])
-            # if value to append is different from last appended
-            elif monitored_states[s][-1] != state[s]:
-                monitored_states[s].append(state[s])
-            
-
-        for state_SAF in states_SAF:
-            # if 1st to append 
-            if not monitored_states_SAF[s]:
-                monitored_states_SAF[s].append(state_SAF[s])
-            # if value to append is different from last appended
-            elif monitored_states_SAF[s][-1] != state_SAF[s]:
-                monitored_states_SAF[s].append(state_SAF[s])
+    monitored_states_SAF = getMonitoredStates(states_SAF, output_signals)
 
     masked = False
     for sig in monitored_states:
@@ -78,8 +72,7 @@ def isMasked(s, tfrom,
     return masked
 
                     
-
-def findDelta(s, tfrom, tto,
+def findDelta(s, tfrom, tto, monitored_states,
               times, states, events, T, output_signals, SAF, MafterGrid,	#	MafterGrid=0.001
               snk_delay=10, src_delay=10,
               monitor=False, tokens=None, input_widths=None, output_widths=None,
@@ -118,7 +111,7 @@ def findDelta(s, tfrom, tto,
         temp_tto = tto + temp_d
 
         # if sig during [t, t+1] is masked w.r.t temp_sig/its local outputs
-        if isMasked(temp_sig, temp_tfrom,
+        if isMasked(temp_sig, temp_tfrom, monitored_states,
                     states, events, T, output_signals, SAF, MafterGrid,
                     snk_delay=snk_delay, src_delay=src_delay,
                     monitor=monitor, tokens=tokens, input_widths=input_widths, output_widths=output_widths):
@@ -142,7 +135,7 @@ def findDelta(s, tfrom, tto,
                 break
 
         # test next level
-        temp_delta = findDelta(temp_sig, temp_tfrom, temp_tto,
+        temp_delta = findDelta(temp_sig, temp_tfrom, temp_tto, monitored_states,
                                times, states, events, T, output_signals, SAF, MafterGrid,	#	MafterGrid=0.001
                                snk_delay=10, src_delay=10,
                                monitor=False, tokens=None, input_widths=None, output_widths=None,
@@ -213,11 +206,12 @@ def checkSA(times, states, events, signals, output_signals,
             logger.debug("checking time %s", tfrom)
 
             delta = [tfrom, tfrom]
+            monitored_states = getMonitoredStates(states, output_signals)
 
             while True:
                 # step 1: find the smallest delta
                 # delta = findDelta(s, delta[1], tto, times, monitored=output_signals, visited=set(), inititally_r=False)
-                delta = findDelta(s, delta[1], tto,
+                delta = findDelta(s, delta[1], tto, monitored_states,
                                times, states, events, T, output_signals, SAF, MafterGrid=ERROR,	#	MafterGrid=0.001
                                snk_delay=10, src_delay=10,
                                monitor=False, tokens=None, input_widths=None, output_widths=None,
