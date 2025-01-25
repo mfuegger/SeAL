@@ -1,3 +1,4 @@
+from itertools import count
 from typing import Any
 from numpy import sign
 from tqdm import tqdm
@@ -62,9 +63,13 @@ def findDelta(
     simulation: tuple,
     simulation_SA: tuple,
     history: list[str] = [],
-) -> tuple[float, set[plotting.Sampling_point]]:
+    use_masking: bool = True,
+) -> tuple[float, set[plotting.Sampling_point], int]:
     """
-    Returns by how much we can proceed and what were the sampling points (for analysis)
+    Returns:
+        - by how much we can proceed
+        - what were the sampling points
+        - how many samples checked (may be different for sample point size since the latter is a set)
     """
     # if len(history) < 10:
     #     logger.warning("%s:%s", signal, time)
@@ -72,7 +77,7 @@ def findDelta(
     times_larger = [t for t in times if t > time]
     if len(times_larger) == 0:
         # no more region boundaries ahead -> can proceed as much as wanted
-        return float("inf"), {(signal, time)}
+        return float("inf"), {(signal, time)}, 1
 
     # next region boundary
     end_of_region = min(times_larger)
@@ -81,24 +86,28 @@ def findDelta(
     duration_on_own_signal = end_of_region - time
     ret = [duration_on_own_signal]
     ret_sampling_points: set[plotting.Sampling_point] = {(signal, time)}
+    ret_calls: int = 0
 
-    # check if this event would be masked,
-    # i.e., simulation(signal, time) == simulation_SA(signal, time)
-    # If so, return
-    sim_val = tr.value_at_trace(signal=signal, time=time + 2 * ERROR, trace=simulation)
-    sim_sa_val = tr.value_at_trace(
-        signal=signal, time=time + 2 * ERROR, trace=simulation_SA
-    )
+    if use_masking:
+        # check if this event would be masked,
+        # i.e., simulation(signal, time) == simulation_SA(signal, time)
+        # If so, return
+        sim_val = tr.value_at_trace(
+            signal=signal, time=time + 2 * ERROR, trace=simulation
+        )
+        sim_sa_val = tr.value_at_trace(
+            signal=signal, time=time + 2 * ERROR, trace=simulation_SA
+        )
 
-    assert sim_val != 0.5
-    if sim_sa_val == 0.5:
-        # assuming these propagate with delay 0
-        return ret[0], {(signal, time)}
+        assert sim_val != 0.5
+        if sim_sa_val == 0.5:
+            # assuming these propagate with delay 0
+            return ret[0], {(signal, time)}, 1
 
-    if sim_val == sim_sa_val:
-        # masking -> do not follow this event anymore
-        logger.debug("masking")
-        return ret[0], {(signal, time)}
+        if sim_val == sim_sa_val:
+            # masking -> do not follow this event anymore
+            logger.debug("masking")
+            return ret[0], {(signal, time)}, 1
 
     # Else (i.e., not masked),
     # check recursively on downstream gates
@@ -106,21 +115,23 @@ def findDelta(
     for output in outputList:
         out_sig = output[0]
         delay = output[1]
-        delta, sampling_points = findDelta(
+        delta, sampling_points, calls = findDelta(
             out_sig,
             time + delay,
             times,
             simulation=simulation,
             simulation_SA=simulation_SA,
             history=history + [f"{signal}:{time}"],
+            use_masking=use_masking,
         )
         assert delta > 0
         ret += [delta]
+        ret_calls += calls
         ret_sampling_points = ret_sampling_points.union(sampling_points)
 
     # combine as minimum
     assert min(ret) > 0
-    return min(ret), ret_sampling_points
+    return min(ret), ret_sampling_points, ret_calls
 
 
 def checkSA(
@@ -141,7 +152,7 @@ def checkSA(
     input_widths=None,
     output_widths=None,
     victim_signals: list[str] = [],
-    plot_sampling_points: bool= False,
+    plot_sampling_points: bool = False,
 ) -> dict[str, Any]:
     """
     checking all equivalence regions
@@ -220,8 +231,13 @@ def checkSA(
             )
 
             # step 1: find the smallest delta
-            delta, sampling_points = findDelta(
-                s, tfrom, times, simulation=simulation, simulation_SA=simulation_SA
+            delta, sampling_points, calls = findDelta(
+                signal=s,
+                time=tfrom,
+                times=times,
+                simulation=simulation,
+                simulation_SA=simulation_SA,
+                use_masking=True,
             )
             mid_point = tfrom + delta / 2
 
@@ -267,6 +283,11 @@ def checkSA(
                 pos_per_sig[s] += delta
             else:
                 neg += delta
+
+            # report
+            print(
+                f"Steps for signal {s} for time region {tfrom} to {tfrom + delta} = {calls}"
+            )
 
             # step 4: proceed to next time
             tfrom += delta
