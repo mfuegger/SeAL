@@ -54,13 +54,20 @@ def isSusceptibleSA(
     return was_M
 
 
-def findDelta(signal: str, time: float, times: list[float], simulation: tuple, simulation_SA: tuple, history: list[str]=[]) -> float:
+def findDelta(
+    signal: str,
+    time: float,
+    times: list[float],
+    simulation: tuple,
+    simulation_SA: tuple,
+    history: list[str] = [],
+) -> float:
     """
     Returns by how much we can proceed.
     """
     # if len(history) < 10:
     #     logger.warning("%s:%s", signal, time)
-    
+
     times_larger = [t for t in times if t > time]
     if len(times_larger) == 0:
         # no more region boundaries ahead -> can proceed as much as wanted
@@ -76,8 +83,10 @@ def findDelta(signal: str, time: float, times: list[float], simulation: tuple, s
     # check if this event would be masked,
     # i.e., simulation(signal, time) == simulation_SA(signal, time)
     # If so, return
-    sim_val = tr.value_at_trace(signal=signal, time=time + 2*ERROR, trace=simulation)
-    sim_sa_val = tr.value_at_trace(signal=signal, time=time + 2*ERROR, trace=simulation_SA)
+    sim_val = tr.value_at_trace(signal=signal, time=time + 2 * ERROR, trace=simulation)
+    sim_sa_val = tr.value_at_trace(
+        signal=signal, time=time + 2 * ERROR, trace=simulation_SA
+    )
 
     assert sim_val != 0.5
     if sim_sa_val == 0.5:
@@ -101,7 +110,14 @@ def findDelta(signal: str, time: float, times: list[float], simulation: tuple, s
     for output in outputList:
         out_sig = output[0]
         delay = output[1]
-        delta = findDelta(out_sig, time + delay, times, simulation=simulation, simulation_SA=simulation_SA, history=history+[f"{signal}:{time}"])
+        delta = findDelta(
+            out_sig,
+            time + delay,
+            times,
+            simulation=simulation,
+            simulation_SA=simulation_SA,
+            history=history + [f"{signal}:{time}"],
+        )
         assert delta > 0
         ret += [delta]
 
@@ -186,7 +202,7 @@ def checkSA(
 
             # step 0: create simulation with SA
             events_check = events + [
-                (tfrom + ERROR, s, SAF),           # add SA0 or SA1
+                (tfrom + ERROR, s, SAF),  # add SA0 or SA1
             ]
             simulation_SA = tr.traceSA(
                 init=states[0],
@@ -206,7 +222,9 @@ def checkSA(
             )
 
             # step 1: find the smallest delta
-            delta = findDelta(s, tfrom, times, simulation=simulation, simulation_SA=simulation_SA)
+            delta = findDelta(
+                s, tfrom, times, simulation=simulation, simulation_SA=simulation_SA
+            )
             mid_point = tfrom + delta / 2
 
             # step 2: inject a fault anywhere within delta
