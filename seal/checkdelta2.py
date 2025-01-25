@@ -231,14 +231,14 @@ def checkSA(
                     simulation[0],
                     simulation[1],
                     signals,
-                    fname=f"sampling-{s}-{tfrom}-ff.svg",
+                    fname=f"{fault}-{s}-{tfrom}-ff.svg",
                     sampling_points=sampling_points,
                 )
                 plotting.plot(
                     simulation_SA[0],
                     simulation_SA[1],
                     signals,
-                    fname=f"sampling-{s}-{tfrom}-sa.svg",
+                    fname=f"{fault}-{s}-{tfrom}-sa.svg",
                     sampling_points=sampling_points,
                 )
 
