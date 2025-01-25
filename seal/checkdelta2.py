@@ -1,3 +1,4 @@
+from curses import ERR
 from typing import Any
 from tqdm import tqdm
 from seal import tracem as tr
@@ -8,13 +9,13 @@ logger = logging.getLogger(__name__)
 
 
 def isSusceptibleSA(
-    t,
-    s,
+    t: float,
+    s: str,
     states,
     events,
-    T,
+    T: float,
     output_signals,
-    SAF,
+    SAF: str,
     MafterGrid: float,
     snk_delay: float = 10,
     src_delay: float = 10,
@@ -146,9 +147,9 @@ def checkSA(
 
     # create the simulation without SA fault
     simulation = tr.trace(
-        states[0],
-        [],
-        output_signals,
+        init=states[0],
+        events=events,
+        output_signals=output_signals,
         T=T,
         snk_delay=snk_delay,
         src_delay=src_delay,
@@ -166,10 +167,13 @@ def checkSA(
             logger.debug("checking time %s", tfrom)
 
             # step 0: create simulation with SA
+            events_check = events + [
+                (tfrom + ERROR, s, SAF),           # add SA0 or SA1
+            ]
             simulation_SA = tr.traceSA(
-                states[0],
-                [],
-                output_signals,
+                init=states[0],
+                events=events_check,
+                output_signals=output_signals,
                 SA_signal=s,
                 SA_value=SAF,
                 SA_time=tfrom + ERROR,

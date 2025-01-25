@@ -36,13 +36,14 @@ XORf = lambda a,b: 1- ANDr(ORr(a, b), NANDr(a, b))
 
 
 rules = []
-signals = []
+signals: list[str] = []
 
-def getSignals():
+def getSignals() -> list[str]:
     global signals
     return signals
 
-def getDelays():
+
+def getDelays() -> list[float]:
     """
     get delays of all PRs as sorted list
     """
@@ -50,6 +51,7 @@ def getDelays():
 
     ret = sorted(list(set([ rule['d'] for rule in rules ])))
     return ret
+
 
 def getInflunceList(o: str):
     """
@@ -66,7 +68,7 @@ def getInflunceList(o: str):
     return ret
 
 
-def getInflunceTimeList(o: str):
+def getInflunceTimeList(o: str) -> list[float]:
     """
     for PRs of the form
 
@@ -96,7 +98,7 @@ def getOutputListAll():
         outputListDict[sig] = getOutputList(sig)
     return outputListDict
 
-def clear():
+def clear() -> None:
     """
     clears the circuit
     """
@@ -130,7 +132,7 @@ def fall(f, i, o, d: float=1):
     rule(f=f, i=i, o=o, val=0, d=d)
 
 
-def trace(init, events, output_signals, T: float=50.0, snk_delay: float=10.0, src_delay: float=10.0, Mdelay=0.1, monitor=False, tokens=None, input_widths=None, output_widths=None, verbose=True):
+def trace(init: dict[str,float], events: list[tuple[float, str, float]], output_signals: list[str], T: float=50.0, snk_delay: float=10.0, src_delay: float=10.0, Mdelay=0.1, monitor=False, tokens=None, input_widths=None, output_widths=None, verbose=True):
     """
     init:   initial state. Dict of the form: signal -> value
     events: list of items (time, signal, value)
@@ -138,9 +140,9 @@ def trace(init, events, output_signals, T: float=50.0, snk_delay: float=10.0, sr
     tokens: input tokens to feed the circuit
     """
     global rules, signals
-    t = 0
+    t: float = 0.0
     states = []
-    times = []
+    times: list[float] = []
 
     # check if something is initialized that is not in the circuit
     for s in init.keys():
@@ -148,7 +150,7 @@ def trace(init, events, output_signals, T: float=50.0, snk_delay: float=10.0, sr
             print(f'warning: initalized signal {s} does not appear in the circuit. Ignoring it.')
     
     # init
-    state = dict()
+    state: dict[str,float] = dict()
     for s in signals:
         state[s] = init[s] if s in init.keys() else 0
         if s not in init.keys():
@@ -159,7 +161,7 @@ def trace(init, events, output_signals, T: float=50.0, snk_delay: float=10.0, sr
     # as stable for the first time
     # to avoid duplicates for the same scheduled value
     # and avoid state explosion
-    visited_stable = dict()
+    visited_stable: dict[str, bool] = dict()
     # visited_unstable = dict()
     for s in signals:
         visited_stable[s] = False
