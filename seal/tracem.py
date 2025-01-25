@@ -142,6 +142,7 @@ def value_at_trace(signal: str, time: float, trace: Trace) -> float:
     """
     times = trace[0]
     states = trace[1]
+    assert len(times) == len(states)
     idx = max([i for i in range(len(times)) if times[i] <= time])
     return states[idx][signal]
 

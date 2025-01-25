@@ -1,5 +1,6 @@
 import svgwrite
 import matplotlib.pyplot as plt
+from seal import tracem as tr
 
 def points2path(points):
 	d = ''
@@ -31,7 +32,7 @@ def plotSensitivityBars(p_per_sig, fname='bar.pdf', title=None):
 	)
 
 
-def plot(times, states, signals, init=None, events=None, delays=None, fname='out.svg', dt=30, dv=60, x0=60, susceptible=None, fault='SET', cutoff=None):
+def plot(times: list[float], states: list[tr.State], signals: list[str], init=None, events=None, delays=None, fname='out.svg', dt=30, dv=60, x0=60, susceptible=None, fault='SET', cutoff=None):
 	GRID_COLOR = svgwrite.rgb(30, 30, 30, '%')
 	GRID_LW = 0.1
 
@@ -228,7 +229,7 @@ def plot(times, states, signals, init=None, events=None, delays=None, fname='out
 			))
 
 	# print circuit parameters
-	if delays != None:		
+	if delays is not None:		
 		text_block_init = f'Init: {init}'
 		text_block_events = '\t'.join([f'{event}' for event in events])
 		text_block_delays = f'Delays: {delays}'

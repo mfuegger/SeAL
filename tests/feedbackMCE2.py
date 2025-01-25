@@ -101,11 +101,11 @@ def main():
         times, states, list(init.keys()), init, events, delays, fname="feedbackMCE2.svg"
     )
 
-    # print it
-    for i in range(len(times)):
-        print()
-        print(f"time {times[i]}:")
-        pprint.pprint(states[i])
+    # # print it
+    # for i in range(len(times)):
+    #     print()
+    #     print(f"time {times[i]}:")
+    #     pprint.pprint(states[i])
 
     # cutoff
     cutoff_min = 0

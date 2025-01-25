@@ -1,8 +1,7 @@
-from curses import ERR
-from multiprocessing.sharedctypes import Value
 from typing import Any
 from tqdm import tqdm
 from seal import tracem as tr
+from seal import plotting
 import logging
 
 ERROR = 1e-6
@@ -16,7 +15,7 @@ def isSusceptibleSA(
     events,
     T: float,
     output_signals,
-    SAF: str,
+    SAF: int | float,
     MafterGrid: float,
     snk_delay: float = 10,
     src_delay: float = 10,
@@ -75,9 +74,18 @@ def findDelta(signal: str, time: float, times: list[float], simulation: tuple, s
     # check if this event would be masked,
     # i.e., simulation(signal, time) == simulation_SA(signal, time)
     # If so, return
-    sim_val = tr.value_at_trace(signal=signal, time=time, trace=simulation)
-    sim_sa_val = tr.value_at_trace(signal=signal, time=time, trace=simulation_SA)
+    sim_val = tr.value_at_trace(signal=signal, time=time + 2*ERROR, trace=simulation)
+    sim_sa_val = tr.value_at_trace(signal=signal, time=time + 2*ERROR, trace=simulation_SA)
+
+    logger.debug(signal, time, "val", sim_val, "val_sa", sim_sa_val, "hist", history)
+    # signals = list(simulation[1][0].keys())
+    # if len(history) == 0:
+    #     plotting.plot(simulation[0], simulation[1], signals, fname = f'out-{signal}-{time}-00-{history}.svg')
+    #     plotting.plot(simulation_SA[0], simulation_SA[1], signals, fname = f'out-{signal}-{time}-sa-{history}.svg')
+
     if sim_val == sim_sa_val:
+        # masking -> do not follow this event anymore
+        logger.debug("masking")
         return ret[0]
 
     # Else (i.e., not masked),

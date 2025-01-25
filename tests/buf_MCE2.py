@@ -29,7 +29,7 @@ Options:
 """
 #--------|---------|---------|---------|---------|---------|---------|---------|
 
-def main():
+def main() -> None:
     options = docopt(usage_msg, version="0.1")
 
     #--------|---------|---------|---------|---------|
@@ -67,14 +67,14 @@ def main():
     tr.fall(f=tr.Cf, i=['a', 'b'], o='out', d=delays['MCE_out'])
 
 
-    init = {
+    init: tr.State = {
         'a': 0,
         'b1': 0,
         'b': 0,
         'out': 0
     }
 
-    events = [
+    events: list[tr.Event] = [
         (10, 'a', 1),  
         (11, 'a', 0),
         (12, 'a', 1),
@@ -114,10 +114,10 @@ def main():
         fname="buf_MCE2.svg")
 
     # print it
-    for i in range(len(times)):
-        print()
-        print(f'time {times[i]}:')
-        pprint.pprint(states[i])
+    # for i in range(len(times)):
+    #     print()
+    #     print(f'time {times[i]}:')
+    #     pprint.pprint(states[i])
         
     # cutoff
     cutoff_min = 0
@@ -140,7 +140,8 @@ def main():
                 cutoff_min=cutoff_min,
                 cutoff_max=cutoff_max,
                 fault='SA1',
-                # victim_signals=[]
+                # victim_signals=['b1'],
+                victim_signals=[]
             )
             pprint.pprint(SA1_M)
 
@@ -154,7 +155,8 @@ def main():
                 cutoff_min=cutoff_min,
                 cutoff_max=cutoff_max,
                 fault='SA0',
-                # victim_signals=[]
+                # victim_signals=['b1']
+                victim_signals=[]
             )
             pprint.pprint(SA0_M)
 
@@ -181,5 +183,5 @@ def main():
             fname="buf_MCE2.svg"
             )
         
-if (__name__ == "__main__"):
+if __name__ == "__main__":
     main()
