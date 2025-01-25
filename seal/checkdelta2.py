@@ -86,7 +86,7 @@ def findDelta(
     duration_on_own_signal = end_of_region - time
     ret = [duration_on_own_signal]
     ret_sampling_points: set[plotting.Sampling_point] = {(signal, time)}
-    ret_calls: int = 0
+    ret_calls: int = 1  # 1 for this call
 
     if use_masking:
         # check if this event would be masked,
@@ -206,6 +206,8 @@ def checkSA(
     for s in victims:
         logger.debug("checking signal %s", s)
         tfrom = times[0]
+        region_idx: int = 0
+        region_calls: int = 0
         while tfrom < times[-1]:
             # logger.warning("checking time %s", tfrom)
 
@@ -237,6 +239,7 @@ def checkSA(
                 times=times,
                 simulation=simulation,
                 simulation_SA=simulation_SA,
+                # use_masking=False,
                 use_masking=True,
             )
             mid_point = tfrom + delta / 2
@@ -284,10 +287,18 @@ def checkSA(
             else:
                 neg += delta
 
-            # report
-            print(
-                f"Steps for signal {s} for time region {tfrom} to {tfrom + delta} = {calls}"
-            )
+            # sum up calls in this region
+            region_calls += calls
+
+            # report & update region index
+            if tfrom + delta >= times[region_idx+1]:
+                # report
+                print(
+                    f"Steps for signal {s} for time region {times[region_idx]} to {times[region_idx+1]} = {region_calls}"
+                )
+                # next region
+                region_calls = 0
+                region_idx += 1
 
             # step 4: proceed to next time
             tfrom += delta
