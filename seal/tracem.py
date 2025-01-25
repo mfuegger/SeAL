@@ -2,6 +2,10 @@ import copy
 
 from seal import DualRail as DR
 
+State = dict[str, float]
+Event = tuple[float, str, float]
+Trace = tuple[list[float],list[State]]
+
 Cr = lambda a,b: min(a,b)
 Cf = lambda a,b: min(1-a,1-b)
 # Cr = lambda *args: min(args)
@@ -132,7 +136,17 @@ def fall(f, i, o, d: float=1):
     rule(f=f, i=i, o=o, val=0, d=d)
 
 
-def trace(init: dict[str,float], events: list[tuple[float, str, float]], output_signals: list[str], T: float=50.0, snk_delay: float=10.0, src_delay: float=10.0, Mdelay=0.1, monitor=False, tokens=None, input_widths=None, output_widths=None, verbose=True):
+def value_at_trace(signal: str, time: float, trace: Trace) -> float:
+    """
+    Returns the value of the signal at time in the trace.
+    """
+    times = trace[0]
+    states = trace[1]
+    idx = max([i for i in range(len(times)) if times[i] <= time])
+    return states[idx][signal]
+
+
+def trace(init: dict[str,float], events: list[Event], output_signals: list[str], T: float=50.0, snk_delay: float=10.0, src_delay: float=10.0, Mdelay: float=0.1, monitor=False, tokens=None, input_widths=None, output_widths=None, verbose=True) -> tuple[list[float], list[State]]:
     """
     init:   initial state. Dict of the form: signal -> value
     events: list of items (time, signal, value)
@@ -141,7 +155,7 @@ def trace(init: dict[str,float], events: list[tuple[float, str, float]], output_
     """
     global rules, signals
     t: float = 0.0
-    states = []
+    states: list[State] = []
     times: list[float] = []
 
     # check if something is initialized that is not in the circuit
@@ -301,7 +315,7 @@ def trace(init: dict[str,float], events: list[tuple[float, str, float]], output_
 
         return ack_event
     
-    def CD(DR_output, ack_in):
+    def CD(DR_output, ack_in) -> float:
         
         # if any(DR_output = 0.5):
         #   return ack_in
@@ -504,8 +518,8 @@ def trace(init: dict[str,float], events: list[tuple[float, str, float]], output_
     # filter (if no change in state -> remove it)
     # this could be done more efficiently in the first place
     state = None
-    filtered_times = []
-    filtered_states = []
+    filtered_times: list[float] = []
+    filtered_states: list[State] = []
     for i in range(len(states)):
         if i == len(states)-1:
             # last state -> always add
@@ -522,7 +536,7 @@ def trace(init: dict[str,float], events: list[tuple[float, str, float]], output_
     return filtered_times, filtered_states
 
 
-def traceSA(init, events, output_signals, SA_signal, SA_value, SA_time, T: float=50.0, snk_delay: float=10.0, src_delay: float=10.0, Mdelay=0.01, monitor=False, tokens=None, input_widths=None, output_widths=None, verbose=True):
+def traceSA(init, events, output_signals, SA_signal, SA_value, SA_time, T: float=50.0, snk_delay: float=10.0, src_delay: float=10.0, Mdelay=0.01, monitor=False, tokens=None, input_widths=None, output_widths=None, verbose=True) -> tuple[list[float], list[State]]:
     """
     init:   initial state. Dict of the form: signal -> value
     events: list of items (time, signal, value)
@@ -952,8 +966,8 @@ def traceSA(init, events, output_signals, SA_signal, SA_value, SA_time, T: float
     # filter (if no change in state -> remove it)
     # this could be done more efficiently in the first place
     state = None
-    filtered_times = []
-    filtered_states = []
+    filtered_times: list[float] = []
+    filtered_states: list[State] = []
     for i in range(len(states)):
         if i == len(states)-1:
             # last state -> always add

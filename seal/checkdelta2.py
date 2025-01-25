@@ -1,4 +1,5 @@
 from curses import ERR
+from multiprocessing.sharedctypes import Value
 from typing import Any
 from tqdm import tqdm
 from seal import tracem as tr
@@ -74,7 +75,9 @@ def findDelta(signal: str, time: float, times: list[float], simulation: tuple, s
     # check if this event would be masked,
     # i.e., simulation(signal, time) == simulation_SA(signal, time)
     # If so, return
-    if False:
+    sim_val = tr.value_at_trace(signal=signal, time=time, trace=simulation)
+    sim_sa_val = tr.value_at_trace(signal=signal, time=time, trace=simulation_SA)
+    if sim_val == sim_sa_val:
         return ret[0]
 
     # Else (i.e., not masked),
@@ -94,16 +97,16 @@ def findDelta(signal: str, time: float, times: list[float], simulation: tuple, s
 
 def checkSA(
     times: list[float],
-    states,
-    events,
+    states: list[tr.State],
+    events: list[tr.Event],
     signals: list[str],
-    output_signals,
+    output_signals: list[str],
     snk_delay: float = 10.0,
     src_delay: float = 10.0,
     Textra: float = 30.0,
     exclude_output_signals=True,
-    cutoff_min=0,
-    cutoff_max=float("Inf"),
+    cutoff_min: float = 0.0,
+    cutoff_max: float = float("Inf"),
     fault: str = "SA0",
     monitor: bool = False,
     tokens=None,
