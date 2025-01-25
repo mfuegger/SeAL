@@ -141,6 +141,7 @@ def checkSA(
     input_widths=None,
     output_widths=None,
     victim_signals: list[str] = [],
+    plot_sampling_points: bool= False,
 ) -> dict[str, Any]:
     """
     checking all equivalence regions
@@ -222,25 +223,24 @@ def checkSA(
             delta, sampling_points = findDelta(
                 s, tfrom, times, simulation=simulation, simulation_SA=simulation_SA
             )
-            print(sampling_points)
-
             mid_point = tfrom + delta / 2
 
-            # for logging, show the sampling points
-            plotting.plot(
-                simulation[0],
-                simulation[1],
-                signals,
-                fname=f"sampling-{s}-{tfrom}-ff.svg",
-                sampling_points=sampling_points,
-            )
-            plotting.plot(
-                simulation_SA[0],
-                simulation_SA[1],
-                signals,
-                fname=f"sampling-{s}-{tfrom}-sa.svg",
-                sampling_points=sampling_points,
-            )
+            # for logging, show the sampling points if requested
+            if plot_sampling_points:
+                plotting.plot(
+                    simulation[0],
+                    simulation[1],
+                    signals,
+                    fname=f"sampling-{s}-{tfrom}-ff.svg",
+                    sampling_points=sampling_points,
+                )
+                plotting.plot(
+                    simulation_SA[0],
+                    simulation_SA[1],
+                    signals,
+                    fname=f"sampling-{s}-{tfrom}-sa.svg",
+                    sampling_points=sampling_points,
+                )
 
             # step 2: inject a fault anywhere within delta
             region_is_M = isSusceptibleSA(

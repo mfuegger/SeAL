@@ -23,6 +23,7 @@ def isSusceptibleSA(
     tokens=None,
     input_widths=None,
     output_widths=None,
+    plot_sampling_points: bool= False,
 ):
     events_check = events + [
         (t + MafterGrid, s, SAF),  # add SA0 or SA1
