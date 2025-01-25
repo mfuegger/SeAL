@@ -2,18 +2,19 @@ import svgwrite
 import matplotlib.pyplot as plt
 from seal import tracem as tr
 
-def points2path(points):
+Point = tuple[float,float]
+
+def points2path(points: list[Point]) -> str:
 	d = ''
 	for i, p in enumerate(points):
 		if i == 0:
 			d += f'M {p[0]} {p[1]}'
 		else:
 			d += f'L {p[0]} {p[1]}'
-
 	return d
 
 
-def plotSensitivityBars(p_per_sig, fname='bar.pdf', title=None):
+def plotSensitivityBars(p_per_sig, fname: str='bar.pdf', title = None) -> None:
 	fig = plt.figure(figsize=(6.5,4))
 
 	if title is not None:
