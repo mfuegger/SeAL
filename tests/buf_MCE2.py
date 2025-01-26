@@ -23,7 +23,8 @@ Options:
                             [default: 100].       
 --fault=F                   Fault type to check (possible values: SA0, SA1, SAF)
                             [default: SAF].            
---testcase                  Check a specific fault injection.
+--testcase=0                Check a specific fault injection case.
+                            [default: 0].
 --delta2                    Check using checkdelta2.
 --deltaopt                  Check using checkdeltaopt.
 --plotsamplingpoints        Plot the sampling points.     
@@ -47,13 +48,15 @@ def main() -> None:
     fault = str(options["--fault"])
     assert fault in ["SAF", "SA1", "SA0"], "Fault type not supported"
 
+    testcase = None
     if options["--testcase"]:
         CHECK = False
+        testcase = int(options["--testcase"])
     else:
         CHECK = True
 
     # circuit
-    delays = {"b": 10, "SET": 2, "MCE_out": 0.5}
+    delays = {"b": 10, "MCE_out": 0.5}
 
     # buf1
     tr.rise(f=tr.BUFr, i=["b1"], o="b", d=delays["b"])
@@ -83,22 +86,34 @@ def main() -> None:
     output_signals = ["out"]
 
     if not CHECK:
-        stuck_sig = "b"
-        stuck_value = 1
-        stuck_t = 12.5
-
-        events += [
-            (stuck_t, stuck_sig, stuck_value),
-        ]
-        times, states = tr.traceSA(
-            init, events, output_signals, stuck_sig, stuck_value, stuck_t, T=T
-        )
+        if testcase == 0:
+            stuck_sig = "b1"
+            stuck_value = 1
+            stuck_t = 0.5
+            events += [
+                (stuck_t, stuck_sig, stuck_value),
+            ]
+            times, states = tr.traceSA(
+                init, events, output_signals, stuck_sig, stuck_value, stuck_t, T=T
+            )
+        elif testcase == 1:
+            stuck_sig = "b1"
+            stuck_value = 1
+            stuck_t = 1.0
+            events += [
+                (stuck_t, stuck_sig, stuck_value),
+            ]
+            times, states = tr.traceSA(
+                init, events, output_signals, stuck_sig, stuck_value, stuck_t, T=T
+            )
+        else:
+            times, states = tr.trace(init, events, output_signals, T=T)
 
     else:
         times, states = tr.trace(init, events, output_signals, T=T)
 
     plotting.plot(
-        times, states, list(init.keys()), init, events, delays, fname="buf_MCE2.svg"
+        times, states, list(init.keys()), init, events, delays=None, fname="buf_MCE2.svg"
     )
 
     # print it
@@ -169,7 +184,7 @@ def main() -> None:
             list(init.keys()),
             init,
             events,
-            delays,
+            delays=None,  # do not add info in svg
             susceptible=susceptible,
             fault=fault,
             cutoff=[cutoff_min, cutoff_max],

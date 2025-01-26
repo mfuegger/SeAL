@@ -133,6 +133,7 @@ def plot(
 
     # grid |
     x = 0.0
+    last_annotated_time = float("-inf")
     for i, time in enumerate(times):
         x = dt * time
         dwg.add(
@@ -140,8 +141,11 @@ def plot(
                 (x0 + x, 0), (x0 + x, maxy), stroke=GRID_COLOR, stroke_width=GRID_LW
             )
         )
-        if i == 0 or (i > 0 and time - times[i - 1] > 0.25):
+        if i == 0 or (i > 0 and time - last_annotated_time > 0.5):
+            last_annotated_time = time
             # only annotate times that are not too close to previous times
+            if time == int(time):
+                time = int(time)
             dwg.add(
                 dwg.text(
                     f"{time}", insert=(x0 + x, maxy + 16), font_size="12", fill="black"
