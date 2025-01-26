@@ -52,73 +52,30 @@ def isSusceptibleSA(
     # print((f"SA_signal {s} stuck at {SAF} at time {t+MafterGrid} {was_M}"))
     return was_M
 
-def getMonitoredStates(states, output_signals):
-    monitored_states = {}
-
-    for s in output_signals:
-        monitored_states[s] = []
-
-        for state in states:
-            # if 1st to append 
-            if not monitored_states[s]:
-                monitored_states[s].append(state[s])
-            # if value to append is different from last appended
-            elif monitored_states[s][-1] != state[s]:
-                monitored_states[s].append(state[s])
-
-    return monitored_states
 
 def isMasked(
     s,
     tfrom,
-    monitored_states,
+    times_SA,
+    states_SA,
+    times,
     states,
-    events,
-    T,
-    output_signals,
-    SAF,
-    MafterGrid,
-    snk_delay=10,
-    src_delay=10,
-    monitor=False,
-    tokens=None,
-    input_widths=None,
-    output_widths=None,
 ):
-    # t = (tfrom + tto) / 2
-    t = tfrom
-
-    events_check = events + [
-        (t + MafterGrid, s, SAF),
-    ]
-
-    times_SAF, states_SAF = tr.traceSA(
-        states[0],
-        events_check,
-        output_signals,
-        SA_signal=s,
-        SA_value=SAF,
-        SA_time=t + MafterGrid,
-        T=T,
-        snk_delay=snk_delay,
-        src_delay=src_delay,
-        monitor=monitor,
-        tokens=tokens,
-        input_widths=input_widths,
-        output_widths=output_widths,
-        verbose=False,
+    sim_val = tr.value_at_trace(
+        signal=s, time=tfrom + 2 * ERROR, trace=(times, states)
+    )
+    sim_sa_val = tr.value_at_trace(
+        signal=s, time=tfrom + 2 * ERROR, trace=(times_SA, states_SA)
     )
 
-    # check only the monitored signals for masking
-    # prepare lists for monitored signals output trace
-    monitored_states_SAF = getMonitoredStates(states_SAF, output_signals)
-
     masked = False
-    for sig in monitored_states:
-        masked = masked or (monitored_states[sig] == monitored_states_SAF[sig])
+    assert sim_val != 0.5
 
-    if masked:
-        print("masked")
+    if sim_sa_val == 0.5:
+        masked = True
+
+    if sim_val == sim_sa_val:
+        masked = True
 
     return masked
 
@@ -127,22 +84,13 @@ def findDelta(
     s,
     tfrom,
     tto,
-    monitored_states,
+    times_SA,
+    states_SA,
     times,
     states,
     events,
     T,
     output_signals,
-    SAF,
-    MafterGrid,  # MafterGrid=0.001
-    snk_delay=10,
-    src_delay=10,
-    monitor=False,
-    tokens=None,
-    input_widths=None,
-    output_widths=None,
-    inititally_r=True,
-    inititally_d=True,
 ):
     """
     1. check if signal is driving a gate ===> if not, return [tfrom, tto]
@@ -177,23 +125,14 @@ def findDelta(
         temp_tfrom = tfrom + temp_d
         temp_tto = tto + temp_d
 
-        # if sig during [t, t+1] is masked w.r.t temp_sig/its local outputs
+        # # if sig during [t, t+1] is masked w.r.t temp_sig/its local outputs
         if isMasked(
             temp_sig,
             temp_tfrom,
-            monitored_states,
+            times_SA,
+            states_SA,
+            times,
             states,
-            events,
-            T,
-            output_signals,
-            SAF,
-            MafterGrid,
-            snk_delay=snk_delay,
-            src_delay=src_delay,
-            monitor=monitor,
-            tokens=tokens,
-            input_widths=input_widths,
-            output_widths=output_widths,
         ):
             delta = [tfrom, tto]
             return delta
@@ -219,22 +158,13 @@ def findDelta(
             temp_sig,
             temp_tfrom,
             temp_tto,
-            monitored_states,
+            times_SA,
+            states_SA,
             times,
             states,
             events,
             T,
             output_signals,
-            SAF,
-            MafterGrid,  # MafterGrid=0.001
-            snk_delay=10,
-            src_delay=10,
-            monitor=False,
-            tokens=None,
-            input_widths=None,
-            output_widths=None,
-            inititally_r=False,
-            inititally_d=False,
         )
 
         delta_candidates.append([temp_delta[0] - temp_d, temp_delta[1] - temp_d])
@@ -313,30 +243,41 @@ def checkSA(
             logger.debug("checking time %s", tfrom)
 
             delta = [tfrom, tfrom]
-            monitored_states = getMonitoredStates(states, output_signals)
+
+            # step 0: create simulation with SA
+            events_check = events + [
+                (tfrom + ERROR, s, SAF),
+            ]
+            times_SA, states_SA = tr.traceSA(
+                states[0],
+                events_check,
+                output_signals,
+                SA_signal=s,
+                SA_value=SAF,
+                SA_time=tfrom + ERROR,
+                T=T,
+                snk_delay=snk_delay,
+                src_delay=src_delay,
+                monitor=monitor,
+                tokens=tokens,
+                input_widths=input_widths,
+                output_widths=output_widths,
+                verbose=False,
+            )
 
             while True:
                 # step 1: find the smallest delta
-                # delta = findDelta(s, delta[1], tto, times, monitored=output_signals, visited=set(), inititally_r=False)
                 delta = findDelta(
                     s,
                     delta[1],
                     tto,
-                    monitored_states,
+                    times_SA,
+                    states_SA,
                     times,
                     states,
                     events,
                     T,
                     output_signals,
-                    SAF,
-                    MafterGrid=ERROR,  # MafterGrid=0.001
-                    snk_delay=10,
-                    src_delay=10,
-                    monitor=False,
-                    tokens=None,
-                    input_widths=None,
-                    output_widths=None,
-                    inititally_r=False,
                 )
                 # print(f"delta for signal {s} is {delta}")
                 # print("delta type is ", type(delta))
