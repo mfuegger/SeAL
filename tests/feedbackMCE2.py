@@ -99,7 +99,7 @@ def main():
         times, states = tr.trace(init, events, output_signals, T=T)
 
     plotting.plot(
-        times, states, list(init.keys()), init, events, delays, fname="feedbackMCE2.svg"
+        times, states, list(init.keys()), init, events, delays=None, fname="feedbackMCE2.svg"
     )
 
     # # print it
@@ -167,7 +167,7 @@ def main():
             list(init.keys()),
             init,
             events,
-            delays,
+            delays=None,
             susceptible=susceptible,
             fault=fault,
             cutoff=[cutoff_min, cutoff_max],
