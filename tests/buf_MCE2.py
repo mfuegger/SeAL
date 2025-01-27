@@ -23,8 +23,7 @@ Options:
                             [default: 100].       
 --fault=F                   Fault type to check (possible values: SA0, SA1, SAF)
                             [default: SAF].            
---testcase=0                Check a specific fault injection case.
-                            [default: 0].
+--testcase=k                Check a specific fault injection case.
 --delta2                    Check using checkdelta2.
 --deltaopt                  Check using checkdeltaopt.
 --plotsamplingpoints        Plot the sampling points.     

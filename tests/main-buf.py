@@ -1,15 +1,9 @@
-import os
-import sys
-
-dir_path = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(dir_path + "/../")
-
 import pprint
-from libs import tracem as tr
-from libs import plotting
+from seal import tracem as tr
+from seal import plotting
 
 # from libs import checkbi as check
-from depricated import check
+# from depricated import check
 
 # CHECK = False
 CHECK = True
