@@ -44,7 +44,7 @@ def plot(
     x0: float = 60.0,
     susceptible=None,
     fault: str="SET",
-    cutoff=None | list[float] | tuple[float,float],
+    cutoff: None | list[float] | tuple[float,float] = None,
     sampling_points: set[Sampling_point] = set(),
 ):
     GRID_COLOR = svgwrite.rgb(30, 30, 30, "%")
