@@ -244,17 +244,18 @@ def checkSA(
 
             # for logging, show the sampling points if requested
             if plot_affected_points:
+                last_index = max(i for i in range(len(simulation[0])) if simulation[0][i] <= cutoff_max)
                 plotting.plot(
-                    simulation[0],
-                    simulation[1],
+                    simulation[0][:last_index],
+                    simulation[1][:last_index],
                     signals,
                     fname=f"{fault}-{s}-{tfrom}-ff.svg",
                     sampling_points=sampling_points,
                     cutoff=[cutoff_min, cutoff_max],
                 )
                 plotting.plot(
-                    simulation_SA[0],
-                    simulation_SA[1],
+                    simulation_SA[0][:last_index],
+                    simulation_SA[1][:last_index],
                     signals,
                     fname=f"{fault}-{s}-{tfrom}-sa.svg",
                     sampling_points=sampling_points,

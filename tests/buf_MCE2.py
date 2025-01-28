@@ -130,7 +130,7 @@ def main() -> None:
 
     # cutoff
     cutoff_min = 0
-    cutoff_max = float("Inf")
+    cutoff_max = float("inf")
 
     if CHECK:
         start = time.time()
