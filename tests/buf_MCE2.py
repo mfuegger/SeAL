@@ -26,6 +26,7 @@ Options:
 --testcase=k                Check a specific fault injection case.
 --delta2                    Check using checkdelta2.
 --deltaopt                  Check using checkdeltaopt.
+--nomasking                 Disable the improved masking algorithm.  
 --plotaffectedpoints        Plot the affected points.     
 """
 # --------|---------|---------|---------|---------|---------|---------|---------|
@@ -150,6 +151,7 @@ def main() -> None:
                 # victim_signals=['b1'],
                 victim_signals=[],
                 plot_affected_points=options["--plotaffectedpoints"],
+                use_masking=not options["--nomasking"],
             )
             pprint.pprint(SA1_M)
 
@@ -166,6 +168,7 @@ def main() -> None:
                 # victim_signals=['b1']
                 victim_signals=[],
                 plot_affected_points=options["--plotaffectedpoints"],
+                use_masking=not options["--nomasking"],
             )
             pprint.pprint(SA0_M)
 

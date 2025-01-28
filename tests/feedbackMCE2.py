@@ -26,7 +26,8 @@ Options:
                             [default: SAF].            
 --testcase                  Check a specific fault injection.
 --delta2                    Check using checkdelta2.
---deltaopt                  Check using checkdeltaopt.        
+--deltaopt                  Check using checkdeltaopt.
+--nomasking                 Disable the improved masking algorithm.        
 --plotaffectedpoints        Plot the affected points.        
 """
 # --------|---------|---------|---------|---------|---------|---------|---------|
@@ -135,6 +136,7 @@ def main():
                 cutoff_max=cutoff_max,
                 fault="SA1",
                 plot_affected_points=options["--plotaffectedpoints"],
+                use_masking=not options["--nomasking"],
                 # victim_signals=[]
             )
             pprint.pprint(SA1_M)
@@ -151,6 +153,7 @@ def main():
                 fault="SA0",
                 # victim_signals=[]
                 plot_affected_points=options["--plotaffectedpoints"],
+                use_masking=not options["--nomasking"],
             )
             pprint.pprint(SA0_M)
 

@@ -1,6 +1,4 @@
-from itertools import count
 from typing import Any
-from numpy import sign
 from tqdm import tqdm
 from seal import tracem as tr
 from seal import plotting
@@ -153,6 +151,7 @@ def checkSA(
     output_widths=None,
     victim_signals: list[str] = [],
     plot_affected_points: bool = False,
+    use_masking: bool = True
 ) -> dict[str, Any]:
     """
     checking all equivalence regions
@@ -239,8 +238,7 @@ def checkSA(
                 times=times,
                 simulation=simulation,
                 simulation_SA=simulation_SA,
-                # use_masking=False,
-                use_masking=True,
+                use_masking=use_masking,
             )
             mid_point = tfrom + delta / 2
 
@@ -252,6 +250,7 @@ def checkSA(
                     signals,
                     fname=f"{fault}-{s}-{tfrom}-ff.svg",
                     sampling_points=sampling_points,
+                    cutoff=[cutoff_min, cutoff_max],
                 )
                 plotting.plot(
                     simulation_SA[0],
@@ -259,6 +258,7 @@ def checkSA(
                     signals,
                     fname=f"{fault}-{s}-{tfrom}-sa.svg",
                     sampling_points=sampling_points,
+                    cutoff=[cutoff_min, cutoff_max],
                 )
 
             # step 2: inject a fault anywhere within delta

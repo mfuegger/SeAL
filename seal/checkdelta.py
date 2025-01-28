@@ -126,6 +126,7 @@ def checkSA(
     output_widths=None,
     victim_signals=[],
     plot_affected_points: bool= False,
+    use_masking: bool = True
 ):
     """
     checking all equivalence regions
