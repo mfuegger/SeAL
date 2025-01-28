@@ -152,7 +152,7 @@ def checkSA(
     input_widths=None,
     output_widths=None,
     victim_signals: list[str] = [],
-    plot_sampling_points: bool = False,
+    plot_affected_points: bool = False,
 ) -> dict[str, Any]:
     """
     checking all equivalence regions
@@ -245,7 +245,7 @@ def checkSA(
             mid_point = tfrom + delta / 2
 
             # for logging, show the sampling points if requested
-            if plot_sampling_points:
+            if plot_affected_points:
                 plotting.plot(
                     simulation[0],
                     simulation[1],

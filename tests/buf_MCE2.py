@@ -26,7 +26,7 @@ Options:
 --testcase=k                Check a specific fault injection case.
 --delta2                    Check using checkdelta2.
 --deltaopt                  Check using checkdeltaopt.
---plotsamplingpoints        Plot the sampling points.     
+--plotaffectedpoints        Plot the affected points.     
 """
 # --------|---------|---------|---------|---------|---------|---------|---------|
 
@@ -112,7 +112,13 @@ def main() -> None:
         times, states = tr.trace(init, events, output_signals, T=T)
 
     plotting.plot(
-        times, states, list(init.keys()), init, events, delays=None, fname="buf_MCE2.svg"
+        times,
+        states,
+        list(init.keys()),
+        init,
+        events,
+        delays=None,
+        fname="buf_MCE2.svg",
     )
 
     # print it
@@ -143,7 +149,7 @@ def main() -> None:
                 fault="SA1",
                 # victim_signals=['b1'],
                 victim_signals=[],
-                plot_sampling_points=options["--plotsamplingpoints"],
+                plot_affected_points=options["--plotaffectedpoints"],
             )
             pprint.pprint(SA1_M)
 
@@ -159,7 +165,7 @@ def main() -> None:
                 fault="SA0",
                 # victim_signals=['b1']
                 victim_signals=[],
-                plot_sampling_points=options["--plotsamplingpoints"],
+                plot_affected_points=options["--plotaffectedpoints"],
             )
             pprint.pprint(SA0_M)
 
