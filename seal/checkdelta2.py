@@ -239,7 +239,6 @@ def checkSA(
                 times=times,
                 simulation=simulation,
                 simulation_SA=simulation_SA,
-                # use_masking=False,
                 use_masking=True,
             )
             mid_point = tfrom + delta / 2
