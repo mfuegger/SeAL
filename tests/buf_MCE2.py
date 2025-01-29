@@ -106,6 +106,16 @@ def main() -> None:
             times, states = tr.traceSA(
                 init, events, output_signals, stuck_sig, stuck_value, stuck_t, T=T
             )
+        elif testcase == 2:
+            stuck_sig = "b1"
+            stuck_value = 1
+            stuck_t = 1.1
+            events += [
+                (stuck_t, stuck_sig, stuck_value),
+            ]
+            times, states = tr.traceSA(
+                init, events, output_signals, stuck_sig, stuck_value, stuck_t, T=T
+            )
         else:
             times, states = tr.trace(init, events, output_signals, T=T)
 

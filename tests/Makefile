@@ -1,4 +1,4 @@
-figures: clean buf_MCE2_case0.pdf buf_MCE2_case1.pdf buf_MCE2_regions.pdf feedbackMCE2_regions.pdf buf_MCE2_affected_nomasking.pdf feedbackMCE2_affected_nomasking.pdf feedbackMCE2_affected_masking.pdf
+figures: clean buf_MCE2_case0.pdf buf_MCE2_case1.pdf buf_MCE2_case2.pdf buf_MCE2_regions.pdf feedbackMCE2_regions.pdf buf_MCE2_affected_nomasking.pdf feedbackMCE2_affected_nomasking.pdf feedbackMCE2_affected_masking.pdf
 
 clean:
 	rm -f *.svg *.pdf
@@ -12,6 +12,11 @@ buf_MCE2_case1.pdf:
 	python3 buf_MCE2.py --runtime=15 --testcase=1
 	inkscape --export-filename=buf_MCE2.pdf buf_MCE2.svg
 	pdfcrop --margins '5 5 5 5' --clip buf_MCE2.pdf buf_MCE2_case1.pdf
+
+buf_MCE2_case2.pdf:
+	python3 buf_MCE2.py --runtime=15 --testcase=2
+	inkscape --export-filename=buf_MCE2.pdf buf_MCE2.svg
+	pdfcrop --margins '5 5 5 5' --clip buf_MCE2.pdf buf_MCE2_case2.pdf
 
 buf_MCE2_regions.pdf:
 	python3 buf_MCE2.py --runtime=21 --delta2
