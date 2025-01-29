@@ -23,7 +23,7 @@ def isSusceptibleSA(
     tokens=None,
     input_widths=None,
     output_widths=None,
-    plot_sampling_points: bool= False,
+    plot_affected_points: bool= False,
 ):
     events_check = events + [
         (t + MafterGrid, s, SAF),  # add SA0 or SA1
@@ -125,7 +125,8 @@ def checkSA(
     input_widths=None,
     output_widths=None,
     victim_signals=[],
-    plot_sampling_points: bool= False,
+    plot_affected_points: bool= False,
+    use_masking: bool = True
 ):
     """
     checking all equivalence regions

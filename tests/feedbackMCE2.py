@@ -26,8 +26,9 @@ Options:
                             [default: SAF].            
 --testcase                  Check a specific fault injection.
 --delta2                    Check using checkdelta2.
---deltaopt                  Check using checkdeltaopt.        
---plotsamplingpoints        Plot the sampling points.        
+--deltaopt                  Check using checkdeltaopt.
+--nomasking                 Disable the improved masking algorithm.        
+--plotaffectedpoints        Plot the affected points.        
 """
 # --------|---------|---------|---------|---------|---------|---------|---------|
 
@@ -99,7 +100,13 @@ def main():
         times, states = tr.trace(init, events, output_signals, T=T)
 
     plotting.plot(
-        times, states, list(init.keys()), init, events, delays=None, fname="feedbackMCE2.svg"
+        times,
+        states,
+        list(init.keys()),
+        init,
+        events,
+        delays=None,
+        fname="feedbackMCE2.svg",
     )
 
     # # print it
@@ -128,7 +135,8 @@ def main():
                 cutoff_min=cutoff_min,
                 cutoff_max=cutoff_max,
                 fault="SA1",
-                plot_sampling_points=options["--plotsamplingpoints"],
+                plot_affected_points=options["--plotaffectedpoints"],
+                use_masking=not options["--nomasking"],
                 # victim_signals=[]
             )
             pprint.pprint(SA1_M)
@@ -144,7 +152,8 @@ def main():
                 cutoff_max=cutoff_max,
                 fault="SA0",
                 # victim_signals=[]
-                plot_sampling_points=options["--plotsamplingpoints"],
+                plot_affected_points=options["--plotaffectedpoints"],
+                use_masking=not options["--nomasking"],
             )
             pprint.pprint(SA0_M)
 

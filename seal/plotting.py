@@ -38,13 +38,13 @@ def plot(
     init=None,
     events=None,
     delays=None,
-    fname="out.svg",
+    fname: str="out.svg",
     dt: float = 30.0,
     dv: float = 60.0,
     x0: float = 60.0,
     susceptible=None,
-    fault="SET",
-    cutoff=None,
+    fault: str="SET",
+    cutoff: None | list[float] | tuple[float,float] = None,
     sampling_points: set[Sampling_point] = set(),
 ):
     GRID_COLOR = svgwrite.rgb(30, 30, 30, "%")
