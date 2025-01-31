@@ -23,7 +23,6 @@ def isSusceptibleSA(
     tokens=None,
     input_widths=None,
     output_widths=None,
-    plot_affected_points: bool= False,
 ):
     events_check = events + [
         (t + MafterGrid, s, SAF),  # add SA0 or SA1
@@ -96,9 +95,8 @@ def findDelta(
     1. check if signal is driving a gate ===> if not, return [tfrom, tto]
     2. for eah gate that is driven by signal
         2.1 project time interval on current signal (temp_sig)
-        2.2 keep track of which monitored signals are visited (visited is cleared for every new delta, i.e. called from check())
-        2.3 check if current time interval crosses the simulation time (times[-1]) ===> if not, edit or return [tfrom, tto]
-        2.4 check if current signal (temp_sig) is masked on immediate outputs during projected time interval
+        2.2 check if current time interval crosses the simulation time (times[-1]) ===> if not, edit or return [tfrom, tto]
+        2.4 check if current signal (temp_sig) is masked (same trace as golden run) ===> return [tfrom, tto]
         2.5 adjust projected time interval (if needed)
         2.6 continue wih recursion
     """
@@ -192,6 +190,7 @@ def checkSA(
     output_widths=None,
     victim_signals=[],
     plot_affected_points: bool= False,
+    use_masking: bool = True
 ):
     """
     checking all equivalence regions

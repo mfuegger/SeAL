@@ -45,7 +45,7 @@ def main():
         from seal import checkdelta as check
     # --------|---------|---------|---------|---------|
 
-    T = int(options["--runtime"])
+    T = float(options["--runtime"])
     fault = str(options["--fault"])
     assert fault in ["SAF", "SA1", "SA0"], "Fault type not supported"
 
