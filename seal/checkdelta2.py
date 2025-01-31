@@ -26,8 +26,8 @@ def isSusceptibleSA(
 ) -> bool:
     # print("isSusceptibleSA", s, t, SAF)
     # add the error event
-    events_check = [e for e in events if e[0] != t or e[1] != s] + [
-        (t, s, SAF),
+    events_check = events + [
+        (t + ERROR, s, SAF),
     ]
     events_check = sorted(events_check, key=lambda x: x[0])
     # simulate
@@ -37,7 +37,7 @@ def isSusceptibleSA(
         output_signals,
         SA_signal=s,
         SA_value=SAF,
-        SA_time=t,
+        SA_time=t + ERROR,
         T=T,
         snk_delay=snk_delay,
         src_delay=src_delay,
@@ -194,8 +194,8 @@ def checkSA(
             # logger.warning("checking time %s", tfrom)
 
             # step 0: create simulation with SA
-            events_check = [e for e in events if e[0] != tfrom or e[1] != s] + [
-                (tfrom, s, SAF),  # add SA0 or SA1
+            events_check = events + [
+                (tfrom + ERROR, s, SAF),  # add SA0 or SA1
             ]
             events_check = sorted(events_check, key=lambda x: x[0])
             simulation_SA = tr.traceSA(
@@ -204,7 +204,7 @@ def checkSA(
                 output_signals=output_signals,
                 SA_signal=s,
                 SA_value=SAF,
-                SA_time=tfrom,
+                SA_time=tfrom + ERROR,
                 T=T,
                 snk_delay=snk_delay,
                 src_delay=src_delay,
@@ -220,7 +220,7 @@ def checkSA(
             print(simulation_SA[0])
             delta, sampling_points, calls = findDelta(
                 signal=s,
-                time=tfrom,
+                time=tfrom + ERROR,
                 # times=times,
                 times=sorted(simulation_SA[0] + [times[-1]]),  # use the value region boundaries from the faulty SA execution, and times[-1]
                 simulation=simulation_SA,
