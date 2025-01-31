@@ -89,7 +89,7 @@ def main() -> None:
         if testcase == 0:
             stuck_sig = "b1"
             stuck_value = 1
-            stuck_t = 0.5
+            stuck_t = 0.1
             events += [
                 (stuck_t, stuck_sig, stuck_value),
             ]
@@ -99,7 +99,7 @@ def main() -> None:
         elif testcase == 1:
             stuck_sig = "b1"
             stuck_value = 1
-            stuck_t = 1.0
+            stuck_t = 0.6
             events += [
                 (stuck_t, stuck_sig, stuck_value),
             ]
