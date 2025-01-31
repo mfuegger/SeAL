@@ -85,9 +85,9 @@ def main():
     output_signals = ["out"]
 
     if not CHECK:
-        stuck_sig = "b"
-        stuck_value = 1
-        stuck_t = 12.5
+        stuck_sig = "a"
+        stuck_value = 0
+        stuck_t = 18.9
 
         events += [
             (stuck_t, stuck_sig, stuck_value),

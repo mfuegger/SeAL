@@ -87,9 +87,9 @@ def main() -> None:
 
     if not CHECK:
         if testcase == 0:
-            stuck_sig = "b1"
+            stuck_sig = "b" # "b1"
             stuck_value = 1
-            stuck_t = 0.1
+            stuck_t = 10.0 # 0.1
             events += [
                 (stuck_t, stuck_sig, stuck_value),
             ]
