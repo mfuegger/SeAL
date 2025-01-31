@@ -167,8 +167,8 @@ def findDelta(
 
         delta_candidates.append([temp_delta[0] - temp_d, temp_delta[1] - temp_d])
 
-        assert len(delta_candidates) == 1
-        return min(delta_candidates)
+    # assert len(delta_candidates) == 1
+    return min(delta_candidates)
 
 
 def checkSA(
