@@ -85,9 +85,10 @@ def main():
     output_signals = ["out"]
 
     if not CHECK:
+        print("running testcase")
         stuck_sig = "a"
-        stuck_value = 0
-        stuck_t = 18.9
+        stuck_value = 1
+        stuck_t = 39.0
 
         events += [
             (stuck_t, stuck_sig, stuck_value),

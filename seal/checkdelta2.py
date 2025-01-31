@@ -26,7 +26,7 @@ def isSusceptibleSA(
 ) -> bool:
     # print("isSusceptibleSA", s, t, SAF)
     # add the error event
-    events_check = [e for e in events if e[0] != t and e[1] != s] + [
+    events_check = [e for e in events if e[0] != t or e[1] != s] + [
         (t, s, SAF),
     ]
     events_check = sorted(events_check, key=lambda x: x[0])
@@ -194,7 +194,7 @@ def checkSA(
             # logger.warning("checking time %s", tfrom)
 
             # step 0: create simulation with SA
-            events_check = [e for e in events if e[0] != tfrom and e[1] != s] + [
+            events_check = [e for e in events if e[0] != tfrom or e[1] != s] + [
                 (tfrom, s, SAF),  # add SA0 or SA1
             ]
             events_check = sorted(events_check, key=lambda x: x[0])
@@ -214,7 +214,7 @@ def checkSA(
                 output_widths=output_widths,
                 verbose=False,
             )
-            print(simulation_SA[1])
+            # print(simulation_SA[1])
 
             # step 1: find the smallest delta
             print(simulation_SA[0])
@@ -286,7 +286,7 @@ def checkSA(
             )
 
             if region_is_M_start != region_is_M:
-                print(f"{tfrom} start: {region_is_M_start} {mid_point} mid: {region_is_M}")
+                print(f"{s}:{tfrom} ({SAF}) start: {region_is_M_start} {mid_point} mid: {region_is_M}")
                 exit(1)
 
             # step 3: label the delta region (and add to pos & neg & pos_per_sig[s] accordingly)
