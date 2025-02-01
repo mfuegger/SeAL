@@ -152,6 +152,16 @@ def value_at_trace(signal: str, time: float, trace: Trace) -> float:
     idx = max([i for i in range(len(times)) if times[i] <= time])
     return states[idx][signal]
 
+def valuechange_within_trace(signal: str, time_interval: tuple[float,float], trace: Trace) -> float:
+    """
+    Returns if the value of the signal changed within time_interval in the trace.
+    """
+    times = trace[0]
+    states = trace[1]
+    assert len(times) == len(states)
+    changes = [ states[i][signal] for i in range(len(times)) if (times[i] >= time_interval[0] and times[i] <= time_interval[1]) ]
+    return len(changes) > 0
+
 
 def trace(
     init: dict[str, float],

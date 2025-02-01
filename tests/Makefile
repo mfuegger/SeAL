@@ -24,7 +24,7 @@ buf_MCE2_regions.pdf:
 	pdfcrop --margins '5 5 5 5' --clip buf_MCE2.pdf buf_MCE2_regions.pdf
 
 feedbackMCE2_regions.pdf:
-	python3 feedbackMCE2.py --runtime=40 --delta2 --nomasking
+	python3 feedbackMCE2.py --runtime=40 --delta2 --plotaffectedpoints
 	inkscape --export-filename=feedbackMCE2.pdf feedbackMCE2.svg
 	pdfcrop --margins '5 5 5 5' --clip feedbackMCE2.pdf feedbackMCE2_regions.pdf
 

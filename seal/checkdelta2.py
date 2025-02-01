@@ -1,3 +1,4 @@
+from curses import ERR
 from typing import Any
 from tqdm import tqdm
 from seal import tracem as tr
@@ -12,10 +13,10 @@ def isSusceptibleSA(
     t: float,
     s: str,
     states,
-    events,
+    events: list[tr.Event],
     T: float,
-    output_signals,
-    SAF: int | float,
+    output_signals: list[str],
+    SAF: float,
     MafterGrid: float,
     snk_delay: float = 10,
     src_delay: float = 10,
@@ -29,12 +30,12 @@ def isSusceptibleSA(
     events_check = events + [
         (t + ERROR, s, SAF),
     ]
-    events_check = sorted(events_check, key=lambda x: x[0])
+    events_check: list[tr.Event] = sorted(events_check, key=lambda x: x[1])
     # simulate
     times_M, states_M = tr.traceSA(
-        states[0],
-        events_check,
-        output_signals,
+        init=states[0],
+        events=events_check,
+        output_signals=output_signals,
         SA_signal=s,
         SA_value=SAF,
         SA_time=t + ERROR,
@@ -47,6 +48,14 @@ def isSusceptibleSA(
         output_widths=output_widths,
         verbose=False,
     )
+
+    # plotting.plot(
+    #                 times_M,
+    #                 states_M,
+    #                 list(states_M[0].keys()),
+    #                 fname=f"huhu-{s}-{t}.svg",
+    #             )
+
     # check if was M
     was_M = False
     for state_M in states_M:
@@ -70,6 +79,7 @@ def findDelta(
         - what were the sampling points
         - how many samples checked (may be different for sample point size since the latter is a set)
     """
+    # print("findDelta", signal, time)
     # if len(history) < 10:
     #     logger.warning("%s:%s", signal, time)
 
@@ -87,22 +97,27 @@ def findDelta(
     ret_sampling_points: set[plotting.Sampling_point] = {(signal, time)}
     ret_calls: int = 1  # 1 for this call
 
-    if use_masking and time != 0.0:
+    if use_masking and time >= 2 * ERROR:
         # check if this event would be masked,
         # i.e., simulation(signal, time) == simulation_SA(signal, time)
         # If so, return
         sim_sa_val_before = tr.value_at_trace(
-            signal=signal, time=time - 1 * ERROR, trace=simulation
+            signal=signal, time=time - 1 * ERROR, trace=simulation_SA
         )
         sim_sa_val_after = tr.value_at_trace(
             signal=signal, time=time + 1 * ERROR, trace=simulation_SA
         )
+        # print("checking masking")
+        # print("sim_sa_val_after", sim_sa_val_after)
 
         if sim_sa_val_after == 0.5:
             # assuming these propagate with delay 0
             return ret[0], {(signal, time)}, 1
 
-        if (sim_sa_val_before == sim_sa_val_after):
+
+        # if (sim_sa_val_before == sim_sa_val_after):
+        # print("changed", tr.valuechange_within_trace(signal=signal, time_interval=(time-2*ERROR,time+2*ERROR), trace=simulation_SA))
+        if not tr.valuechange_within_trace(signal=signal, time_interval=(time-2*ERROR,time+2*ERROR), trace=simulation_SA):
             # masking -> do not follow this event anymore
             logger.debug("masking")
             return ret[0], {(signal, time)}, 1
@@ -195,7 +210,7 @@ def checkSA(
 
             # step 0: create simulation with SA
             events_check = events + [
-                (tfrom + ERROR, s, SAF),  # add SA0 or SA1
+                (tfrom + 1*ERROR, s, SAF),  # add SA0 or SA1
             ]
             events_check = sorted(events_check, key=lambda x: x[0])
             simulation_SA = tr.traceSA(
@@ -204,7 +219,7 @@ def checkSA(
                 output_signals=output_signals,
                 SA_signal=s,
                 SA_value=SAF,
-                SA_time=tfrom + ERROR,
+                SA_time=tfrom + 1*ERROR,
                 T=T,
                 snk_delay=snk_delay,
                 src_delay=src_delay,
@@ -214,25 +229,35 @@ def checkSA(
                 output_widths=output_widths,
                 verbose=False,
             )
-            # print(simulation_SA[1])
+            # print(tfrom + 1*ERROR, simulation_SA[0])
 
             # step 1: find the smallest delta
-            print(simulation_SA[0])
+
+            # use the value region boundaries from the faulty SA execution, and times[-1]
+            new_boundaries: list[float] = simulation_SA[0] + times + [e[0] for e in events]
+            new_boundaries = sorted(list(set(new_boundaries)))
+            # print("----", SAF, s, tfrom, "----")
+            # print("new_boundaries", new_boundaries)
+
             delta, sampling_points, calls = findDelta(
                 signal=s,
-                time=tfrom + ERROR,
+                time=tfrom + 2*ERROR,
                 # times=times,
-                times=sorted(simulation_SA[0] + [times[-1]]),  # use the value region boundaries from the faulty SA execution, and times[-1]
+                times=new_boundaries,
                 simulation=simulation_SA,
                 simulation_SA=simulation_SA,
                 use_masking=use_masking,
             )
-            print(s, tfrom, delta, sampling_points)
+            delta = delta + 2*ERROR
+            # sampling_points_li = sorted(sampling_points, key=lambda x: x[1])
+            # print("sampling points", sampling_points_li)
+            # print(">> delta:", delta)
             mid_point = tfrom + delta / 2
+            # print("testing at:", mid_point)
 
             # for logging, show the sampling points if requested
             if plot_affected_points:
-                last_index = max(i for i in range(len(simulation_SA[0])) if simulation_SA[0][i] <= cutoff_max)
+                last_index = len(simulation_SA[0]) # max(i for i in range(len(simulation_SA[0])) if simulation_SA[0][i] <= cutoff_max)
                 # plotting.plot(
                 #     simulation[0][:last_index],
                 #     simulation[1][:last_index],
@@ -267,6 +292,7 @@ def checkSA(
                 input_widths=input_widths,
                 output_widths=output_widths,
             )
+            # print("mispoint susceptable", region_is_M)
 
             region_is_M_start = isSusceptibleSA(
                 t=tfrom,
@@ -284,10 +310,11 @@ def checkSA(
                 input_widths=input_widths,
                 output_widths=output_widths,
             )
+            # print("just for test: beginng susceptible", region_is_M_start)
 
             if region_is_M_start != region_is_M:
-                print(f"{s}:{tfrom} ({SAF}) start: {region_is_M_start} {mid_point} mid: {region_is_M}")
-                exit(1)
+                print(f">> {s}:{tfrom} ({SAF}) start: {region_is_M_start} {mid_point} mid: {region_is_M}")
+                # exit(1)
 
             # step 3: label the delta region (and add to pos & neg & pos_per_sig[s] accordingly)
             if region_is_M:
