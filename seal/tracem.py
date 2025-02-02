@@ -582,7 +582,7 @@ def traceSA(
     T: float = 50.0,
     snk_delay: float = 10.0,
     src_delay: float = 10.0,
-    Mdelay=0.01,
+    Mdelay=0,
     monitor=False,
     tokens=None,
     input_widths=None,

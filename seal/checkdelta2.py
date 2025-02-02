@@ -206,7 +206,7 @@ def checkSA(
         logger.debug("checking signal %s", s)
         tfrom = times[0]
         while tfrom < times[-1]:
-            # logger.warning("checking time %s", tfrom)
+            logger.warning("checking time %s", tfrom)
 
             # step 0: create simulation with SA
             events_check = events + [

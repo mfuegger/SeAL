@@ -31,6 +31,8 @@ Options:
 --cutoff-max=N              The maximal cutoff. the end of the window to investigate
                             [default: float('Inf')].               
 --delta2                    Check using checkdelta2.
+--nomasking                 Disable the improved masking algorithm.  
+--plotaffectedpoints        Plot the affected points.     
 """
 
 logging.basicConfig(level=logging.WARNING, format='%(name)s - %(levelname)s - %(message)s')
@@ -176,7 +178,9 @@ def main():
                 input_widths=input_widths,
                 output_widths=output_widths,
                 # victim_signals=[]
-                victim_signals=['op(0).F']
+                victim_signals=['op(0).F'],
+                plot_affected_points=options["--plotaffectedpoints"],
+                use_masking=not options["--nomasking"],
             )
             # pprint.pprint(SA1_M)
 
@@ -194,7 +198,9 @@ def main():
                 tokens=tokens,
                 input_widths=input_widths,
                 output_widths=output_widths,
-                victim_signals=[]
+                victim_signals=[],
+                plot_affected_points=options["--plotaffectedpoints"],
+                use_masking=not options["--nomasking"],
                 # victim_signals=['op(0).F']
             )
             # pprint.pprint(SA0_M)
