@@ -36,7 +36,9 @@ Options:
 --cutoff-min=N              The minimal cutoff. the start of the window to investigate
                             [default: 0].
 --cutoff-max=N              The maximal cutoff. the end of the window to investigate
-                            [default: float('Inf')].               
+                            [default: float('Inf')].    
+--nomasking                 Disable the improved masking algorithm.  
+--plotaffectedpoints        Plot the affected points.                
 """
 # --------|---------|---------|---------|---------|---------|---------|---------|
 
@@ -75,6 +77,9 @@ def main():
     init, events, tokens, input_widths, output_signals, output_widths = (
         logic.umul4x4_new.GeneratePipeline()
     )
+
+    print("number of signals:", len(tr.signals))
+    print("number of prs:", len(tr.rules))
 
     if not CHECK:
         if fault == "SA1":
@@ -149,6 +154,7 @@ def main():
         )
         # print("print after trace call", events)
 
+    print("number of transitions in fault-free execution:", tr.nr_transitions_in_simulation(states))
     plotting.plot(times, states, list(init.keys()))
     # print(events)
 
@@ -177,6 +183,8 @@ def main():
                     output_widths=output_widths,
                     # victim_signals=[]
                     victim_signals=["ack_in"],
+                    plot_affected_points=options["--plotaffectedpoints"],
+                    use_masking=not options["--nomasking"],
                 )
                 # pprint.pprint(SA1_M)
 
@@ -196,6 +204,8 @@ def main():
                     output_widths=output_widths,
                     # victim_signals=[]
                     victim_signals=["ack_in"],
+                    plot_affected_points=options["--plotaffectedpoints"],
+                    use_masking=not options["--nomasking"],
                 )
                 # pprint.pprint(SA0_M)
 

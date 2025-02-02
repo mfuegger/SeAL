@@ -78,6 +78,8 @@ def main():
     init, events, tokens, input_widths, output_signals, output_widths = (
         logic.alu.GeneratePipeline()
     )
+    print("number of signals:", len(tr.signals))
+    print("number of prs:", len(tr.rules))
 
     if not CHECK:
         if fault == "SET":
@@ -172,6 +174,7 @@ def main():
         # print("print after trace call", events)
 
     plotting.plot(times, states, list(init.keys()))
+    print("number of transitions in fault-free execution:", tr.nr_transitions_in_simulation(states))
     # print(events)
 
     # # print it

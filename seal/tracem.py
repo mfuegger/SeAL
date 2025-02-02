@@ -113,6 +113,16 @@ def clear() -> None:
     rules = []
     signals = []
 
+def nr_transitions_in_simulation(states: list[State]) -> int:
+    count: int = 0
+    old_state = states[0]
+    for i in range(1,len(states)):
+        new_state = states[i]
+        for s in new_state:
+            if old_state[s] != new_state[s]:
+                count += 1
+    return count
+
 
 def rule(f, i, o, val, d: float = 1):
     global rules, signals
