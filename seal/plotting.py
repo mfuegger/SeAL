@@ -132,8 +132,9 @@ def plot(
             )
 
     # grid |
-    x = 0.0
-    last_annotated_time = float("-inf")
+    grid_digits: int = 1
+    x: float = 0.0
+    last_annotated_time: float = -float("inf")
     for i, time in enumerate(times):
         x = dt * time
         dwg.add(
@@ -148,7 +149,7 @@ def plot(
                 time = int(time)
             dwg.add(
                 dwg.text(
-                    f"{time}", insert=(x0 + x, maxy + 16), font_size="12", fill="black"
+                    f"{round(time, grid_digits)}", insert=(x0 + x - 5, maxy + 16), font_size="12", fill="black"
                 )
             )
     maxx = x
@@ -282,7 +283,7 @@ def plot(
     # print circuit parameters
     if delays is not None:
         text_block_init = f"Init: {init}"
-        text_block_events = "\t".join([f"{event}" for event in events])
+        text_block_events = "\t".join([f"{event}" for event in events]) if events is not None else ""
         text_block_delays = f"Delays: {delays}"
 
         # Adjust the text insertion point to avoid overlap
