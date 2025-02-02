@@ -31,24 +31,25 @@ Options:
 --cutoff-max=N              The maximal cutoff. the end of the window to investigate
                             [default: float('Inf')].               
 """
-#--------|---------|---------|---------|---------|---------|---------|---------|
+# --------|---------|---------|---------|---------|---------|---------|---------|
+
 
 def main():
     options = docopt(usage_msg, version="0.1")
 
     # CHECK = True --> show sensitivity windows
     # CHECK = False --> show effect of specific glitches
-    if (options["--check"]):
+    if options["--check"]:
         CHECK = True
     else:
         CHECK = False
 
-#--------|---------|---------|---------|---------|
-    if (options["--exhaustive"]):
+    # --------|---------|---------|---------|---------|
+    if options["--exhaustive"]:
         from depricated import check
     else:
         from seal import checkbi as check
-#--------|---------|---------|---------|---------|
+    # --------|---------|---------|---------|---------|
 
     fault = str(options["--fault"])
     T = int(options["--runtime"])
@@ -60,82 +61,84 @@ def main():
     init, events, output_signals = logic.half_adder.GeneratePipeline()
 
     if not CHECK:
-        if fault == 'SET':
+        if fault == "SET":
             glitch_t = 7.9
-            glitch_sig = 'c2'
+            glitch_sig = "c2"
             events += [
-                    (glitch_t, glitch_sig, 1),  # add glitch
-                    (glitch_t + 0.1, glitch_sig, 0),  # reset glitch
+                (glitch_t, glitch_sig, 1),  # add glitch
+                (glitch_t + 0.1, glitch_sig, 0),  # reset glitch
             ]
 
             times, states = tr.trace(init, events=events, T=T)
 
-        elif fault == 'SA1':
+        elif fault == "SA1":
             stuck_t = 4
-            stuck_sig = 'c2'
+            stuck_sig = "c2"
             events += [
-                    # (stuck_t, 'en2', 1),  # add SA1
-                    # (24.5, 'en2', 1),  # add SA1
-                    # (3.5, 'c2', 1),  # add SA1               #########################
-                    (stuck_t, stuck_sig, 1),  # add SA1 
+                # (stuck_t, 'en2', 1),  # add SA1
+                # (24.5, 'en2', 1),  # add SA1
+                # (3.5, 'c2', 1),  # add SA1               #########################
+                (stuck_t, stuck_sig, 1),  # add SA1
             ]
 
-            times, states = tr.traceSA(init, events=events, SA_sig=stuck_sig, SA_time=stuck_t, T=T)
+            times, states = tr.traceSA(
+                init, events=events, SA_sig=stuck_sig, SA_time=stuck_t, T=T
+            )
 
         else:
             stuck_t = 15
-            stuck_sig = 'c2'
+            stuck_sig = "c2"
             events += [
-                    # (20, 'c1', 0),  
-                    # (20, 'en2', 0),
-                    # (20.1, 'c1', 0),
-                    # (20.1, 'en2', 0),
-                    
-                    (stuck_t, stuck_sig, 0),  # add SA0
+                # (20, 'c1', 0),
+                # (20, 'en2', 0),
+                # (20.1, 'c1', 0),
+                # (20.1, 'en2', 0),
+                (stuck_t, stuck_sig, 0),  # add SA0
             ]
 
-            times, states = tr.traceSA(init, events=events, SA_sig=stuck_sig, SA_time=stuck_t, T=T)
+            times, states = tr.traceSA(
+                init, events=events, SA_sig=stuck_sig, SA_time=stuck_t, T=T
+            )
 
     # if CHECK, run golden run without any faults
     else:
         times, states = tr.trace(init, events=events, T=T)
-
 
     plotting.plot(times, states, list(init.keys()))
 
     # print it
     for i in range(len(times)):
         print()
-        print(f'time {times[i]}:')
+        print(f"time {times[i]}:")
         pprint.pprint(states[i])
 
     if CHECK:
-        if fault == 'SET':
+        if fault == "SET":
             ret = check.check(
-                    times=times,
-                    events=events,
-                    states=states,
-                    signals=list(init.keys()),
-                    output_signals=output_signals,
-                    cutoff_min=cutoff_min,
-                    cutoff_max=cutoff_max,
+                times=times,
+                events=events,
+                states=states,
+                signals=list(init.keys()),
+                output_signals=output_signals,
+                cutoff_min=cutoff_min,
+                cutoff_max=cutoff_max,
             )
             pprint.pprint(ret)
 
             plotting.plot(
-                    times,
-                    states,
-                    list(init.keys()),
-                    susceptible=ret['susceptible'],
-                    cutoff=[cutoff_min, cutoff_max],
-                    )
+                times,
+                states,
+                list(init.keys()),
+                susceptible=ret["susceptible"],
+                cutoff=[cutoff_min, cutoff_max],
+            )
         else:
             ret = check.checkSA(
                 times=times,
                 events=events,
                 states=states,
                 signals=list(init.keys()),
-                output_signals=output_signals, 
+                output_signals=output_signals,
                 cutoff_min=cutoff_min,
                 cutoff_max=cutoff_max,
                 fault=fault,
@@ -146,10 +149,11 @@ def main():
                 times,
                 states,
                 list(init.keys()),
-                susceptible=ret['susceptible'],
+                susceptible=ret["susceptible"],
                 fault=fault,
                 cutoff=[cutoff_min, cutoff_max],
-                )
+            )
 
-if (__name__ == "__main__"):
+
+if __name__ == "__main__":
     main()

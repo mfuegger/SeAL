@@ -25,7 +25,6 @@ def isSusceptibleSA(
     input_widths=None,
     output_widths=None,
 ) -> bool:
-    # print("isSusceptibleSA", s, t, SAF)
     # add the error event
     events_check = events + [
         (t + ERROR, s, SAF),
@@ -48,14 +47,6 @@ def isSusceptibleSA(
         output_widths=output_widths,
         verbose=False,
     )
-
-    # plotting.plot(
-    #                 times_M,
-    #                 states_M,
-    #                 list(states_M[0].keys()),
-    #                 fname=f"huhu-{s}-{t}.svg",
-    #             )
-
     # check if was M
     was_M = False
     for state_M in states_M:
@@ -80,8 +71,6 @@ def findDelta(
         - how many samples checked (may be different for sample point size since the latter is a set)
     """
     # print("findDelta", signal, time)
-    # if len(history) < 10:
-    #     logger.warning("%s:%s", signal, time)
 
     times_larger = [t for t in times if t > time]
     if len(times_larger) == 0:
@@ -102,22 +91,17 @@ def findDelta(
         # i.e., simulation(signal, time) == simulation_SA(signal, time)
         # If so, return
         sim_sa_val_before = tr.value_at_trace(
-            signal=signal, time=time - 1 * ERROR, trace=simulation_SA
+            signal=signal, time=time - 2 * ERROR, trace=simulation_SA
         )
         sim_sa_val_after = tr.value_at_trace(
-            signal=signal, time=time + 1 * ERROR, trace=simulation_SA
+            signal=signal, time=time + 2 * ERROR, trace=simulation_SA
         )
-        # print("checking masking")
-        # print("sim_sa_val_after", sim_sa_val_after)
-
+        
         if sim_sa_val_after == 0.5:
             # assuming these propagate with delay 0
             return ret[0], {(signal, time)}, 1
 
-
-        # if (sim_sa_val_before == sim_sa_val_after):
-        # print("changed", tr.valuechange_within_trace(signal=signal, time_interval=(time-2*ERROR,time+2*ERROR), trace=simulation_SA))
-        if not tr.valuechange_within_trace(signal=signal, time_interval=(time-2*ERROR,time+2*ERROR), trace=simulation_SA):
+        if (sim_sa_val_before == sim_sa_val_after):
             # masking -> do not follow this event anymore
             logger.debug("masking")
             return ret[0], {(signal, time)}, 1
@@ -206,7 +190,7 @@ def checkSA(
         logger.debug("checking signal %s", s)
         tfrom = times[0]
         while tfrom < times[-1]:
-            logger.warning("checking time %s", tfrom)
+            logger.warning("checking signal %s at %s", s, tfrom)
 
             # step 0: create simulation with SA
             events_check = events + [
@@ -233,7 +217,7 @@ def checkSA(
 
             # step 1: find the smallest delta
 
-            # use the value region boundaries from the faulty SA execution, and times[-1]
+            # use the value region boundaries from the faulty SA execution, and times + events
             new_boundaries: list[float] = simulation_SA[0] + times + [e[0] for e in events]
             new_boundaries = sorted(list(set(new_boundaries)))
             # print("----", SAF, s, tfrom, "----")
