@@ -75,7 +75,9 @@ def main():
 
     # create circuit
     init, events, tokens, input_widths, output_signals, output_widths = (
-        logic.umul4x4_new.GeneratePipeline()
+        # logic.umul4x4_new.GeneratePipeline()
+        logic.umul8x8_new.GeneratePipeline()
+        # logic.umul16x16_new.GeneratePipeline()
     )
 
     print("number of signals:", len(tr.signals))

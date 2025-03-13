@@ -76,7 +76,9 @@ def main():
 
     # create circuit
     init, events, tokens, input_widths, output_signals, output_widths = (
-        logic.alu.GeneratePipeline()
+        # logic.alu4x4_new.GeneratePipeline()
+        # logic.alu8x8_new.GeneratePipeline()
+        logic.alu16x16_new.GeneratePipeline()
     )
     print("number of signals:", len(tr.signals))
     print("number of prs:", len(tr.rules))
@@ -228,7 +230,8 @@ def main():
                 input_widths=input_widths,
                 output_widths=output_widths,
                 # victim_signals=[]
-                victim_signals=["op(0).F"],
+                victim_signals=["ack_in"],
+                # victim_signals=["op(0).F"],
                 plot_affected_points=options["--plotaffectedpoints"],
                 use_masking=not options["--nomasking"],
             )
@@ -249,7 +252,8 @@ def main():
                 input_widths=input_widths,
                 output_widths=output_widths,
                 # victim_signals=[]
-                victim_signals=["op(0).F"],
+                victim_signals=["ack_in"],
+                # victim_signals=["op(0).F"],
                 plot_affected_points=options["--plotaffectedpoints"],
                 use_masking=not options["--nomasking"],
             )

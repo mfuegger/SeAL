@@ -1,6 +1,8 @@
 import svgwrite
 import matplotlib.pyplot as plt
 from seal import tracem as tr
+from typing import Optional, Union
+
 
 Point = tuple[float, float]
 Sampling_point = tuple[str, float]
@@ -44,7 +46,9 @@ def plot(
     x0: float = 60.0,
     susceptible=None,
     fault: str="SET",
-    cutoff: None | list[float] | tuple[float,float] = None,
+    # cutoff: None | list[float] | tuple[float,float] = None,
+    # cutoff: Optional[list[float] | tuple[float,float]] = None,
+    cutoff: Union[None, list[float], tuple[float,float]] = None,
     sampling_points: set[Sampling_point] = set(),
 ):
     GRID_COLOR = svgwrite.rgb(30, 30, 30, "%")

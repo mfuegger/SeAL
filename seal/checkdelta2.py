@@ -31,16 +31,20 @@ def isSusceptibleSA(
     ]
     events_check: list[tr.Event] = sorted(events_check, key=lambda x: x[1])
     # simulate
-    times_M, states_M = tr.traceSA(
+    times_M, states_M = tr.trace(
         init=states[0],
         events=events_check,
         output_signals=output_signals,
-        SA_signal=s,
-        SA_value=SAF,
-        SA_time=t + ERROR,
+
         T=T,
         snk_delay=snk_delay,
         src_delay=src_delay,
+
+        SAF = True,
+        SA_signal=s,
+        SA_value=SAF,
+        SA_time=t + ERROR,
+        
         monitor=monitor,
         tokens=tokens,
         input_widths=input_widths,
@@ -197,16 +201,20 @@ def checkSA(
                 (tfrom + 1*ERROR, s, SAF),  # add SA0 or SA1
             ]
             events_check = sorted(events_check, key=lambda x: x[0])
-            simulation_SA = tr.traceSA(
+            simulation_SA = tr.trace(
                 init=states[0],
                 events=events_check,
                 output_signals=output_signals,
-                SA_signal=s,
-                SA_value=SAF,
-                SA_time=tfrom + 1*ERROR,
+                
                 T=T,
                 snk_delay=snk_delay,
                 src_delay=src_delay,
+
+                SAF = True,
+                SA_signal=s,
+                SA_value=SAF,
+                SA_time=tfrom + 1*ERROR,
+
                 monitor=monitor,
                 tokens=tokens,
                 input_widths=input_widths,
