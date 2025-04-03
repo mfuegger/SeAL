@@ -1,5 +1,12 @@
-import tracem as tr
+import os
+import sys
+dir_path = os.path.dirname(os.path.realpath(__file__))
+# print(dir_path)
+sys.path.append(dir_path + '/../')
 
+import numpy as np
+
+from libs import tracem as tr
 
 def getStateAtTime(times, states, time: float):
     """
@@ -80,7 +87,7 @@ def check(times, states, events, signals, output_signals,
                 was_M = was_M or any([ state_M[s] == 0.5 for s in output_signals ])
             
             if times_grid[i] <= cutoff_max and times_grid[i+1] >= cutoff_min:
-                # region overlaps with cropped region
+                ## region overlaps with cropped region
                 t_from = max(cutoff_min, times_grid[i])
                 t_to =   min(cutoff_max, times_grid[i+1])
 

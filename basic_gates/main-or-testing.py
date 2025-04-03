@@ -1,0 +1,102 @@
+import os
+import sys
+dir_path = os.path.dirname(os.path.realpath(__file__))
+# print(dir_path)
+sys.path.append(dir_path + '/../')
+
+import pprint
+from libs import tracem as tr
+from libs import plotting
+# from libs import checkbi as check
+from depricated import check
+
+# CHECK = True --> show sensitivity windows
+# CHECK = False --> show effect of specific glitches
+CHECK = True
+
+# circuit
+
+# or
+tr.rise(f=tr.ORr, i=['a', 'b'], o='y', d=2)
+tr.fall(f=tr.ORf, i=['a', 'b'], o='y', d=2)
+
+# init = {'a': 1,
+# 	'b': 1,
+# 	'y': 1,}
+
+init = {'a': 0,
+	'b': 0,
+	'y': 0,}
+
+events = [
+	(3, 'a', 1),
+    (5, 'b', 1),
+	# (10, 'b', 1),
+	# (20, 'a', 0),
+    # (25, 'b', 0),
+]
+
+if not CHECK:
+    events += [
+        # (25.1, 'b', 1),  # add PF
+        # (19, 'a', 0),  # add PF
+        (27.1, 'a', 1),  # add PF
+        # (2.5, 'a', 1),  # add glitch
+		# (2.6, 'a', 0),  # reset glitch
+        # (4, 'b', 1),  # add glitch
+		# (4.1, 'b', 0),  # reset glitch
+        # (8, 'a', 0),  # add glitch
+		# (8.1, 'a', 1),  # reset glitch
+		# (13, 'b', 0),  # add glitch
+		# (13.1, 'b', 1),  # reset glitch
+        # (17, 'a', 0),  # add glitch
+		# (17.1, 'a', 1),  # reset glitch
+        # (21, 'a', 1),  # add glitch
+		# (21.1, 'a', 0),  # reset glitch
+		# (23, 'b', 0),  # add glitch
+		# (23.1, 'b', 1),  # reset glitch
+		# (12, 'b', 0),  # add glitch
+		# (14.1, 'b', 1),  # reset glitch
+		# (22, 'a', 0),  # add glitch
+		# (22.1, 'a', 1),  # reset glitch
+		# (26, 'a', 1),  # add glitch
+		# (26.9, 'a', 0),  # reset glitch
+        # (8.5, 'b', 0),  # add glitch
+		# (8.6, 'b', 1),  # reset glitch
+		# (31.5, 'a', 1),  # add glitch
+		# (31.6, 'a', 0),  # reset glitch
+    ]
+
+times, states = tr.trace(init, events=events, T=10)
+
+# print it
+for i in range(len(times)):
+	print()
+	print(f'time {times[i]}:')
+	pprint.pprint(states[i])
+	
+# cutoff
+cutoff_min = 0
+cutoff_max = float('Inf')
+
+plotting.plot(times, states, list(init.keys()))
+
+if CHECK:
+    ret = check.check(
+        times=times,
+        events=events,
+        states=states,
+        signals=list(init.keys()),
+        output_signals=['y'],
+        cutoff_min=cutoff_min,
+        cutoff_max=cutoff_max
+    )
+    pprint.pprint(ret)
+
+    plotting.plot(
+        times,
+        states,
+        list(init.keys()),
+        susceptible=ret['susceptible'],
+        cutoff=[cutoff_min, cutoff_max],
+    )
