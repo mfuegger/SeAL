@@ -1,10 +1,12 @@
 import copy
-
+from collections import namedtuple
 from seal import DualRail as DR
 
 State = dict[str, float]
 Event = tuple[float, str, float]
+EventT = namedtuple('EventT', ['time', 'signal', 'value'])
 Trace = tuple[list[float], list[State]]
+TraceT = namedtuple('TraceT', ['times', 'states'])
 
 Cr = lambda a, b: min(a, b)
 Cf = lambda a, b: min(1 - a, 1 - b)
@@ -39,79 +41,79 @@ XORr = lambda a, b: ANDr(ORr(a, b), NANDr(a, b))
 XORf = lambda a, b: 1 - ANDr(ORr(a, b), NANDr(a, b))
 
 
-rules = []
-signals: list[str] = []
+# rules = []
+# signals: list[str] = []
 
 
-def getSignals() -> list[str]:
-    global signals
-    return signals
+# def getSignals() -> list[str]:
+#     global signals
+#     return signals
 
 
-def getDelays() -> list[float]:
-    """
-    get delays of all PRs as sorted list
-    """
-    global rules
+# def getDelays() -> list[float]:
+#     """
+#     get delays of all PRs as sorted list
+#     """
+#     global rules
 
-    ret = sorted(list(set([rule["d"] for rule in rules])))
-    return ret
-
-
-def getInflunceList(o: str):
-    """
-    for PRs of the form
-
-    G1 -> o = b [d]
-
-    it returns [ (a, d), (b, d), ... ]
-    where a, b, ... are the variables in G
-    """
-    global rules
-
-    ret = [(sig, rule["d"]) for rule in rules for sig in rule["i"] if rule["o"] == o]
-    return ret
+#     ret = sorted(list(set([rule["d"] for rule in rules])))
+#     return ret
 
 
-def getInflunceTimeList(o: str) -> list[float]:
-    """
-    for PRs of the form
+# def getInflunceList(o: str):
+#     """
+#     for PRs of the form
 
-    G1 -> o = b [d1]
-    G1 -> o = b [d2]
+#     G1 -> o = b [d]
 
-    it returns [ d1, d2 ]
-    """
-    global rules
+#     it returns [ (a, d), (b, d), ... ]
+#     where a, b, ... are the variables in G
+#     """
+#     global rules
 
-    ret = [rule["d"] for rule in rules if rule["o"] == o]
-    return ret
-
-
-def getOutputList(i: str):
-    global rules
-
-    # remove duplicates because of rising/falling -> set
-    ret = list(set([(rule["o"], rule["d"]) for rule in rules if i in rule["i"]]))
-    return ret
+#     ret = [(sig, rule["d"]) for rule in rules for sig in rule["i"] if rule["o"] == o]
+#     return ret
 
 
-def getOutputListAll():
-    global signals
-    outputListDict = dict()
+# def getInflunceTimeList(o: str) -> list[float]:
+#     """
+#     for PRs of the form
 
-    for sig in signals:
-        outputListDict[sig] = getOutputList(sig)
-    return outputListDict
+#     G1 -> o = b [d1]
+#     G1 -> o = b [d2]
+
+#     it returns [ d1, d2 ]
+#     """
+#     global rules
+
+#     ret = [rule["d"] for rule in rules if rule["o"] == o]
+#     return ret
 
 
-def clear() -> None:
-    """
-    clears the circuit
-    """
-    global rules, signals
-    rules = []
-    signals = []
+# def getOutputList(i: str) -> list[str, float]:
+#     global rules
+
+#     # remove duplicates because of rising/falling -> set
+#     ret = list(set([(rule["o"], rule["d"]) for rule in rules if i in rule["i"]]))
+#     return ret
+
+
+# def getOutputListAll():
+#     global signals
+#     outputListDict = dict()
+
+#     for sig in signals:
+#         outputListDict[sig] = getOutputList(sig)
+#     return outputListDict
+
+
+# def clear() -> None:
+#     """
+#     clears the circuit
+#     """
+#     global rules, signals
+#     rules = []
+#     signals = []
 
 def nr_transitions_in_simulation(states: list[State]) -> int:
     count: int = 0
@@ -124,12 +126,12 @@ def nr_transitions_in_simulation(states: list[State]) -> int:
     return count
 
 
-def rule(f, i, o, val, d: float = 1):
-    global rules, signals
-    rules += [{"f": f, "i": i, "o": o, "val": val, "d": d}]
-    for s in i + [o]:
-        if s not in signals:
-            signals += [s]
+# def rule(f, i, o, val, d: float = 1):
+#     global rules, signals
+#     rules += [{"f": f, "i": i, "o": o, "val": val, "d": d}]
+#     for s in i + [o]:
+#         if s not in signals:
+#             signals += [s]
 
 
 def eval_rule(state, rule):
@@ -138,18 +140,18 @@ def eval_rule(state, rule):
     return rule["f"](*args)
 
 
-def rise(f, i, o, d: float = 1):
-    """
-    add a rising PR
-    """
-    rule(f=f, i=i, o=o, val=1, d=d)
+# def rise(f, i, o, d: float = 1):
+#     """
+#     add a rising PR
+#     """
+#     rule(f=f, i=i, o=o, val=1, d=d)
 
 
-def fall(f, i, o, d: float = 1):
-    """
-    add a falling PR
-    """
-    rule(f=f, i=i, o=o, val=0, d=d)
+# def fall(f, i, o, d: float = 1):
+#     """
+#     add a falling PR
+#     """
+#     rule(f=f, i=i, o=o, val=0, d=d)
 
 
 def value_at_trace(signal: str, time: float, trace: Trace) -> float:
@@ -403,6 +405,7 @@ def trace(
         # external events
         for event in events:
             if event[0] == t:
+            # if event.time == t:  
                 if not SAF:
                     state[event[1]] = event[2]
                 else:
