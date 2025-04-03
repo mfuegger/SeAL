@@ -1,6 +1,7 @@
 import copy
 from collections import namedtuple
 from seal import DualRail as DR
+from seal.Circuit import Circuit
 
 State = dict[str, float]
 Event = tuple[float, str, float]
@@ -8,112 +9,10 @@ EventT = namedtuple('EventT', ['time', 'signal', 'value'])
 Trace = tuple[list[float], list[State]]
 TraceT = namedtuple('TraceT', ['times', 'states'])
 
-Cr = lambda a, b: min(a, b)
-Cf = lambda a, b: min(1 - a, 1 - b)
-# Cr = lambda *args: min(args)
-# Cf = lambda *args: min(1 - arg for arg in args)
-
-INVr = lambda a: 1 - a
-INVf = lambda a: a
-
-BUFr = lambda a: a
-BUFf = lambda a: 1 - a
-
-# ORr = lambda a,b: max(a,b)    # a or b      -> rise
-# ORf = lambda a,b: 1-max(a,b)  # not(a or b) -> fall
-ORr = lambda *args: max(args)  # a or b      -> rise
-ORf = lambda *args: 1 - max(args)  # not(a or b) -> fall
-
-ANDr = lambda a, b: min(a, b)  # a and b      -> rise
-ANDf = lambda a, b: 1 - min(a, b)  # not(a and b) -> fall
-
-# switch rise and fall of OR
-NORr = lambda a, b: 1 - max(a, b)  # not(a or b) -> rise
-NORf = lambda a, b: max(a, b)  # a or b      -> fall
-
-# switch rise and fall of AND
-NANDr = lambda a, b: 1 - min(a, b)  # not(a and b) -> rise
-NANDf = lambda a, b: min(a, b)  # a and b      -> fall
-
-
-# switch rise and fall of XOR
-XORr = lambda a, b: ANDr(ORr(a, b), NANDr(a, b))
-XORf = lambda a, b: 1 - ANDr(ORr(a, b), NANDr(a, b))
-
-
-# rules = []
-# signals: list[str] = []
-
-
-# def getSignals() -> list[str]:
-#     global signals
-#     return signals
-
-
-# def getDelays() -> list[float]:
-#     """
-#     get delays of all PRs as sorted list
-#     """
-#     global rules
-
-#     ret = sorted(list(set([rule["d"] for rule in rules])))
-#     return ret
-
-
-# def getInflunceList(o: str):
-#     """
-#     for PRs of the form
-
-#     G1 -> o = b [d]
-
-#     it returns [ (a, d), (b, d), ... ]
-#     where a, b, ... are the variables in G
-#     """
-#     global rules
-
-#     ret = [(sig, rule["d"]) for rule in rules for sig in rule["i"] if rule["o"] == o]
-#     return ret
-
-
-# def getInflunceTimeList(o: str) -> list[float]:
-#     """
-#     for PRs of the form
-
-#     G1 -> o = b [d1]
-#     G1 -> o = b [d2]
-
-#     it returns [ d1, d2 ]
-#     """
-#     global rules
-
-#     ret = [rule["d"] for rule in rules if rule["o"] == o]
-#     return ret
-
-
-# def getOutputList(i: str) -> list[str, float]:
-#     global rules
-
-#     # remove duplicates because of rising/falling -> set
-#     ret = list(set([(rule["o"], rule["d"]) for rule in rules if i in rule["i"]]))
-#     return ret
-
-
-# def getOutputListAll():
-#     global signals
-#     outputListDict = dict()
-
-#     for sig in signals:
-#         outputListDict[sig] = getOutputList(sig)
-#     return outputListDict
-
-
-# def clear() -> None:
-#     """
-#     clears the circuit
-#     """
-#     global rules, signals
-#     rules = []
-#     signals = []
+def eval_rule(state, rule):
+    args = [state[s] for s in rule["i"]]
+    # x = rule['f'](*args)
+    return rule["f"](*args)
 
 def nr_transitions_in_simulation(states: list[State]) -> int:
     count: int = 0
@@ -124,35 +23,6 @@ def nr_transitions_in_simulation(states: list[State]) -> int:
             if old_state[s] != new_state[s]:
                 count += 1
     return count
-
-
-# def rule(f, i, o, val, d: float = 1):
-#     global rules, signals
-#     rules += [{"f": f, "i": i, "o": o, "val": val, "d": d}]
-#     for s in i + [o]:
-#         if s not in signals:
-#             signals += [s]
-
-
-def eval_rule(state, rule):
-    args = [state[s] for s in rule["i"]]
-    # x = rule['f'](*args)
-    return rule["f"](*args)
-
-
-# def rise(f, i, o, d: float = 1):
-#     """
-#     add a rising PR
-#     """
-#     rule(f=f, i=i, o=o, val=1, d=d)
-
-
-# def fall(f, i, o, d: float = 1):
-#     """
-#     add a falling PR
-#     """
-#     rule(f=f, i=i, o=o, val=0, d=d)
-
 
 def value_at_trace(signal: str, time: float, trace: Trace) -> float:
     """
@@ -166,9 +36,11 @@ def value_at_trace(signal: str, time: float, trace: Trace) -> float:
 
 
 def trace(
-    init: dict[str, float],
-    events: list[Event],
-    output_signals: list[str],
+    c: Circuit,    
+
+    # init: dict[str, float],
+    # events: list[Event],
+    # output_signals: list[str],
 
     T: float = 50.0,
     snk_delay: float = 10.0,
@@ -181,9 +53,9 @@ def trace(
     SA_time: float = None,
 
     monitor: bool = False,
-    tokens=None,
-    input_widths=None,
-    output_widths=None,
+    # tokens=None,
+    # input_widths=None,
+    # output_widths=None,
     verbose=True,
 ) -> tuple[list[float], list[State]]:
     
@@ -193,23 +65,23 @@ def trace(
     T:      time until execution
     tokens: input tokens to feed the circuit
     """
-    global rules, signals
+    # global rules, signals
     t: float = 0.0
     states: list[State] = []
     times: list[float] = []
 
     # check if something is initialized that is not in the circuit
-    for s in init.keys():
-        if s not in signals:
+    for s in c.init.keys():
+        if s not in c.signals:
             print(
                 f"warning: initalized signal {s} does not appear in the circuit. Ignoring it."
             )
 
     # init
     state: dict[str, float] = dict()
-    for s in signals:
-        state[s] = init[s] if s in init.keys() else 0
-        if s not in init.keys():
+    for s in c.signals:
+        state[s] = c.init[s] if s in c.init.keys() else 0
+        if s not in c.init.keys():
             print(f"warning: did not find initial state for signal {s}. Assuming 0.")
 
     """
@@ -220,7 +92,7 @@ def trace(
     and avoid state explosion
     """
     visited_stable: dict[str, bool] = dict()
-    for s in signals:
+    for s in c.signals:
         visited_stable[s] = False
 
     if SAF:
@@ -229,33 +101,33 @@ def trace(
 
     # --------------------------------------- Monitor Prepocessing ---------------------------------------
     if monitor:
-        if tokens is None or input_widths is None or output_widths is None:
+        if c.tokens is None or c.input_widths is None or c.output_widths is None:
             raise Exception("Tokens and In/Output Widths missing!")
         else:
-            DR_tokens = DR.toDualRail(tokens, input_widths)
+            DR_tokens = DR.toDualRail(c.tokens, c.input_widths)
             DR_tokens_copy = DR_tokens.copy()
-            tokens_copy = tokens.copy()
+            tokens_copy = c.tokens.copy()
 
             # list of data inputs (add it to prs? then no need to have it here)
             inputs = []
-            for key in input_widths:
+            for key in c.input_widths:
                 inputs.append(key)
 
             # list of data outputs
             # outputs = output_signals
             # outputs.discard('ack_out')
             outputs = []
-            for key in output_widths:
+            for key in c.output_widths:
                 outputs.append(key)
 
             signal_bits_dict = {}
             # Iterate over the input widths dictionary
-            for signal in output_widths:
+            for signal in c.output_widths:
                 # Initialize an empty set to store single bits for the current input signal
                 signal_bits = set()
 
                 # Iterate over the output signals set to find single bits corresponding to the current input signal
-                for output in output_signals:
+                for output in c.output_signals:
                     if output.startswith(f"{signal}("):
                         # Extract the bit index from the output signal
                         bit_index = output.split("(")[1].split(")")[0]
@@ -395,7 +267,7 @@ def trace(
     # schedule first token or spacer
     if monitor:
         input_events = monitorACK(state["ack_out"], t)
-        events.extend(input_events)    
+        c.events.extend(input_events)    
 
     scheduled = []
     while t <= T:
@@ -403,7 +275,7 @@ def trace(
         # --- apply external events ---
 
         # external events
-        for event in events:
+        for event in c.events:
             if event[0] == t:
             # if event.time == t:  
                 if not SAF:
@@ -468,10 +340,10 @@ def trace(
                     # if ack_out made a transition
                     if temp_state != state[rule["o"]]:
                         input_events = monitorACK(state[rule["o"]], t)
-                        events.extend(input_events)
+                        c.events.extend(input_events)
 
 
-                elif rule["o"] in output_signals:
+                elif rule["o"] in c.output_signals:
                     # update the specific rail in DR_output
                     for signal, bits in DR_output.items():  # dict
                         # print(bits)
@@ -484,7 +356,7 @@ def trace(
                     # if done made a transition
                     if done != ack_in:
                         ack_event = monitorDATA(done, t)
-                        events.append(ack_event)
+                        c.events.append(ack_event)
 
             # if SAF:
             #     if t >= SA_time:
@@ -495,7 +367,7 @@ def trace(
         # --- again apply external events if they were overwritten by a state change ---
 
         # external events
-        for event in events:
+        for event in c.events:
             if event[0] == t:
                 if not SAF:
                     state[event[1]] = event[2]
@@ -521,13 +393,13 @@ def trace(
 
         # keep only future events
         scheduled = [event for event in scheduled if event[0] > t]
-        events = [event for event in events if event[0] > t]
+        c.events = [event for event in c.events if event[0] > t]
 
         # --- schedule new events ---
 
         # check if the current state of the circuit affects any of the gates
         # schedule new events
-        for rule in rules:
+        for rule in c.rules:
             if SAF:
                 # if the rule concerns the SA_signal after it got stuck
                 # don't schedule a new event and keep the signal stuck
@@ -550,12 +422,13 @@ def trace(
                     scheduled += [(t + Mdelay, new_rule)]
                     # visited_unstable[ rule['o'] ] = True
 
-        if t > SA_time:
-            if state[SA_signal] != SA_value:
-                print(f"SA_signal {SA_signal} = {state[SA_signal]} at time {t}")
-                raise Exception(
-                    f"SA_signal {SA_signal} became stuck at {SA_value} at {SA_time} and is not stuck anymore at time {t}!"
-                )
+        if SAF:
+            if t > SA_time:
+                if state[SA_signal] != SA_value:
+                    print(f"SA_signal {SA_signal} = {state[SA_signal]} at time {t}")
+                    raise Exception(
+                        f"SA_signal {SA_signal} became stuck at {SA_value} at {SA_time} and is not stuck anymore at time {t}!"
+                    )
 
         # next time from:
         #  T,
@@ -563,7 +436,7 @@ def trace(
         #  external event
         if t < T:
             next_t = min(
-                [T] + [event[0] for event in scheduled] + [event[0] for event in events]
+                [T] + [event[0] for event in scheduled] + [event[0] for event in c.events]
             )
             t = next_t
 

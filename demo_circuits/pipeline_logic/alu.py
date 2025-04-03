@@ -1,6 +1,7 @@
 from docopt import docopt
 import time
 from seal.prs import pipeline_logic as logic
+from seal.Circuit import Circuit
 from seal import tracem as tr
 from seal import plotting
 from seal import preprocessing as p
@@ -74,34 +75,41 @@ def main():
     cutoff_min = int(options["--cutoff-min"])
     cutoff_max = float(options["--cutoff-min"])
 
-    # create circuit
-    init, events, tokens, input_widths, output_signals, output_widths = (
-        # logic.alu4x4_new.GeneratePipeline()
-        # logic.alu8x8_new.GeneratePipeline()
-        logic.alu16x16_new.GeneratePipeline()
-    )
-    print("number of signals:", len(tr.signals))
-    print("number of prs:", len(tr.rules))
+    # # create circuit
+    # init, events, tokens, input_widths, output_signals, output_widths = (
+    #     # logic.alu4x4_new.GeneratePipeline()
+    #     # logic.alu8x8_new.GeneratePipeline()
+    #     logic.alu16x16_new.GeneratePipeline()
+    # )
+    # print("number of signals:", len(tr.signals))
+    # print("number of prs:", len(tr.rules))
+
+
+    alu1 = Circuit("alu4x4")
+    logic.alu4x4_new.GeneratePipeline(alu1)
+    print(alu1)
+
 
     if not CHECK:
         if fault == "SET":
             glitch_t = 29.521037528996843
             glitch_sig = "d1__chin_op.T"
-            events += [
+            alu1.events += [
                 (glitch_t, glitch_sig, 0.5),  # add glitch
                 (glitch_t + 0.1, glitch_sig, 0),  # reset glitch
             ]
 
             # print("print before trace call", events)
             times, states = tr.trace(
-                init,
-                events,
-                output_signals,
+                alu1,
+                # init,
+                # events,
+                # output_signals,
                 T=T,
                 monitor=True,
-                tokens=tokens,
-                input_widths=input_widths,
-                output_widths=output_widths,
+                # tokens=tokens,
+                # input_widths=input_widths,
+                # output_widths=output_widths,
             )
             # print("print after trace call", events)
 
@@ -109,7 +117,7 @@ def main():
             stuck_sig = "a(3).F"
             stuck_val = 1
             stuck_t = 300
-            events += [
+            alu1.events += [
                 (stuck_t, stuck_sig, stuck_val),  # add SA1
             ]
 
@@ -118,17 +126,18 @@ def main():
             # events += [(stuck_t+10, stuck_sig, not stuck_val)]
 
             times, states = tr.traceSA(
-                init,
-                events,
-                output_signals,
+                alu1,
+                # init,
+                # events,
+                # output_signals,
                 stuck_sig,
                 stuck_val,
                 stuck_t,
                 T=T,
                 monitor=True,
-                tokens=tokens,
-                input_widths=input_widths,
-                output_widths=output_widths,
+                # tokens=tokens,
+                # input_widths=input_widths,
+                # output_widths=output_widths,
             )
             # times, states = tr.trace(init, events, output_signals, T=T, monitor=True, tokens=tokens, input_widths=input_widths, output_widths=output_widths)
 
@@ -136,7 +145,7 @@ def main():
             stuck_sig = "op(0).F"
             stuck_val = 0
             stuck_t = 83.2645698969215
-            events += [
+            alu1.events += [
                 (stuck_t, stuck_sig, 0),  # add SA0
             ]
 
@@ -145,17 +154,18 @@ def main():
             # events += [(stuck_t+10, stuck_sig, not stuck_val)]
 
             times, states = tr.traceSA(
-                init,
-                events,
-                output_signals,
+                alu1,
+                # init,
+                # events,
+                # output_signals,
                 stuck_sig,
                 stuck_val,
                 stuck_t,
                 T=T,
                 monitor=True,
-                tokens=tokens,
-                input_widths=input_widths,
-                output_widths=output_widths,
+                # tokens=tokens,
+                # input_widths=input_widths,
+                # output_widths=output_widths,
             )
 
         else:
@@ -164,125 +174,126 @@ def main():
     # if CHECK, run golden run without any faults
     else:
         times, states = tr.trace(
-            init,
-            events,
-            output_signals,
+            alu1,
+            # init,
+            # events,
+            # output_signals,
             T=T,
             monitor=True,
-            tokens=tokens,
-            input_widths=input_widths,
-            output_widths=output_widths,
+            # tokens=tokens,
+            # input_widths=input_widths,
+            # output_widths=output_widths,
         )
         # print("print after trace call", events)
 
-    plotting.plot(times, states, list(init.keys()))
+    plotting.plot(times, states, list(alu1.init.keys()))
     print("number of transitions in fault-free execution:", tr.nr_transitions_in_simulation(states))
     # print(events)
 
-    # # print it
-    # for i in range(len(times)):
-    #     print()
-    #     print(f'time {times[i]}:')
-    #     pprint.pprint(states[i])
+    # # # print it
+    # # for i in range(len(times)):
+    # #     print()
+    # #     print(f'time {times[i]}:')
+    # #     pprint.pprint(states[i])
 
-    if CHECK:
-        # if fault == 'SET':
-        #     ret = check.check(
-        #             times=times,
-        #             states=states,
-        #             events=events,
-        #             signals=list(init.keys()),
-        #             output_signals=output_signals,
-        #             cutoff_min=cutoff_min,
-        #             cutoff_max=cutoff_max,
-        #             monitor=True,
-        #             tokens=tokens,
-        #             input_widths=input_widths,
-        #             output_widths=output_widths,
-        #             victim_signals=['op(0).F']   # 'd1__chin_op.T', 'b1__c_b_out_0'
-        #     )
-        #     pprint.pprint(ret)
+    # if CHECK:
+    #     # if fault == 'SET':
+    #     #     ret = check.check(
+    #     #             times=times,
+    #     #             states=states,
+    #     #             events=events,
+    #     #             signals=list(init.keys()),
+    #     #             output_signals=output_signals,
+    #     #             cutoff_min=cutoff_min,
+    #     #             cutoff_max=cutoff_max,
+    #     #             monitor=True,
+    #     #             tokens=tokens,
+    #     #             input_widths=input_widths,
+    #     #             output_widths=output_widths,
+    #     #             victim_signals=['op(0).F']   # 'd1__chin_op.T', 'b1__c_b_out_0'
+    #     #     )
+    #     #     pprint.pprint(ret)
 
-        #     plotting.plot(
-        #             times,
-        #             states,
-        #             list(init.keys()),
-        #             susceptible=ret['susceptible'],
-        #             cutoff=[cutoff_min, cutoff_max],
-        #             )
-        # else:
-        start = time.time()
-        SA1_M = {}
-        SA0_M = {}
+    #     #     plotting.plot(
+    #     #             times,
+    #     #             states,
+    #     #             list(init.keys()),
+    #     #             susceptible=ret['susceptible'],
+    #     #             cutoff=[cutoff_min, cutoff_max],
+    #     #             )
+    #     # else:
+    #     start = time.time()
+    #     SA1_M = {}
+    #     SA0_M = {}
 
-        if fault == "SAF" or fault == "SA1":
-            SA1_M = check.checkSA(
-                times=times,
-                states=states,
-                events=events,
-                signals=list(init.keys()),
-                output_signals=output_signals,
-                cutoff_min=cutoff_min,
-                cutoff_max=cutoff_max,
-                fault="SA1",
-                monitor=True,
-                tokens=tokens,
-                input_widths=input_widths,
-                output_widths=output_widths,
-                # victim_signals=[]
-                victim_signals=["ack_in"],
-                # victim_signals=["op(0).F"],
-                plot_affected_points=options["--plotaffectedpoints"],
-                use_masking=not options["--nomasking"],
-            )
-            # pprint.pprint(SA1_M)
+    #     if fault == "SAF" or fault == "SA1":
+    #         SA1_M = check.checkSA(
+    #             times=times,
+    #             states=states,
+    #             events=events,
+    #             signals=list(init.keys()),
+    #             output_signals=output_signals,
+    #             cutoff_min=cutoff_min,
+    #             cutoff_max=cutoff_max,
+    #             fault="SA1",
+    #             monitor=True,
+    #             tokens=tokens,
+    #             input_widths=input_widths,
+    #             output_widths=output_widths,
+    #             # victim_signals=[]
+    #             victim_signals=["ack_in"],
+    #             # victim_signals=["op(0).F"],
+    #             plot_affected_points=options["--plotaffectedpoints"],
+    #             use_masking=not options["--nomasking"],
+    #         )
+    #         # pprint.pprint(SA1_M)
 
-        if fault == "SAF" or fault == "SA0":
-            SA0_M = check.checkSA(
-                times=times,
-                states=states,
-                events=events,
-                signals=list(init.keys()),
-                output_signals=output_signals,
-                cutoff_min=cutoff_min,
-                cutoff_max=cutoff_max,
-                fault="SA0",
-                monitor=True,
-                tokens=tokens,
-                input_widths=input_widths,
-                output_widths=output_widths,
-                # victim_signals=[]
-                victim_signals=["ack_in"],
-                # victim_signals=["op(0).F"],
-                plot_affected_points=options["--plotaffectedpoints"],
-                use_masking=not options["--nomasking"],
-            )
-            # pprint.pprint(SA0_M)
+    #     if fault == "SAF" or fault == "SA0":
+    #         SA0_M = check.checkSA(
+    #             times=times,
+    #             states=states,
+    #             events=events,
+    #             signals=list(init.keys()),
+    #             output_signals=output_signals,
+    #             cutoff_min=cutoff_min,
+    #             cutoff_max=cutoff_max,
+    #             fault="SA0",
+    #             monitor=True,
+    #             tokens=tokens,
+    #             input_widths=input_widths,
+    #             output_widths=output_widths,
+    #             # victim_signals=[]
+    #             victim_signals=["ack_in"],
+    #             # victim_signals=["op(0).F"],
+    #             plot_affected_points=options["--plotaffectedpoints"],
+    #             use_masking=not options["--nomasking"],
+    #         )
+    #         # pprint.pprint(SA0_M)
 
-        end = time.time()
+    #     end = time.time()
 
-        susceptible_SA1 = p.appendSAF(
-            p.collapseRanges(SA1_M["susceptible"] if SA1_M else []), "SA1"
-        )
-        susceptible_SA0 = p.appendSAF(
-            p.collapseRanges(SA0_M["susceptible"] if SA0_M else []), "SA0"
-        )
-        print(f"Susceptible SA1: {susceptible_SA1}")
-        print(f"Susceptible SA0: {susceptible_SA0}")
+    #     susceptible_SA1 = p.appendSAF(
+    #         p.collapseRanges(SA1_M["susceptible"] if SA1_M else []), "SA1"
+    #     )
+    #     susceptible_SA0 = p.appendSAF(
+    #         p.collapseRanges(SA0_M["susceptible"] if SA0_M else []), "SA0"
+    #     )
+    #     print(f"Susceptible SA1: {susceptible_SA1}")
+    #     print(f"Susceptible SA0: {susceptible_SA0}")
 
-        susceptible = susceptible_SA1 + susceptible_SA0
+    #     susceptible = susceptible_SA1 + susceptible_SA0
 
-        total_time = end - start
-        print(f"\n time to check circuit using checkdelta is {total_time}")
+    #     total_time = end - start
+    #     print(f"\n time to check circuit using checkdelta is {total_time}")
 
-        plotting.plot(
-            times,
-            states,
-            list(init.keys()),
-            susceptible=susceptible,
-            fault=fault,
-            cutoff=[cutoff_min, cutoff_max],
-        )
+    #     plotting.plot(
+    #         times,
+    #         states,
+    #         list(init.keys()),
+    #         susceptible=susceptible,
+    #         fault=fault,
+    #         cutoff=[cutoff_min, cutoff_max],
+    #     )
 
 
 if __name__ == "__main__":

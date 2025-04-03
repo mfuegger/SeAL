@@ -1,26 +1,50 @@
-from collections import namedtuple
+from seal.tracem import Event
+
+Cr = lambda a, b: min(a, b)
+Cf = lambda a, b: min(1 - a, 1 - b)
+# Cr = lambda *args: min(args)
+# Cf = lambda *args: min(1 - arg for arg in args)
+
+INVr = lambda a: 1 - a
+INVf = lambda a: a
+
+BUFr = lambda a: a
+BUFf = lambda a: 1 - a
+
+# ORr = lambda a,b: max(a,b)    # a or b      -> rise
+# ORf = lambda a,b: 1-max(a,b)  # not(a or b) -> fall
+ORr = lambda *args: max(args)  # a or b      -> rise
+ORf = lambda *args: 1 - max(args)  # not(a or b) -> fall
+
+ANDr = lambda a, b: min(a, b)  # a and b      -> rise
+ANDf = lambda a, b: 1 - min(a, b)  # not(a and b) -> fall
+
+# switch rise and fall of OR
+NORr = lambda a, b: 1 - max(a, b)  # not(a or b) -> rise
+NORf = lambda a, b: max(a, b)  # a or b      -> fall
+
+# switch rise and fall of AND
+NANDr = lambda a, b: 1 - min(a, b)  # not(a and b) -> rise
+NANDf = lambda a, b: min(a, b)  # a and b      -> fall
+
+
+# switch rise and fall of XOR
+XORr = lambda a, b: ANDr(ORr(a, b), NANDr(a, b))
+XORf = lambda a, b: 1 - ANDr(ORr(a, b), NANDr(a, b))
 
 class Circuit:
-    State = dict[str, float]
-    Event = tuple[float, str, float]
-    # EventT = namedtuple('EventT', ['time', 'signal', 'value'])
-    Trace = tuple[list[float], list[State]]
-    # TraceT = namedtuple('TraceT', ['times', 'states'])
-
-    rules = []
-    signals: list[str] = []
-    init = dict[str, float]
-    events = list[Event]
-    # ------------------
-    tokens = []
-    input_widths = []
-    # ------------------
-    output_signals = []
-    # ------------------
-    output_widths = []
 
     def __init__(self, name):
         self.name = name
+        self.rules = []
+        self.signals: list[str] = []
+        self.init: dict[str, float] = {}
+        self.events: list[Event] = []
+        self.output_signals = []
+        # ------------------
+        self.tokens = []
+        self.input_widths = []
+        self.output_widths = []
 
     def ToCode(self) -> str:
         output = f"{self.name}.T = {self.T}, {self.name}.F = {self.F}"
